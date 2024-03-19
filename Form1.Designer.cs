@@ -56,7 +56,7 @@ namespace billiard_laser
             btnFindCueball.TabIndex = 1;
             btnFindCueball.Text = "Find Cueball";
             btnFindCueball.UseVisualStyleBackColor = true;
-            btnFindCueball.Click += btnLaserOff_Click;
+            btnFindCueball.Click += btnFindCueball_Click;
             // 
             // btnLaserOn
             // 

@@ -10,6 +10,8 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="OpenCVSharp" Version="2.4.0.1" />
+    <PackageReference Include="OpenCvSharp4" Version="4.9.0.20240103" />
     <PackageReference Include="System.IO.Ports" Version="8.0.0" />
   </ItemGroup>
 

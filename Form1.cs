@@ -9,6 +9,8 @@ using System.IO;
 using System.Windows.Forms;
 using System.IO.Ports;
 using System.CodeDom;
+using OpenCvSharp;
+
 namespace billiard_laser
 {
     public partial class Form1 : Form
@@ -62,7 +64,6 @@ namespace billiard_laser
             }
         }
 
-
         private void btnLoadImage_Click(object sender, EventArgs e)
         {
             using (OpenFileDialog openfiledialog = new OpenFileDialog())
@@ -82,6 +83,12 @@ namespace billiard_laser
                     }
                 }
             }
+        }
+
+        private void btnFindCueball_Click(object sender, EventArgs e)
+        {
+            CueBallDetector detector = new CueBallDetector();
+            detector.FindAndDrawCueBall(pictureBoxImage);
         }
     }
 }
