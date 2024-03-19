@@ -1,1 +1,10 @@
 *.vsidx
+
+# Visual Studio auto-generated files
+.vs/
+bin/
+obj/
+
+# Exclude untracked files
+/bin/Debug/net8.0-windows/System.IO.Ports.dll
+/bin/Debug/net8.0-windows/runtimes/

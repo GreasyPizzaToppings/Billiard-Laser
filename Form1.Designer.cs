@@ -30,34 +30,63 @@
         {
             pictureBoxImage = new PictureBox();
             btnCheckImage = new Button();
+            btnLaserOn = new Button();
+            btnLaserOff = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
             // pictureBoxImage
             // 
-            pictureBoxImage.Location = new Point(252, 37);
+            pictureBoxImage.Location = new Point(220, 28);
+            pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
             pictureBoxImage.Name = "pictureBoxImage";
-            pictureBoxImage.Size = new Size(511, 341);
+            pictureBoxImage.Size = new Size(447, 256);
             pictureBoxImage.TabIndex = 0;
             pictureBoxImage.TabStop = false;
             // 
             // btnCheckImage
             // 
-            btnCheckImage.Location = new Point(65, 202);
+            btnCheckImage.Location = new Point(12, 28);
+            btnCheckImage.Margin = new Padding(3, 2, 3, 2);
             btnCheckImage.Name = "btnCheckImage";
-            btnCheckImage.Size = new Size(123, 29);
+            btnCheckImage.Size = new Size(108, 22);
             btnCheckImage.TabIndex = 1;
             btnCheckImage.Text = "Check Image";
             btnCheckImage.UseVisualStyleBackColor = true;
             btnCheckImage.Click += btnCheckImage_Click;
             // 
+            // btnLaserOn
+            // 
+            btnLaserOn.Location = new Point(12, 205);
+            btnLaserOn.Margin = new Padding(3, 2, 3, 2);
+            btnLaserOn.Name = "btnLaserOn";
+            btnLaserOn.Size = new Size(88, 32);
+            btnLaserOn.TabIndex = 2;
+            btnLaserOn.Text = "Laser ON";
+            btnLaserOn.UseVisualStyleBackColor = true;
+            btnLaserOn.Click += btnLaserOn_Click;
+            // 
+            // btnLaserOff
+            // 
+            btnLaserOff.Location = new Point(106, 205);
+            btnLaserOff.Margin = new Padding(3, 2, 3, 2);
+            btnLaserOff.Name = "btnLaserOff";
+            btnLaserOff.Size = new Size(88, 32);
+            btnLaserOff.TabIndex = 3;
+            btnLaserOff.Text = "Laser OFF";
+            btnLaserOff.UseVisualStyleBackColor = true;
+            btnLaserOff.Click += btnLaserOff_Click;
+            // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(8F, 20F);
+            AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(800, 450);
+            ClientSize = new Size(700, 338);
+            Controls.Add(btnLaserOff);
+            Controls.Add(btnLaserOn);
             Controls.Add(btnCheckImage);
             Controls.Add(pictureBoxImage);
+            Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Text = "Form1";
             Load += Form1_Load;
@@ -69,5 +98,7 @@
 
         private PictureBox pictureBoxImage;
         private Button btnCheckImage;
+        private Button btnLaserOn;
+        private Button btnLaserOff;
     }
 }
