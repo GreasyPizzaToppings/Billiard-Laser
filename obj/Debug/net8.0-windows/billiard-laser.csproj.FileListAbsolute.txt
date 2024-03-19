@@ -14,3 +14,4 @@ C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\refint
 C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.pdb
 C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.genruntimeconfig.cache
 C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\ref\billiard-laser.dll
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.sourcelink.json

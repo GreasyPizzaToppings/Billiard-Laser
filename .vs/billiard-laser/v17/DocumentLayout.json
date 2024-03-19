@@ -9,6 +9,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|c:\\users\\nooth\\documents\\summer\\baxter_pool_tabl\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
       "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|c:\\users\\nooth\\documents\\summer\\baxter_pool_tabl\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -28,9 +32,10 @@
               "RelativeDocumentMoniker": "Form1.cs",
               "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.cs*",
               "RelativeToolTip": "Form1.cs*",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAhwAsAAAAAAAAA",
+              "ViewState": "AQIAAA0AAAAAAAAAAIA5wCIAAAArAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-19T03:22:40.954Z",
+              "IsPinned": true,
               "EditorCaption": ""
             },
             {
@@ -42,8 +47,21 @@
               "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.cs [Design]*",
               "RelativeToolTip": "Form1.cs [Design]*",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-19T03:22:05.892Z",
+              "WhenOpened": "2024-03-19T03:40:16.743Z",
               "EditorCaption": " [Design]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Form1.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.Designer.cs",
+              "RelativeDocumentMoniker": "Form1.Designer.cs",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.Designer.cs",
+              "RelativeToolTip": "Form1.Designer.cs",
+              "ViewState": "AQIAACUAAAAAAAAAAAAtwDUAAAAUAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-19T03:38:03.384Z",
+              "EditorCaption": ""
             }
           ]
         }

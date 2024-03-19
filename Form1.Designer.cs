@@ -28,45 +28,46 @@
         /// </summary>
         private void InitializeComponent()
         {
-            pictureBox1 = new PictureBox();
-            button1 = new Button();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
+            pictureBoxImage = new PictureBox();
+            btnCheckImage = new Button();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
-            // pictureBox1
+            // pictureBoxImage
             // 
-            pictureBox1.Location = new Point(252, 37);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(511, 341);
-            pictureBox1.TabIndex = 0;
-            pictureBox1.TabStop = false;
+            pictureBoxImage.Location = new Point(252, 37);
+            pictureBoxImage.Name = "pictureBoxImage";
+            pictureBoxImage.Size = new Size(511, 341);
+            pictureBoxImage.TabIndex = 0;
+            pictureBoxImage.TabStop = false;
             // 
-            // button1
+            // btnCheckImage
             // 
-            button1.Location = new Point(65, 202);
-            button1.Name = "button1";
-            button1.Size = new Size(123, 29);
-            button1.TabIndex = 1;
-            button1.Text = "Check Image";
-            button1.UseVisualStyleBackColor = true;
+            btnCheckImage.Location = new Point(65, 202);
+            btnCheckImage.Name = "btnCheckImage";
+            btnCheckImage.Size = new Size(123, 29);
+            btnCheckImage.TabIndex = 1;
+            btnCheckImage.Text = "Check Image";
+            btnCheckImage.UseVisualStyleBackColor = true;
+            btnCheckImage.Click += btnCheckImage_Click;
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
-            Controls.Add(button1);
-            Controls.Add(pictureBox1);
+            Controls.Add(btnCheckImage);
+            Controls.Add(pictureBoxImage);
             Name = "Form1";
             Text = "Form1";
             Load += Form1_Load;
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
+            ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
             ResumeLayout(false);
         }
 
         #endregion
 
-        private PictureBox pictureBox1;
-        private Button button1;
+        private PictureBox pictureBoxImage;
+        private Button btnCheckImage;
     }
 }
