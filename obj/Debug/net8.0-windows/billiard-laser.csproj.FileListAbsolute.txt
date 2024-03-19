@@ -1,0 +1,16 @@
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.AssemblyInfoInputs.cache
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.AssemblyInfo.cs
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.csproj.CoreCompileInputs.cache
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\bin\Debug\net8.0-windows\billiard-laser.exe
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\bin\Debug\net8.0-windows\billiard-laser.deps.json
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\bin\Debug\net8.0-windows\billiard-laser.runtimeconfig.json
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\bin\Debug\net8.0-windows\billiard-laser.dll
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\bin\Debug\net8.0-windows\billiard-laser.pdb
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard_laser.Form1.resources
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.csproj.GenerateResource.cache
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.dll
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\refint\billiard-laser.dll
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.pdb
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\billiard-laser.genruntimeconfig.cache
+C:\Users\nooth\Documents\Summer\Baxter_Pool_Tabl\obj\Debug\net8.0-windows\ref\billiard-laser.dll
