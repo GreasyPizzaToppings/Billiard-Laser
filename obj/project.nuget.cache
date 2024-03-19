@@ -1,8 +1,16 @@
 {
   "version": 2,
-  "dgSpecHash": "gU3Xxs8u63CJuCmNFx9dsH35JnolfqLPosL/nOLpxG7SJeBg9jmqyFoQL2o1D9DqzaWsPC3fr7itv/MmPaH+sg==",
+  "dgSpecHash": "kaS4WWAPcui7XwCvUUg88f9rDmwr/FHUfDy2W7ZwuhgeU5u/nAkHzshHej4zDKbUGLM26P0Co/tSyHRQ/QH1xw==",
   "success": true,
-  "projectFilePath": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
-  "expectedPackageFiles": [],
+  "projectFilePath": "C:\\Users\\PC\\Documents\\Billiard-Laser\\billiard-laser.csproj",
+  "expectedPackageFiles": [
+    "C:\\Users\\PC\\.nuget\\packages\\runtime.linux-arm.runtime.native.system.io.ports\\8.0.0\\runtime.linux-arm.runtime.native.system.io.ports.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\runtime.linux-arm64.runtime.native.system.io.ports\\8.0.0\\runtime.linux-arm64.runtime.native.system.io.ports.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\runtime.linux-x64.runtime.native.system.io.ports\\8.0.0\\runtime.linux-x64.runtime.native.system.io.ports.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\runtime.native.system.io.ports\\8.0.0\\runtime.native.system.io.ports.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\runtime.osx-arm64.runtime.native.system.io.ports\\8.0.0\\runtime.osx-arm64.runtime.native.system.io.ports.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\runtime.osx-x64.runtime.native.system.io.ports\\8.0.0\\runtime.osx-x64.runtime.native.system.io.ports.8.0.0.nupkg.sha512",
+    "C:\\Users\\PC\\.nuget\\packages\\system.io.ports\\8.0.0\\system.io.ports.8.0.0.nupkg.sha512"
+  ],
   "logs": []
 }

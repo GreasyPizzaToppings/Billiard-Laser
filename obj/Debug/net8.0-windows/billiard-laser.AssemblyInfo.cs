@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("billiard-laser")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+48b77bacf85780d1bf941957a0ae874f62c3fd92")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+b181728699892a075245b2b0fade86bb76e49e76")]
 [assembly: System.Reflection.AssemblyProductAttribute("billiard-laser")]
 [assembly: System.Reflection.AssemblyTitleAttribute("billiard-laser")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
