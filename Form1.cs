@@ -8,6 +8,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.CodeDom;
 namespace billiard_laser
 {
     public partial class Form1 : Form
@@ -23,8 +24,11 @@ namespace billiard_laser
 
         private void Form1_Load(object sender, EventArgs e)
         {
+            pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
+
             // try connect to arduino. close serial monitor in arduino ide if not working
-            try { 
+            try
+            {
                 serialPort = new SerialPort("COM3", 9600);
                 serialPort.Open();
             }
@@ -36,11 +40,11 @@ namespace billiard_laser
 
         private void btnLaserOn_Click(object sender, EventArgs e)
         {
-            try 
+            try
             {
                 serialPort.WriteLine(LASER_ON); // Send "on" command to Arduino to turn on the laser
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.GetBaseException().Message);
             }
@@ -52,32 +56,30 @@ namespace billiard_laser
             {
                 serialPort.WriteLine(LASER_OFF); // Send "off" command to Arduino to turn off the laser
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 MessageBox.Show(ex.GetBaseException().Message);
             }
         }
 
 
-        //todo (huey): implement image cue ball and other detection
-        private void btnCheckImage_Click(object sender, EventArgs e)
+        private void btnLoadImage_Click(object sender, EventArgs e)
         {
-            OpenFileDialog ofd = new OpenFileDialog();
-            if (ofd.ShowDialog() == System.Windows.Forms.DialogResult.OK)
+            using (OpenFileDialog openfiledialog = new OpenFileDialog())
             {
-                switch (Path.GetExtension(ofd.FileName).ToUpper())
+                openfiledialog.Filter = "image files (*.jpg; *.jpeg; *.png; *.gif; *.bmp)|*.jpg; *.jpeg; *.png; *.gif; *.bmp|all files (*.*)|*.*";
+                openfiledialog.RestoreDirectory = true;
+
+                if (openfiledialog.ShowDialog() == DialogResult.OK)
                 {
-                    case ".BMP":
-                        pictureBoxImage.Image.Save(ofd.FileName, System.Drawing.Imaging.ImageFormat.Bmp);
-                        break;
-                    case ".JPG":
-                        pictureBoxImage.Image.Save(ofd.FileName, System.Drawing.Imaging.ImageFormat.Jpeg);
-                        break;
-                    case ".PNG":
-                        pictureBoxImage.Image.Save(ofd.FileName, System.Drawing.Imaging.ImageFormat.Png);
-                        break;
-                    default:
-                        break;
+                    try
+                    {
+                        pictureBoxImage.Image = new Bitmap(openfiledialog.FileName);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show("error loading image: " + ex.Message);
+                    }
                 }
             }
         }

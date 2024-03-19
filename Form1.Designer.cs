@@ -1,4 +1,5 @@
-﻿namespace billiard_laser
+﻿
+namespace billiard_laser
 {
     partial class Form1
     {
@@ -29,35 +30,37 @@
         private void InitializeComponent()
         {
             pictureBoxImage = new PictureBox();
-            btnCheckImage = new Button();
+            btnFindCueball = new Button();
             btnLaserOn = new Button();
             btnLaserOff = new Button();
+            btnLoadImage = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
             // pictureBoxImage
             // 
-            pictureBoxImage.Location = new Point(220, 28);
+            pictureBoxImage.Image = Properties.Resources.birdEyeShot;
+            pictureBoxImage.Location = new Point(106, 26);
             pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
             pictureBoxImage.Name = "pictureBoxImage";
-            pictureBoxImage.Size = new Size(447, 256);
+            pictureBoxImage.Size = new Size(1200, 720);
             pictureBoxImage.TabIndex = 0;
             pictureBoxImage.TabStop = false;
             // 
-            // btnCheckImage
+            // btnFindCueball
             // 
-            btnCheckImage.Location = new Point(12, 28);
-            btnCheckImage.Margin = new Padding(3, 2, 3, 2);
-            btnCheckImage.Name = "btnCheckImage";
-            btnCheckImage.Size = new Size(108, 22);
-            btnCheckImage.TabIndex = 1;
-            btnCheckImage.Text = "Check Image";
-            btnCheckImage.UseVisualStyleBackColor = true;
-            btnCheckImage.Click += btnCheckImage_Click;
+            btnFindCueball.Location = new Point(12, 122);
+            btnFindCueball.Margin = new Padding(3, 2, 3, 2);
+            btnFindCueball.Name = "btnFindCueball";
+            btnFindCueball.Size = new Size(88, 39);
+            btnFindCueball.TabIndex = 1;
+            btnFindCueball.Text = "Find Cueball";
+            btnFindCueball.UseVisualStyleBackColor = true;
+            btnFindCueball.Click += btnLaserOff_Click;
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(12, 205);
+            btnLaserOn.Location = new Point(12, 224);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(88, 32);
@@ -68,7 +71,7 @@
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(106, 205);
+            btnLaserOff.Location = new Point(12, 317);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(88, 32);
@@ -77,18 +80,30 @@
             btnLaserOff.UseVisualStyleBackColor = true;
             btnLaserOff.Click += btnLaserOff_Click;
             // 
+            // btnLoadImage
+            // 
+            btnLoadImage.Location = new Point(12, 26);
+            btnLoadImage.Margin = new Padding(3, 2, 3, 2);
+            btnLoadImage.Name = "btnLoadImage";
+            btnLoadImage.Size = new Size(88, 39);
+            btnLoadImage.TabIndex = 4;
+            btnLoadImage.Text = "Load Image ";
+            btnLoadImage.UseVisualStyleBackColor = true;
+            btnLoadImage.Click += btnLoadImage_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(700, 338);
+            ClientSize = new Size(1314, 753);
+            Controls.Add(btnLoadImage);
             Controls.Add(btnLaserOff);
             Controls.Add(btnLaserOn);
-            Controls.Add(btnCheckImage);
+            Controls.Add(btnFindCueball);
             Controls.Add(pictureBoxImage);
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
-            Text = "Form1";
+            Text = "Billiard Laser";
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
             ResumeLayout(false);
@@ -97,8 +112,9 @@
         #endregion
 
         private PictureBox pictureBoxImage;
-        private Button btnCheckImage;
+        private Button btnFindCueball;
         private Button btnLaserOn;
         private Button btnLaserOff;
+        private Button btnLoadImage;
     }
 }
