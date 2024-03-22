@@ -34,6 +34,7 @@ namespace billiard_laser
             btnLaserOn = new Button();
             btnLaserOff = new Button();
             btnLoadImage = new Button();
+            btnGetCameraInput = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
@@ -49,7 +50,7 @@ namespace billiard_laser
             // 
             // btnFindCueball
             // 
-            btnFindCueball.Location = new Point(12, 122);
+            btnFindCueball.Location = new Point(12, 220);
             btnFindCueball.Margin = new Padding(3, 2, 3, 2);
             btnFindCueball.Name = "btnFindCueball";
             btnFindCueball.Size = new Size(88, 39);
@@ -60,7 +61,7 @@ namespace billiard_laser
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(12, 224);
+            btnLaserOn.Location = new Point(12, 307);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(88, 32);
@@ -71,7 +72,7 @@ namespace billiard_laser
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(12, 317);
+            btnLaserOff.Location = new Point(12, 388);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(88, 32);
@@ -82,7 +83,7 @@ namespace billiard_laser
             // 
             // btnLoadImage
             // 
-            btnLoadImage.Location = new Point(12, 26);
+            btnLoadImage.Location = new Point(12, 117);
             btnLoadImage.Margin = new Padding(3, 2, 3, 2);
             btnLoadImage.Name = "btnLoadImage";
             btnLoadImage.Size = new Size(88, 39);
@@ -91,11 +92,23 @@ namespace billiard_laser
             btnLoadImage.UseVisualStyleBackColor = true;
             btnLoadImage.Click += btnLoadImage_Click;
             // 
+            // btnGetCameraInput
+            // 
+            btnGetCameraInput.Location = new Point(12, 26);
+            btnGetCameraInput.Margin = new Padding(3, 2, 3, 2);
+            btnGetCameraInput.Name = "btnGetCameraInput";
+            btnGetCameraInput.Size = new Size(88, 32);
+            btnGetCameraInput.TabIndex = 5;
+            btnGetCameraInput.Text = "Camera Input";
+            btnGetCameraInput.UseVisualStyleBackColor = true;
+            btnGetCameraInput.Click += btnGetCameraInput_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1314, 753);
+            ClientSize = new Size(1314, 749);
+            Controls.Add(btnGetCameraInput);
             Controls.Add(btnLoadImage);
             Controls.Add(btnLaserOff);
             Controls.Add(btnLaserOn);
@@ -116,5 +129,6 @@ namespace billiard_laser
         private Button btnLaserOn;
         private Button btnLaserOff;
         private Button btnLoadImage;
+        private Button btnGetCameraInput;
     }
 }
