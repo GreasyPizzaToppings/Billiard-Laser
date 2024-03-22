@@ -10,6 +10,7 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.CodeDom;
 using OpenCvSharp;
+using System.Net;
 
 namespace billiard_laser
 {
@@ -89,6 +90,51 @@ namespace billiard_laser
         {
             CueBallDetector detector = new CueBallDetector();
             detector.FindAndDrawCueBall(pictureBoxImage);
+        }
+
+        private void btnGetCameraInput_Click(object sender, EventArgs e)
+        {
+            // Create a new background worker
+            BackgroundWorker worker = new BackgroundWorker();
+            worker.DoWork += Worker_DoWork;
+            worker.RunWorkerAsync();
+        }
+
+        private void Worker_DoWork(object sender, DoWorkEventArgs e)
+        {
+            BackgroundWorker worker = sender as BackgroundWorker;
+            string cameraUrl = "http://192.168.43.1:8080/video";
+
+            using (WebClient webClient = new WebClient())
+            {
+                try
+                {
+                    // Create a stream to receive the video data
+                    Stream videoStream = webClient.OpenRead(cameraUrl);
+
+                    // Read the video data in chunks and update the PictureBox
+                    byte[] buffer = new byte[1024];
+                    int bytesRead;
+
+                    while ((bytesRead = videoStream.Read(buffer, 0, buffer.Length)) > 0)
+                    {
+                        // Create a MemoryStream from the received chunk
+                        using (MemoryStream memoryStream = new MemoryStream(buffer, 0, bytesRead))
+                        {
+                            // Create a new Bitmap object from the MemoryStream
+                            Bitmap bitmap = new Bitmap(memoryStream);
+
+                            // Update the PictureBox control's Image property on the UI thread
+                            pictureBoxImage.Invoke(new Action(() => pictureBoxImage.Image = bitmap));
+                        }
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Handle any exceptions that may occur during the video stream processing
+                    Console.WriteLine($"An error occurred: {ex.Message}");
+                }
+            }
         }
     }
 }
