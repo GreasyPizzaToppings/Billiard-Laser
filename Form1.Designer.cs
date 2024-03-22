@@ -35,6 +35,11 @@ namespace billiard_laser
             btnLaserOff = new Button();
             btnLoadImage = new Button();
             btnGetCameraInput = new Button();
+            btnLeft = new Button();
+            btnRight = new Button();
+            btnUp = new Button();
+            btnDown = new Button();
+            lblServos = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
@@ -50,7 +55,7 @@ namespace billiard_laser
             // 
             // btnFindCueball
             // 
-            btnFindCueball.Location = new Point(12, 220);
+            btnFindCueball.Location = new Point(8, 170);
             btnFindCueball.Margin = new Padding(3, 2, 3, 2);
             btnFindCueball.Name = "btnFindCueball";
             btnFindCueball.Size = new Size(88, 39);
@@ -61,7 +66,7 @@ namespace billiard_laser
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(12, 307);
+            btnLaserOn.Location = new Point(8, 271);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(88, 32);
@@ -72,7 +77,7 @@ namespace billiard_laser
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(12, 388);
+            btnLaserOff.Location = new Point(8, 307);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(88, 32);
@@ -83,7 +88,7 @@ namespace billiard_laser
             // 
             // btnLoadImage
             // 
-            btnLoadImage.Location = new Point(12, 117);
+            btnLoadImage.Location = new Point(8, 62);
             btnLoadImage.Margin = new Padding(3, 2, 3, 2);
             btnLoadImage.Name = "btnLoadImage";
             btnLoadImage.Size = new Size(88, 39);
@@ -94,7 +99,7 @@ namespace billiard_laser
             // 
             // btnGetCameraInput
             // 
-            btnGetCameraInput.Location = new Point(12, 26);
+            btnGetCameraInput.Location = new Point(8, 26);
             btnGetCameraInput.Margin = new Padding(3, 2, 3, 2);
             btnGetCameraInput.Name = "btnGetCameraInput";
             btnGetCameraInput.Size = new Size(88, 32);
@@ -103,11 +108,73 @@ namespace billiard_laser
             btnGetCameraInput.UseVisualStyleBackColor = true;
             btnGetCameraInput.Click += btnGetCameraInput_Click;
             // 
+            // btnLeft
+            // 
+            btnLeft.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            btnLeft.Location = new Point(11, 500);
+            btnLeft.Margin = new Padding(3, 2, 3, 2);
+            btnLeft.Name = "btnLeft";
+            btnLeft.Size = new Size(31, 32);
+            btnLeft.TabIndex = 6;
+            btnLeft.Text = "←";
+            btnLeft.UseVisualStyleBackColor = true;
+            btnLeft.Click += btnLeft_Click;
+            // 
+            // btnRight
+            // 
+            btnRight.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            btnRight.Location = new Point(48, 500);
+            btnRight.Margin = new Padding(3, 2, 3, 2);
+            btnRight.Name = "btnRight";
+            btnRight.Size = new Size(31, 32);
+            btnRight.TabIndex = 7;
+            btnRight.Text = "→";
+            btnRight.UseVisualStyleBackColor = true;
+            btnRight.Click += btnRight_Click;
+            // 
+            // btnUp
+            // 
+            btnUp.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            btnUp.Location = new Point(31, 464);
+            btnUp.Margin = new Padding(3, 2, 3, 2);
+            btnUp.Name = "btnUp";
+            btnUp.Size = new Size(31, 32);
+            btnUp.TabIndex = 8;
+            btnUp.Text = "↑";
+            btnUp.UseVisualStyleBackColor = true;
+            btnUp.Click += btnUp_Click;
+            // 
+            // btnDown
+            // 
+            btnDown.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            btnDown.Location = new Point(31, 536);
+            btnDown.Margin = new Padding(3, 2, 3, 2);
+            btnDown.Name = "btnDown";
+            btnDown.Size = new Size(31, 32);
+            btnDown.TabIndex = 9;
+            btnDown.Text = "↓";
+            btnDown.UseVisualStyleBackColor = true;
+            btnDown.Click += btnDown_Click;
+            // 
+            // lblServos
+            // 
+            lblServos.AutoSize = true;
+            lblServos.Location = new Point(8, 434);
+            lblServos.Name = "lblServos";
+            lblServos.Size = new Size(84, 15);
+            lblServos.TabIndex = 10;
+            lblServos.Text = "Servo Controls";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1314, 749);
+            Controls.Add(lblServos);
+            Controls.Add(btnDown);
+            Controls.Add(btnUp);
+            Controls.Add(btnRight);
+            Controls.Add(btnLeft);
             Controls.Add(btnGetCameraInput);
             Controls.Add(btnLoadImage);
             Controls.Add(btnLaserOff);
@@ -117,9 +184,11 @@ namespace billiard_laser
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Text = "Billiard Laser";
+            FormClosed += Form1_FormClosed;
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
             ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion
@@ -130,5 +199,10 @@ namespace billiard_laser
         private Button btnLaserOff;
         private Button btnLoadImage;
         private Button btnGetCameraInput;
+        private Button btnLeft;
+        private Button btnRight;
+        private Button btnUp;
+        private Button btnDown;
+        private Label lblServos;
     }
 }

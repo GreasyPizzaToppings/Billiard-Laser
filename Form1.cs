@@ -10,7 +10,8 @@ using System.Windows.Forms;
 using System.IO.Ports;
 using System.CodeDom;
 using System.Net;
-using AForge.Video;
+using Emgu.CV;
+
 
 namespace billiard_laser
 {
@@ -19,9 +20,14 @@ namespace billiard_laser
         SerialPort serialPort;
         const string LASER_OFF = "0";
         const string LASER_ON = "1";
+        const string LEFT = "l";
+        const string RIGHT = "r";
+        const string UP = "u";
+        const string DOWN = "d";
 
-        private MJPEGStream mjpegStream = new MJPEGStream(); 
-        //private VideoCaptureDevice videoSource;
+        bool streamVideo = false;
+        VideoCapture capture = new VideoCapture(0);
+
 
         public Form1()
         {
@@ -97,34 +103,139 @@ namespace billiard_laser
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
-            // Create a MJPEGStream instance with the camera URL
-            string cameraUrl = "http://192.168.43.1:8080/video";
-            mjpegStream.Source = cameraUrl;
+            streamVideo = true;
 
-            // Set the NewFrame event handler to update the PictureBox
-            mjpegStream.NewFrame += VideoSource_NewFrame;
-            mjpegStream.VideoSourceError += MjpegStream_VideoSourceError;
+            capture.ImageGrabbed += Capture_ImageGrabbed;
+            capture.Start();
 
-            // Start the video source
-            mjpegStream.Start();
+            //StreamVideo();
+
         }
 
-        private void VideoSource_NewFrame(object sender, NewFrameEventArgs eventArgs)
+
+        private void Capture_ImageGrabbed(object sender, EventArgs e)
         {
-            // Update the PictureBox with the new frame
-            pictureBoxImage.Image = (Bitmap)eventArgs.Frame.Clone();
+            var frameSize = new System.Drawing.Size(640, 480);
+
+            if (streamVideo)
+            {
+                Mat frame = new Mat();
+                capture.Retrieve(frame);
+                //Mat frame = capture.QueryFrame(); //what is this
+
+                CvInvoke.Resize(frame, frame, frameSize);
+                pictureBoxImage.Image = frame.ToBitmap();
+
+                frame.Dispose();
+            }
         }
 
-        private void MjpegStream_VideoSourceError(object sender, AForge.Video.VideoSourceErrorEventArgs eventArgs)
+        private async void StreamVideo()
         {
-            // Handle the error here
-            MessageBox.Show("Error occurred during MJPEG stream: " + eventArgs.Description);
+            while (streamVideo)
+            {
+
+                Mat frame = new Mat();
+
+                try
+                {
+                    capture.Read(frame);
+
+                    if (frame.IsEmpty)
+                    {
+                        Console.Write("gay");
+                    }
+
+                    MessageBox.Show(frame.Size.ToString());
+
+                    double frameWidth = capture.Get(Emgu.CV.CvEnum.CapProp.FrameWidth);
+                    double frameHeight = capture.Get(Emgu.CV.CvEnum.CapProp.FrameHeight);
+                    double fps = capture.Get(Emgu.CV.CvEnum.CapProp.Fps);
+
+                    // Check if the properties have valid values
+                    if (frameWidth > 0 && frameHeight > 0 && fps > 0)
+                    {
+                        // Video source properties are valid, proceed with frame capture
+                        // ...
+                    }
+                    else
+                    {
+                        // Video source properties are invalid, handle the error
+                        MessageBox.Show("Invalid video source properties.");
+                    }
+
+                    //capture.Retrieve(frame);
+
+
+
+                    var frameSize = new System.Drawing.Size(640, 480);
+                    CvInvoke.Resize(frame, frame, frameSize);
+
+                    var img = frame.ToBitmap();
+                    pictureBoxImage.Image = img;
+
+                    await Task.Delay(16);
+                }
+
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message);
+                }
+
+            }
         }
 
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
         {
-            mjpegStream.Stop();
+
         }
 
+        private void btnUp_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                serialPort.WriteLine(UP);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetBaseException().Message);
+            }
+        }
+
+        private void btnLeft_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                serialPort.WriteLine(LEFT);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetBaseException().Message);
+            }
+        }
+
+        private void btnRight_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                serialPort.WriteLine(RIGHT);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetBaseException().Message);
+            }
+        }
+
+        private void btnDown_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                serialPort.WriteLine(DOWN);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.GetBaseException().Message);
+            }
+        }
     }
 }
