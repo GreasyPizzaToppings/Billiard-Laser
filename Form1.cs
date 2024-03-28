@@ -103,86 +103,30 @@ namespace billiard_laser
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
-            streamVideo = true;
+            // find device.
+            var devices = UsbCamera.FindDevices();
+            if (devices.Length == 0) return; // no device.
 
-            capture.ImageGrabbed += Capture_ImageGrabbed;
-            capture.Start();
+            // get video format.
+            var cameraIndex = 1; // todo change depending on pc running it
+            var formats = UsbCamera.GetVideoFormat(cameraIndex);
 
-            //StreamVideo();
+            // select the format you want.
+            foreach (var item in formats) Console.WriteLine(item);
+            var format = formats[0];
 
-        }
+            // create instance.
+            var camera = new UsbCamera(cameraIndex, format);
+            // this closing event handler make sure that the instance is not subject to garbage collection.
+            this.FormClosing += (s, ev) => camera.Release(); // release when close.
 
-
-        private void Capture_ImageGrabbed(object sender, EventArgs e)
-        {
-            var frameSize = new System.Drawing.Size(640, 480);
-
-            if (streamVideo)
-            {
-                Mat frame = new Mat();
-                capture.Retrieve(frame);
-                //Mat frame = capture.QueryFrame(); //what is this
-
-                CvInvoke.Resize(frame, frame, frameSize);
-                pictureBoxImage.Image = frame.ToBitmap();
-
-                frame.Dispose();
-            }
-        }
-
-        private async void StreamVideo()
-        {
-            while (streamVideo)
-            {
-
-                Mat frame = new Mat();
-
-                try
-                {
-                    capture.Read(frame);
-
-                    if (frame.IsEmpty)
-                    {
-                        Console.Write("gay");
-                    }
-
-                    MessageBox.Show(frame.Size.ToString());
-
-                    double frameWidth = capture.Get(Emgu.CV.CvEnum.CapProp.FrameWidth);
-                    double frameHeight = capture.Get(Emgu.CV.CvEnum.CapProp.FrameHeight);
-                    double fps = capture.Get(Emgu.CV.CvEnum.CapProp.Fps);
-
-                    // Check if the properties have valid values
-                    if (frameWidth > 0 && frameHeight > 0 && fps > 0)
-                    {
-                        // Video source properties are valid, proceed with frame capture
-                        // ...
-                    }
-                    else
-                    {
-                        // Video source properties are invalid, handle the error
-                        MessageBox.Show("Invalid video source properties.");
-                    }
-
-                    //capture.Retrieve(frame);
+            // to show preview, there are 3 ways.
+            // 1. use SetPreviewControl. (works light, recommended.)
+            camera.SetPreviewControl(pictureBoxImage.Handle, pictureBoxImage.ClientSize);
+            pictureBoxImage.Resize += (s, ev) => camera.SetPreviewSize(pictureBoxImage.ClientSize); // support resize.
 
 
-
-                    var frameSize = new System.Drawing.Size(640, 480);
-                    CvInvoke.Resize(frame, frame, frameSize);
-
-                    var img = frame.ToBitmap();
-                    pictureBoxImage.Image = img;
-
-                    await Task.Delay(16);
-                }
-
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message);
-                }
-
-            }
+            camera.Start();
         }
 
         private void Form1_FormClosed(object sender, FormClosedEventArgs e)
