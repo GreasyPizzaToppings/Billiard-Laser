@@ -1,32 +1,36 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\PC\\Documents\\Billiard-Laser\\billiard-laser.csproj": {}
+    "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj": {}
   },
   "projects": {
-    "C:\\Users\\PC\\Documents\\Billiard-Laser\\billiard-laser.csproj": {
+    "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\PC\\Documents\\Billiard-Laser\\billiard-laser.csproj",
+        "projectUniqueName": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
         "projectName": "billiard-laser",
-        "projectPath": "C:\\Users\\PC\\Documents\\Billiard-Laser\\billiard-laser.csproj",
-        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\PC\\Documents\\Billiard-Laser\\obj\\",
+        "projectPath": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
+        "packagesPath": "C:\\Users\\nooth\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\obj\\",
         "projectStyle": "PackageReference",
+        "fallbackFolders": [
+          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
+        ],
         "configFilePaths": [
-          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\nooth\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
-          "net8.0-windows"
+          "net6.0-windows7.0"
         ],
         "sources": {
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
-          "net8.0-windows7.0": {
-            "targetAlias": "net8.0-windows",
+          "net6.0-windows7.0": {
+            "targetAlias": "net6.0-windows7.0",
             "projectReferences": {}
           }
         },
@@ -42,9 +46,37 @@
         }
       },
       "frameworks": {
-        "net8.0-windows7.0": {
-          "targetAlias": "net8.0-windows",
+        "net6.0-windows7.0": {
+          "targetAlias": "net6.0-windows7.0",
           "dependencies": {
+            "AForge": {
+              "target": "Package",
+              "version": "[2.2.5, )"
+            },
+            "AForge.Video": {
+              "target": "Package",
+              "version": "[2.2.5, )"
+            },
+            "AForge.Video.DirectShow": {
+              "target": "Package",
+              "version": "[2.2.5, )"
+            },
+            "Accord.Video.VFW": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
+            "Emgu.CV": {
+              "target": "Package",
+              "version": "[4.8.1.5350, )"
+            },
+            "Emgu.CV.Bitmap": {
+              "target": "Package",
+              "version": "[4.8.1.5350, )"
+            },
+            "Emgu.CV.runtime.windows": {
+              "target": "Package",
+              "version": "[4.8.1.5350, )"
+            },
             "System.IO.Ports": {
               "target": "Package",
               "version": "[8.0.0, )"
@@ -69,7 +101,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.203\\RuntimeIdentifierGraph.json"
         }
       }
     }
