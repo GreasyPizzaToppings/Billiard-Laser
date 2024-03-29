@@ -40,6 +40,8 @@ namespace billiard_laser
             btnUp = new Button();
             btnDown = new Button();
             lblServos = new Label();
+            cboCamera = new ComboBox();
+            labelCameras = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
@@ -55,7 +57,7 @@ namespace billiard_laser
             // 
             // btnFindCueball
             // 
-            btnFindCueball.Location = new Point(8, 170);
+            btnFindCueball.Location = new Point(11, 248);
             btnFindCueball.Margin = new Padding(3, 2, 3, 2);
             btnFindCueball.Name = "btnFindCueball";
             btnFindCueball.Size = new Size(88, 39);
@@ -66,7 +68,7 @@ namespace billiard_laser
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(8, 271);
+            btnLaserOn.Location = new Point(8, 375);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(88, 32);
@@ -77,7 +79,7 @@ namespace billiard_laser
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(8, 307);
+            btnLaserOff.Location = new Point(8, 411);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(88, 32);
@@ -88,7 +90,7 @@ namespace billiard_laser
             // 
             // btnLoadImage
             // 
-            btnLoadImage.Location = new Point(8, 62);
+            btnLoadImage.Location = new Point(8, 158);
             btnLoadImage.Margin = new Padding(3, 2, 3, 2);
             btnLoadImage.Name = "btnLoadImage";
             btnLoadImage.Size = new Size(88, 39);
@@ -99,7 +101,7 @@ namespace billiard_laser
             // 
             // btnGetCameraInput
             // 
-            btnGetCameraInput.Location = new Point(8, 26);
+            btnGetCameraInput.Location = new Point(8, 65);
             btnGetCameraInput.Margin = new Padding(3, 2, 3, 2);
             btnGetCameraInput.Name = "btnGetCameraInput";
             btnGetCameraInput.Size = new Size(88, 32);
@@ -111,7 +113,7 @@ namespace billiard_laser
             // btnLeft
             // 
             btnLeft.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLeft.Location = new Point(11, 500);
+            btnLeft.Location = new Point(11, 560);
             btnLeft.Margin = new Padding(3, 2, 3, 2);
             btnLeft.Name = "btnLeft";
             btnLeft.Size = new Size(31, 32);
@@ -123,7 +125,7 @@ namespace billiard_laser
             // btnRight
             // 
             btnRight.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnRight.Location = new Point(48, 500);
+            btnRight.Location = new Point(48, 560);
             btnRight.Margin = new Padding(3, 2, 3, 2);
             btnRight.Name = "btnRight";
             btnRight.Size = new Size(31, 32);
@@ -135,7 +137,7 @@ namespace billiard_laser
             // btnUp
             // 
             btnUp.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUp.Location = new Point(31, 464);
+            btnUp.Location = new Point(31, 524);
             btnUp.Margin = new Padding(3, 2, 3, 2);
             btnUp.Name = "btnUp";
             btnUp.Size = new Size(31, 32);
@@ -147,7 +149,7 @@ namespace billiard_laser
             // btnDown
             // 
             btnDown.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDown.Location = new Point(31, 536);
+            btnDown.Location = new Point(31, 596);
             btnDown.Margin = new Padding(3, 2, 3, 2);
             btnDown.Name = "btnDown";
             btnDown.Size = new Size(31, 32);
@@ -159,17 +161,36 @@ namespace billiard_laser
             // lblServos
             // 
             lblServos.AutoSize = true;
-            lblServos.Location = new Point(8, 434);
+            lblServos.Location = new Point(8, 494);
             lblServos.Name = "lblServos";
             lblServos.Size = new Size(84, 15);
             lblServos.TabIndex = 10;
             lblServos.Text = "Servo Controls";
+            // 
+            // cboCamera
+            // 
+            cboCamera.FormattingEnabled = true;
+            cboCamera.Location = new Point(8, 37);
+            cboCamera.Name = "cboCamera";
+            cboCamera.Size = new Size(86, 23);
+            cboCamera.TabIndex = 11;
+            // 
+            // labelCameras
+            // 
+            labelCameras.AutoSize = true;
+            labelCameras.Location = new Point(9, 12);
+            labelCameras.Name = "labelCameras";
+            labelCameras.Size = new Size(82, 15);
+            labelCameras.TabIndex = 12;
+            labelCameras.Text = "Select Camera";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1314, 749);
+            Controls.Add(labelCameras);
+            Controls.Add(cboCamera);
             Controls.Add(lblServos);
             Controls.Add(btnDown);
             Controls.Add(btnUp);
@@ -184,7 +205,7 @@ namespace billiard_laser
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Text = "Billiard Laser";
-            FormClosed += Form1_FormClosed;
+            FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
             ResumeLayout(false);
@@ -204,5 +225,7 @@ namespace billiard_laser
         private Button btnUp;
         private Button btnDown;
         private Label lblServos;
+        private ComboBox cboCamera;
+        private Label labelCameras;
     }
 }

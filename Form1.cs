@@ -11,6 +11,8 @@ using System.IO.Ports;
 using System.CodeDom;
 using System.Net;
 using Emgu.CV;
+using AForge.Video.DirectShow;
+using AForge.Video;
 
 
 namespace billiard_laser
@@ -25,9 +27,8 @@ namespace billiard_laser
         const string UP = "u";
         const string DOWN = "d";
 
-        bool streamVideo = false;
-        VideoCapture capture = new VideoCapture(0);
-
+        FilterInfoCollection filterInfoCollection;
+        VideoCaptureDevice videoCaptureDevice;
 
         public Form1()
         {
@@ -48,7 +49,16 @@ namespace billiard_laser
             {
                 MessageBox.Show(ex.GetBaseException().Message);
             }
+
+            // fill combo box with camera options
+            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
+            foreach (FilterInfo Device in filterInfoCollection)
+                cboCamera.Items.Add(Device.Name);
+            cboCamera.SelectedIndex = 0;
+
+            videoCaptureDevice = new VideoCaptureDevice();
         }
+
 
         private void btnLaserOn_Click(object sender, EventArgs e)
         {
@@ -103,36 +113,16 @@ namespace billiard_laser
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
-            // find device.
-            var devices = UsbCamera.FindDevices();
-            if (devices.Length == 0) return; // no device.
-
-            // get video format.
-            var cameraIndex = 1; // todo change depending on pc running it
-            var formats = UsbCamera.GetVideoFormat(cameraIndex);
-
-            // select the format you want.
-            foreach (var item in formats) Console.WriteLine(item);
-            var format = formats[0];
-
-            // create instance.
-            var camera = new UsbCamera(cameraIndex, format);
-            // this closing event handler make sure that the instance is not subject to garbage collection.
-            this.FormClosing += (s, ev) => camera.Release(); // release when close.
-
-            // to show preview, there are 3 ways.
-            // 1. use SetPreviewControl. (works light, recommended.)
-            camera.SetPreviewControl(pictureBoxImage.Handle, pictureBoxImage.ClientSize);
-            pictureBoxImage.Resize += (s, ev) => camera.SetPreviewSize(pictureBoxImage.ClientSize); // support resize.
-
-
-            camera.Start();
+            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cboCamera.SelectedIndex].MonikerString);
+            videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
+            videoCaptureDevice.Start();
         }
 
-        private void Form1_FormClosed(object sender, FormClosedEventArgs e)
+        private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
-
+            pictureBoxImage.Image = (Bitmap)eventArgs.Frame.Clone();
         }
+
 
         private void btnUp_Click(object sender, EventArgs e)
         {
@@ -179,6 +169,33 @@ namespace billiard_laser
             catch (Exception ex)
             {
                 MessageBox.Show(ex.GetBaseException().Message);
+            }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (videoCaptureDevice != null)
+            {
+                videoCaptureDevice.SignalToStop();
+
+                // wait ~ 3 seconds
+                for (int i = 0; i < 30; i++)
+                {
+                    if (!videoCaptureDevice.IsRunning)
+                    {
+                        break;
+                    }
+                    System.Threading.Thread.Sleep(100);
+                }
+
+                if (videoCaptureDevice.IsRunning)
+                {
+                    videoCaptureDevice.Stop();
+                }
+
+                videoCaptureDevice.Stop();
+
+                videoCaptureDevice = null;
             }
         }
     }
