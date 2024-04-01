@@ -37,7 +37,7 @@ void loop() {
       digitalWrite(laserPin, LOW);
     }
 
- // Pan left for 'l'
+    // Pan left for 'l'
     else if (command == 'l') {
       panAngle -= 10; // Decrease pan angle by 10 degrees
       panAngle = constrain(panAngle, 0, 180); // Constrain pan angle to 0-180 degrees
