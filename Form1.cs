@@ -1,27 +1,24 @@
 using System.IO.Ports;
-using AForge.Video.DirectShow;
 using AForge.Video;
+using AForge.Video.DirectShow;
 using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using System.Drawing;
-using Emgu.CV.Reg;
-using System.Windows.Forms;
 
 namespace billiard_laser
 {
     public partial class Form1 : Form
     {
-        SerialPort serialPort;
-        const string LASER_OFF = "0";
-        const string LASER_ON = "1";
-        const string LEFT = "l";
-        const string RIGHT = "r";
-        const string UP = "u";
-        const string DOWN = "d";
+        private SerialPort serialPort;
+        private FilterInfoCollection filterInfoCollection;
+        private VideoCaptureDevice videoCaptureDevice;
+        private OpenCvSharp.Size size = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
-        FilterInfoCollection filterInfoCollection;
-        VideoCaptureDevice videoCaptureDevice;
-
+        private const string LASER_OFF = "0";
+        private const string LASER_ON = "1";
+        private const string LEFT = "l";
+        private const string RIGHT = "r";
+        private const string UP = "u";
+        private const string DOWN = "d";
 
         public Form1()
         {
@@ -31,8 +28,12 @@ namespace billiard_laser
         private void Form1_Load(object sender, EventArgs e)
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
+            ConnectToArduino();
+            PopulateCameraComboBox();
+        }
 
-            // try connect to arduino. close serial monitor in arduino ide if not working
+        private void ConnectToArduino()
+        {
             try
             {
                 serialPort = new SerialPort("COM3", 9600);
@@ -40,10 +41,12 @@ namespace billiard_laser
             }
             catch (Exception ex)
             {
-                MessageBox.Show(ex.GetBaseException().Message);
+                MessageBox.Show("Couldn't connect to arduino\n" + ex.Message);
             }
+        }
 
-            // fill combo box with camera options
+        private void PopulateCameraComboBox()
+        {
             filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
             foreach (FilterInfo Device in filterInfoCollection)
                 cboCamera.Items.Add(Device.Name);
@@ -52,24 +55,21 @@ namespace billiard_laser
             videoCaptureDevice = new VideoCaptureDevice();
         }
 
-
         private void btnLaserOn_Click(object sender, EventArgs e)
         {
-            try
-            {
-                serialPort.WriteLine(LASER_ON); // Send "on" command to Arduino to turn on the laser
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            SendCommandToArduino(LASER_ON);
         }
 
         private void btnLaserOff_Click(object sender, EventArgs e)
         {
+            SendCommandToArduino(LASER_OFF);
+        }
+
+        private void SendCommandToArduino(string command)
+        {
             try
             {
-                serialPort.WriteLine(LASER_OFF); // Send "off" command to Arduino to turn off the laser
+                serialPort.WriteLine(command);
             }
             catch (Exception ex)
             {
@@ -103,7 +103,8 @@ namespace billiard_laser
             HighlightCueball(pictureBoxImage, 150);
         }
 
-        private void HighlightCueball(PictureBox pictureBox, int threshold) {
+        private void HighlightCueball(PictureBox pictureBox, int threshold)
+        {
             CueBallDetector detector = new CueBallDetector();
             detector.FindAndDrawCueBall(pictureBox, threshold);
         }
@@ -122,53 +123,30 @@ namespace billiard_laser
 
         private void btnUp_Click(object sender, EventArgs e)
         {
-            try
-            {
-                serialPort.WriteLine(UP);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            SendCommandToArduino(UP);
         }
 
         private void btnLeft_Click(object sender, EventArgs e)
         {
-            try
-            {
-                serialPort.WriteLine(LEFT);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            SendCommandToArduino(LEFT);
         }
 
         private void btnRight_Click(object sender, EventArgs e)
         {
-            try
-            {
-                serialPort.WriteLine(RIGHT);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            SendCommandToArduino(RIGHT);
         }
 
         private void btnDown_Click(object sender, EventArgs e)
         {
-            try
-            {
-                serialPort.WriteLine(DOWN);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            SendCommandToArduino(DOWN);
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            StopVideoCaptureDevice();
+        }
+
+        private void StopVideoCaptureDevice()
         {
             if (videoCaptureDevice != null)
             {
@@ -242,15 +220,9 @@ namespace billiard_laser
             {
                 string selectedVideoPath = openFileDialog.FileName;
 
-                //TODO parametrise or remove. testing only
-                //native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
-                OpenCvSharp.Size size = new OpenCvSharp.Size(255, 144); 
-
                 // get video frames
                 List<Bitmap> images = GetVideoFrames(selectedVideoPath, size);
 
-                // detect cue ball in each frame
-                System.Timers.Timer cbTimer = new System.Timers.Timer();
                 // detect cue ball in each frame
                 System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
                 double totalDetectionTime = 0;
