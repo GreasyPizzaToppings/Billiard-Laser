@@ -29,7 +29,7 @@ namespace billiard_laser
         /// </summary>
         private void InitializeComponent()
         {
-            pictureBoxImage = new PictureBox();
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             btnFindCueball = new Button();
             btnLaserOn = new Button();
             btnLaserOff = new Button();
@@ -42,22 +42,23 @@ namespace billiard_laser
             lblServos = new Label();
             cboCamera = new ComboBox();
             labelCameras = new Label();
+            btnLoadVideo = new Button();
+            button1 = new Button();
+            tabControl1 = new TabControl();
+            tabPageImage = new TabPage();
+            pictureBoxImage = new PictureBox();
+            tabPageVideo = new TabPage();
+            mediaPlayerVideo = new AxWMPLib.AxWindowsMediaPlayer();
+            tabControl1.SuspendLayout();
+            tabPageImage.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
+            tabPageVideo.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)mediaPlayerVideo).BeginInit();
             SuspendLayout();
-            // 
-            // pictureBoxImage
-            // 
-            pictureBoxImage.Image = Properties.Resources.birdEyeShot;
-            pictureBoxImage.Location = new Point(106, 26);
-            pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
-            pictureBoxImage.Name = "pictureBoxImage";
-            pictureBoxImage.Size = new Size(1200, 720);
-            pictureBoxImage.TabIndex = 0;
-            pictureBoxImage.TabStop = false;
             // 
             // btnFindCueball
             // 
-            btnFindCueball.Location = new Point(11, 248);
+            btnFindCueball.Location = new Point(9, 294);
             btnFindCueball.Margin = new Padding(3, 2, 3, 2);
             btnFindCueball.Name = "btnFindCueball";
             btnFindCueball.Size = new Size(88, 39);
@@ -68,7 +69,7 @@ namespace billiard_laser
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(8, 375);
+            btnLaserOn.Location = new Point(10, 364);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(88, 32);
@@ -79,7 +80,7 @@ namespace billiard_laser
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(8, 411);
+            btnLaserOff.Location = new Point(10, 400);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(88, 32);
@@ -90,7 +91,7 @@ namespace billiard_laser
             // 
             // btnLoadImage
             // 
-            btnLoadImage.Location = new Point(8, 158);
+            btnLoadImage.Location = new Point(9, 241);
             btnLoadImage.Margin = new Padding(3, 2, 3, 2);
             btnLoadImage.Name = "btnLoadImage";
             btnLoadImage.Size = new Size(88, 39);
@@ -113,7 +114,7 @@ namespace billiard_laser
             // btnLeft
             // 
             btnLeft.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLeft.Location = new Point(11, 560);
+            btnLeft.Location = new Point(17, 533);
             btnLeft.Margin = new Padding(3, 2, 3, 2);
             btnLeft.Name = "btnLeft";
             btnLeft.Size = new Size(31, 32);
@@ -125,7 +126,7 @@ namespace billiard_laser
             // btnRight
             // 
             btnRight.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnRight.Location = new Point(48, 560);
+            btnRight.Location = new Point(54, 533);
             btnRight.Margin = new Padding(3, 2, 3, 2);
             btnRight.Name = "btnRight";
             btnRight.Size = new Size(31, 32);
@@ -137,7 +138,7 @@ namespace billiard_laser
             // btnUp
             // 
             btnUp.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUp.Location = new Point(31, 524);
+            btnUp.Location = new Point(37, 497);
             btnUp.Margin = new Padding(3, 2, 3, 2);
             btnUp.Name = "btnUp";
             btnUp.Size = new Size(31, 32);
@@ -149,7 +150,7 @@ namespace billiard_laser
             // btnDown
             // 
             btnDown.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDown.Location = new Point(31, 596);
+            btnDown.Location = new Point(37, 569);
             btnDown.Margin = new Padding(3, 2, 3, 2);
             btnDown.Name = "btnDown";
             btnDown.Size = new Size(31, 32);
@@ -161,7 +162,7 @@ namespace billiard_laser
             // lblServos
             // 
             lblServos.AutoSize = true;
-            lblServos.Location = new Point(8, 494);
+            lblServos.Location = new Point(14, 467);
             lblServos.Name = "lblServos";
             lblServos.Size = new Size(84, 15);
             lblServos.TabIndex = 10;
@@ -184,11 +185,86 @@ namespace billiard_laser
             labelCameras.TabIndex = 12;
             labelCameras.Text = "Select Camera";
             // 
+            // btnLoadVideo
+            // 
+            btnLoadVideo.Location = new Point(9, 130);
+            btnLoadVideo.Margin = new Padding(3, 2, 3, 2);
+            btnLoadVideo.Name = "btnLoadVideo";
+            btnLoadVideo.Size = new Size(88, 32);
+            btnLoadVideo.TabIndex = 13;
+            btnLoadVideo.Text = "Load Video";
+            btnLoadVideo.UseVisualStyleBackColor = true;
+            btnLoadVideo.Click += btnLoadVideo_Click;
+            // 
+            // button1
+            // 
+            button1.Location = new Point(10, 166);
+            button1.Margin = new Padding(3, 2, 3, 2);
+            button1.Name = "button1";
+            button1.Size = new Size(88, 40);
+            button1.TabIndex = 14;
+            button1.Text = "Play and Detect CB";
+            button1.UseVisualStyleBackColor = true;
+            // 
+            // tabControl1
+            // 
+            tabControl1.Controls.Add(tabPageImage);
+            tabControl1.Controls.Add(tabPageVideo);
+            tabControl1.Location = new Point(104, 12);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new Size(884, 589);
+            tabControl1.TabIndex = 16;
+            // 
+            // tabPageImage
+            // 
+            tabPageImage.Controls.Add(pictureBoxImage);
+            tabPageImage.Location = new Point(4, 24);
+            tabPageImage.Name = "tabPageImage";
+            tabPageImage.Padding = new Padding(3);
+            tabPageImage.Size = new Size(876, 561);
+            tabPageImage.TabIndex = 0;
+            tabPageImage.Text = "Image";
+            tabPageImage.UseVisualStyleBackColor = true;
+            // 
+            // pictureBoxImage
+            // 
+            pictureBoxImage.Image = Properties.Resources.birdEyeShot;
+            pictureBoxImage.Location = new Point(3, 2);
+            pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
+            pictureBoxImage.Name = "pictureBoxImage";
+            pictureBoxImage.Size = new Size(867, 554);
+            pictureBoxImage.TabIndex = 1;
+            pictureBoxImage.TabStop = false;
+            // 
+            // tabPageVideo
+            // 
+            tabPageVideo.Controls.Add(mediaPlayerVideo);
+            tabPageVideo.Location = new Point(4, 24);
+            tabPageVideo.Name = "tabPageVideo";
+            tabPageVideo.Padding = new Padding(3);
+            tabPageVideo.Size = new Size(876, 561);
+            tabPageVideo.TabIndex = 1;
+            tabPageVideo.Text = "Video";
+            tabPageVideo.UseVisualStyleBackColor = true;
+            // 
+            // mediaPlayerVideo
+            // 
+            mediaPlayerVideo.Enabled = true;
+            mediaPlayerVideo.Location = new Point(6, 6);
+            mediaPlayerVideo.Name = "mediaPlayerVideo";
+            mediaPlayerVideo.OcxState = (AxHost.State)resources.GetObject("mediaPlayerVideo.OcxState");
+            mediaPlayerVideo.Size = new Size(864, 548);
+            mediaPlayerVideo.TabIndex = 0;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1314, 749);
+            ClientSize = new Size(994, 602);
+            Controls.Add(tabControl1);
+            Controls.Add(button1);
+            Controls.Add(btnLoadVideo);
             Controls.Add(labelCameras);
             Controls.Add(cboCamera);
             Controls.Add(lblServos);
@@ -201,20 +277,21 @@ namespace billiard_laser
             Controls.Add(btnLaserOff);
             Controls.Add(btnLaserOn);
             Controls.Add(btnFindCueball);
-            Controls.Add(pictureBoxImage);
             Margin = new Padding(3, 2, 3, 2);
             Name = "Form1";
             Text = "Billiard Laser";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
+            tabControl1.ResumeLayout(false);
+            tabPageImage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
+            tabPageVideo.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)mediaPlayerVideo).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
 
         #endregion
-
-        private PictureBox pictureBoxImage;
         private Button btnFindCueball;
         private Button btnLaserOn;
         private Button btnLaserOff;
@@ -227,5 +304,12 @@ namespace billiard_laser
         private Label lblServos;
         private ComboBox cboCamera;
         private Label labelCameras;
+        private Button btnLoadVideo;
+        private Button button1;
+        private TabControl tabControl1;
+        private TabPage tabPageImage;
+        private PictureBox pictureBoxImage;
+        private TabPage tabPageVideo;
+        private AxWMPLib.AxWindowsMediaPlayer mediaPlayerVideo;
     }
 }

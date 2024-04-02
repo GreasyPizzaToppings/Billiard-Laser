@@ -1,19 +1,11 @@
-using System;
-using System.Data;
-using System.Linq;
-using System.Drawing;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
-using System.IO;
-using System.Windows.Forms;
 using System.IO.Ports;
-using System.CodeDom;
-using System.Net;
-using Emgu.CV;
 using AForge.Video.DirectShow;
 using AForge.Video;
-
+using OpenCvSharp;
+using OpenCvSharp.Extensions;
+using System.Drawing;
+using Emgu.CV.Reg;
+using System.Windows.Forms;
 
 namespace billiard_laser
 {
@@ -29,6 +21,7 @@ namespace billiard_laser
 
         FilterInfoCollection filterInfoCollection;
         VideoCaptureDevice videoCaptureDevice;
+
 
         public Form1()
         {
@@ -197,6 +190,46 @@ namespace billiard_laser
 
                 videoCaptureDevice = null;
             }
+        }
+
+        private void btnLoadVideo_Click(object sender, EventArgs e)
+        {
+            //show dialog for video
+
+            //get video frames
+            List<Mat> images = SplitVideoIntoFrames("egg");
+
+            Mat image = images.ElementAt(25);
+            pictureBoxImage.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(image);
+
+
+            //for each frame, detect cueball
+
+            //time how long it takes. show fps
+        }
+
+        public static List<Mat> SplitVideoIntoFrames(string videoPath)
+        {
+            var videoFile = "C:\\Users\\t420\\Desktop\\billiard-laser\\billiard-laser\\Test footage\\successfulPot.mp4"; // Specify path to MP4 video file.
+
+            List<Mat> images = new List<Mat>();
+
+            var capture = new VideoCapture(videoFile);
+            var image = new Mat();
+
+            while (capture.IsOpened())
+            {
+                // Read next frame in video file
+                capture.Read(image);
+                if (image.Empty())
+                {
+                    break;
+                }
+
+                images.Add(image);
+            }
+
+            return images;
         }
     }
 }
