@@ -100,8 +100,12 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
+            HighlightCueball(pictureBoxImage, 150);
+        }
+
+        private void HighlightCueball(PictureBox pictureBox, int threshold) {
             CueBallDetector detector = new CueBallDetector();
-            detector.FindAndDrawCueBall(pictureBoxImage, 150);
+            detector.FindAndDrawCueBall(pictureBox, threshold);
         }
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
@@ -115,7 +119,6 @@ namespace billiard_laser
         {
             pictureBoxImage.Image = (Bitmap)eventArgs.Frame.Clone();
         }
-
 
         private void btnUp_Click(object sender, EventArgs e)
         {
@@ -192,33 +195,16 @@ namespace billiard_laser
             }
         }
 
-        private void btnLoadVideo_Click(object sender, EventArgs e)
+        public static List<Bitmap> GetVideoFrames(string videoPath)
         {
-            //show dialog for video
 
-            //get video frames
-            List<Mat> images = SplitVideoIntoFrames("egg");
-
-            Mat image = images.ElementAt(25);
-            pictureBoxImage.Image = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(image);
-
-
-            //for each frame, detect cueball
-
-            //time how long it takes. show fps
-        }
-
-        public static List<Mat> SplitVideoIntoFrames(string videoPath)
-        {
-            var videoFile = "C:\\Users\\t420\\Desktop\\billiard-laser\\billiard-laser\\Test footage\\successfulPot.mp4"; // Specify path to MP4 video file.
-
-            List<Mat> images = new List<Mat>();
-
-            var capture = new VideoCapture(videoFile);
-            var image = new Mat();
+            var frames = new List<Bitmap>();
+            var capture = new VideoCapture(videoPath);
 
             while (capture.IsOpened())
             {
+                var image = new Mat();
+
                 // Read next frame in video file
                 capture.Read(image);
                 if (image.Empty())
@@ -226,10 +212,54 @@ namespace billiard_laser
                     break;
                 }
 
-                images.Add(image);
+                frames.Add(BitmapConverter.ToBitmap(image));
             }
 
-            return images;
+            return frames;
+        }
+
+        private void btnFindCueballInVideo_Click(object sender, EventArgs e)
+        {
+            //show dialog for video
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Video Files (*.mp4;*.avi;*.mkv)|*.mp4;*.avi;*.mkv";
+            openFileDialog.Title = "Select a Video File";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                string selectedVideoPath = openFileDialog.FileName;
+
+                // get video frames
+                List<Bitmap> images = GetVideoFrames(selectedVideoPath);
+
+                // detect cue ball in each frame
+                System.Timers.Timer cbTimer = new System.Timers.Timer();
+                // detect cue ball in each frame
+                System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+                double totalDetectionTime = 0;
+
+                foreach (var image in images)
+                {
+                    pictureBoxImage.Image = image;
+
+                    // start the stopwatch
+                    stopwatch.Restart();
+
+                    // detect the cue ball in the current frame
+                    HighlightCueball(pictureBoxImage, 150);
+
+                    // stop the stopwatch and add the elapsed time to the total
+                    stopwatch.Stop();
+                    totalDetectionTime += stopwatch.Elapsed.TotalSeconds;
+
+                    // update the labelFPS with the current average FPS
+                    double averageFps = images.IndexOf(image) / totalDetectionTime;
+                    labelFrameRate.Text = $"FPS: {averageFps:F2}";
+
+                    // refresh the UI to show the updated image and FPS
+                    Application.DoEvents();
+                }
+            }
         }
     }
 }

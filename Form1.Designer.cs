@@ -29,7 +29,6 @@ namespace billiard_laser
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             btnFindCueball = new Button();
             btnLaserOn = new Button();
             btnLaserOff = new Button();
@@ -42,23 +41,15 @@ namespace billiard_laser
             lblServos = new Label();
             cboCamera = new ComboBox();
             labelCameras = new Label();
-            btnLoadVideo = new Button();
-            button1 = new Button();
-            tabControl1 = new TabControl();
-            tabPageImage = new TabPage();
+            btnFindCueballInVideo = new Button();
             pictureBoxImage = new PictureBox();
-            tabPageVideo = new TabPage();
-            mediaPlayerVideo = new AxWMPLib.AxWindowsMediaPlayer();
-            tabControl1.SuspendLayout();
-            tabPageImage.SuspendLayout();
+            labelFrameRate = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
-            tabPageVideo.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)mediaPlayerVideo).BeginInit();
             SuspendLayout();
             // 
             // btnFindCueball
             // 
-            btnFindCueball.Location = new Point(9, 294);
+            btnFindCueball.Location = new Point(8, 274);
             btnFindCueball.Margin = new Padding(3, 2, 3, 2);
             btnFindCueball.Name = "btnFindCueball";
             btnFindCueball.Size = new Size(88, 39);
@@ -91,7 +82,7 @@ namespace billiard_laser
             // 
             // btnLoadImage
             // 
-            btnLoadImage.Location = new Point(9, 241);
+            btnLoadImage.Location = new Point(8, 221);
             btnLoadImage.Margin = new Padding(3, 2, 3, 2);
             btnLoadImage.Name = "btnLoadImage";
             btnLoadImage.Size = new Size(88, 39);
@@ -185,86 +176,44 @@ namespace billiard_laser
             labelCameras.TabIndex = 12;
             labelCameras.Text = "Select Camera";
             // 
-            // btnLoadVideo
+            // btnFindCueballInVideo
             // 
-            btnLoadVideo.Location = new Point(9, 130);
-            btnLoadVideo.Margin = new Padding(3, 2, 3, 2);
-            btnLoadVideo.Name = "btnLoadVideo";
-            btnLoadVideo.Size = new Size(88, 32);
-            btnLoadVideo.TabIndex = 13;
-            btnLoadVideo.Text = "Load Video";
-            btnLoadVideo.UseVisualStyleBackColor = true;
-            btnLoadVideo.Click += btnLoadVideo_Click;
-            // 
-            // button1
-            // 
-            button1.Location = new Point(10, 166);
-            button1.Margin = new Padding(3, 2, 3, 2);
-            button1.Name = "button1";
-            button1.Size = new Size(88, 40);
-            button1.TabIndex = 14;
-            button1.Text = "Play and Detect CB";
-            button1.UseVisualStyleBackColor = true;
-            // 
-            // tabControl1
-            // 
-            tabControl1.Controls.Add(tabPageImage);
-            tabControl1.Controls.Add(tabPageVideo);
-            tabControl1.Location = new Point(104, 12);
-            tabControl1.Name = "tabControl1";
-            tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(884, 589);
-            tabControl1.TabIndex = 16;
-            // 
-            // tabPageImage
-            // 
-            tabPageImage.Controls.Add(pictureBoxImage);
-            tabPageImage.Location = new Point(4, 24);
-            tabPageImage.Name = "tabPageImage";
-            tabPageImage.Padding = new Padding(3);
-            tabPageImage.Size = new Size(876, 561);
-            tabPageImage.TabIndex = 0;
-            tabPageImage.Text = "Image";
-            tabPageImage.UseVisualStyleBackColor = true;
+            btnFindCueballInVideo.Location = new Point(8, 137);
+            btnFindCueballInVideo.Margin = new Padding(3, 2, 3, 2);
+            btnFindCueballInVideo.Name = "btnFindCueballInVideo";
+            btnFindCueballInVideo.Size = new Size(88, 40);
+            btnFindCueballInVideo.TabIndex = 14;
+            btnFindCueballInVideo.Text = "Find CB in Video";
+            btnFindCueballInVideo.UseVisualStyleBackColor = true;
+            btnFindCueballInVideo.Click += btnFindCueballInVideo_Click;
             // 
             // pictureBoxImage
             // 
             pictureBoxImage.Image = Properties.Resources.birdEyeShot;
-            pictureBoxImage.Location = new Point(3, 2);
+            pictureBoxImage.Location = new Point(115, 12);
             pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
             pictureBoxImage.Name = "pictureBoxImage";
-            pictureBoxImage.Size = new Size(867, 554);
-            pictureBoxImage.TabIndex = 1;
+            pictureBoxImage.Size = new Size(867, 587);
+            pictureBoxImage.TabIndex = 15;
             pictureBoxImage.TabStop = false;
             // 
-            // tabPageVideo
+            // labelFrameRate
             // 
-            tabPageVideo.Controls.Add(mediaPlayerVideo);
-            tabPageVideo.Location = new Point(4, 24);
-            tabPageVideo.Name = "tabPageVideo";
-            tabPageVideo.Padding = new Padding(3);
-            tabPageVideo.Size = new Size(876, 561);
-            tabPageVideo.TabIndex = 1;
-            tabPageVideo.Text = "Video";
-            tabPageVideo.UseVisualStyleBackColor = true;
-            // 
-            // mediaPlayerVideo
-            // 
-            mediaPlayerVideo.Enabled = true;
-            mediaPlayerVideo.Location = new Point(6, 6);
-            mediaPlayerVideo.Name = "mediaPlayerVideo";
-            mediaPlayerVideo.OcxState = (AxHost.State)resources.GetObject("mediaPlayerVideo.OcxState");
-            mediaPlayerVideo.Size = new Size(864, 548);
-            mediaPlayerVideo.TabIndex = 0;
+            labelFrameRate.AutoSize = true;
+            labelFrameRate.Location = new Point(8, 179);
+            labelFrameRate.Name = "labelFrameRate";
+            labelFrameRate.Size = new Size(32, 15);
+            labelFrameRate.TabIndex = 16;
+            labelFrameRate.Text = "FPS: ";
             // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(994, 602);
-            Controls.Add(tabControl1);
-            Controls.Add(button1);
-            Controls.Add(btnLoadVideo);
+            ClientSize = new Size(992, 606);
+            Controls.Add(labelFrameRate);
+            Controls.Add(pictureBoxImage);
+            Controls.Add(btnFindCueballInVideo);
             Controls.Add(labelCameras);
             Controls.Add(cboCamera);
             Controls.Add(lblServos);
@@ -282,11 +231,7 @@ namespace billiard_laser
             Text = "Billiard Laser";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
-            tabControl1.ResumeLayout(false);
-            tabPageImage.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
-            tabPageVideo.ResumeLayout(false);
-            ((System.ComponentModel.ISupportInitialize)mediaPlayerVideo).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -304,12 +249,8 @@ namespace billiard_laser
         private Label lblServos;
         private ComboBox cboCamera;
         private Label labelCameras;
-        private Button btnLoadVideo;
-        private Button button1;
-        private TabControl tabControl1;
-        private TabPage tabPageImage;
+        private Button btnFindCueballInVideo;
         private PictureBox pictureBoxImage;
-        private TabPage tabPageVideo;
-        private AxWMPLib.AxWindowsMediaPlayer mediaPlayerVideo;
+        private Label labelFrameRate;
     }
 }
