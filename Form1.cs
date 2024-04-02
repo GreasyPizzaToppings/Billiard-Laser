@@ -195,11 +195,17 @@ namespace billiard_laser
             }
         }
 
-        public static List<Bitmap> GetVideoFrames(string videoPath)
+        public static List<Bitmap> GetVideoFrames(string videoPath, OpenCvSharp.Size? resolution = null)
         {
-
             var frames = new List<Bitmap>();
             var capture = new VideoCapture(videoPath);
+
+            if (resolution.HasValue)
+            {
+                // Set the desired frame resolution
+                capture.Set(VideoCaptureProperties.FrameWidth, resolution.Value.Width);
+                capture.Set(VideoCaptureProperties.FrameHeight, resolution.Value.Height);
+            }
 
             while (capture.IsOpened())
             {
@@ -207,9 +213,16 @@ namespace billiard_laser
 
                 // Read next frame in video file
                 capture.Read(image);
+
                 if (image.Empty())
                 {
                     break;
+                }
+
+                // Resize the frame to the specified resolution
+                if (resolution.HasValue)
+                {
+                    Cv2.Resize(image, image, resolution.Value);
                 }
 
                 frames.Add(BitmapConverter.ToBitmap(image));
@@ -229,8 +242,12 @@ namespace billiard_laser
             {
                 string selectedVideoPath = openFileDialog.FileName;
 
+                //TODO parametrise or remove. testing only
+                //native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
+                OpenCvSharp.Size size = new OpenCvSharp.Size(255, 144); 
+
                 // get video frames
-                List<Bitmap> images = GetVideoFrames(selectedVideoPath);
+                List<Bitmap> images = GetVideoFrames(selectedVideoPath, size);
 
                 // detect cue ball in each frame
                 System.Timers.Timer cbTimer = new System.Timers.Timer();

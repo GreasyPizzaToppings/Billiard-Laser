@@ -49,7 +49,7 @@ namespace billiard_laser
             // 
             // btnFindCueball
             // 
-            btnFindCueball.Location = new Point(8, 274);
+            btnFindCueball.Location = new Point(8, 237);
             btnFindCueball.Margin = new Padding(3, 2, 3, 2);
             btnFindCueball.Name = "btnFindCueball";
             btnFindCueball.Size = new Size(88, 39);
@@ -60,7 +60,7 @@ namespace billiard_laser
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(10, 364);
+            btnLaserOn.Location = new Point(9, 294);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(88, 32);
@@ -71,7 +71,7 @@ namespace billiard_laser
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(10, 400);
+            btnLaserOff.Location = new Point(9, 330);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(88, 32);
@@ -82,7 +82,7 @@ namespace billiard_laser
             // 
             // btnLoadImage
             // 
-            btnLoadImage.Location = new Point(8, 221);
+            btnLoadImage.Location = new Point(7, 194);
             btnLoadImage.Margin = new Padding(3, 2, 3, 2);
             btnLoadImage.Name = "btnLoadImage";
             btnLoadImage.Size = new Size(88, 39);
@@ -105,7 +105,7 @@ namespace billiard_laser
             // btnLeft
             // 
             btnLeft.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLeft.Location = new Point(17, 533);
+            btnLeft.Location = new Point(15, 452);
             btnLeft.Margin = new Padding(3, 2, 3, 2);
             btnLeft.Name = "btnLeft";
             btnLeft.Size = new Size(31, 32);
@@ -117,7 +117,7 @@ namespace billiard_laser
             // btnRight
             // 
             btnRight.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnRight.Location = new Point(54, 533);
+            btnRight.Location = new Point(52, 452);
             btnRight.Margin = new Padding(3, 2, 3, 2);
             btnRight.Name = "btnRight";
             btnRight.Size = new Size(31, 32);
@@ -129,7 +129,7 @@ namespace billiard_laser
             // btnUp
             // 
             btnUp.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUp.Location = new Point(37, 497);
+            btnUp.Location = new Point(35, 416);
             btnUp.Margin = new Padding(3, 2, 3, 2);
             btnUp.Name = "btnUp";
             btnUp.Size = new Size(31, 32);
@@ -141,7 +141,7 @@ namespace billiard_laser
             // btnDown
             // 
             btnDown.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDown.Location = new Point(37, 569);
+            btnDown.Location = new Point(35, 488);
             btnDown.Margin = new Padding(3, 2, 3, 2);
             btnDown.Name = "btnDown";
             btnDown.Size = new Size(31, 32);
@@ -153,7 +153,7 @@ namespace billiard_laser
             // lblServos
             // 
             lblServos.AutoSize = true;
-            lblServos.Location = new Point(14, 467);
+            lblServos.Location = new Point(12, 386);
             lblServos.Name = "lblServos";
             lblServos.Size = new Size(84, 15);
             lblServos.TabIndex = 10;
@@ -178,7 +178,7 @@ namespace billiard_laser
             // 
             // btnFindCueballInVideo
             // 
-            btnFindCueballInVideo.Location = new Point(8, 137);
+            btnFindCueballInVideo.Location = new Point(6, 118);
             btnFindCueballInVideo.Margin = new Padding(3, 2, 3, 2);
             btnFindCueballInVideo.Name = "btnFindCueballInVideo";
             btnFindCueballInVideo.Size = new Size(88, 40);
@@ -193,14 +193,14 @@ namespace billiard_laser
             pictureBoxImage.Location = new Point(115, 12);
             pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
             pictureBoxImage.Name = "pictureBoxImage";
-            pictureBoxImage.Size = new Size(867, 587);
+            pictureBoxImage.Size = new Size(865, 517);
             pictureBoxImage.TabIndex = 15;
             pictureBoxImage.TabStop = false;
             // 
             // labelFrameRate
             // 
             labelFrameRate.AutoSize = true;
-            labelFrameRate.Location = new Point(8, 179);
+            labelFrameRate.Location = new Point(6, 160);
             labelFrameRate.Name = "labelFrameRate";
             labelFrameRate.Size = new Size(32, 15);
             labelFrameRate.TabIndex = 16;
@@ -210,7 +210,7 @@ namespace billiard_laser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(992, 606);
+            ClientSize = new Size(992, 535);
             Controls.Add(labelFrameRate);
             Controls.Add(pictureBoxImage);
             Controls.Add(btnFindCueballInVideo);
