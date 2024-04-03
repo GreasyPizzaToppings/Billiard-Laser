@@ -13,4 +13,17 @@
     <SourceRoot Include="C:\Users\nooth\.nuget\packages\" />
     <SourceRoot Include="C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages\" />
   </ItemGroup>
+  <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Content Include="$(NuGetPackageRoot)opencvsharpextension\2.0.0.2\contentFiles\any\net6.0-windows7.0\haarcascade_frontalface_default.xml" Condition="Exists('$(NuGetPackageRoot)opencvsharpextension\2.0.0.2\contentFiles\any\net6.0-windows7.0\haarcascade_frontalface_default.xml')">
+      <NuGetPackageId>OpenCvSharpExtension</NuGetPackageId>
+      <NuGetPackageVersion>2.0.0.2</NuGetPackageVersion>
+      <NuGetItemType>Content</NuGetItemType>
+      <Pack>false</Pack>
+      <Private>False</Private>
+      <Link>haarcascade_frontalface_default.xml</Link>
+    </Content>
+  </ItemGroup>
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <PkgOpenCVSharp Condition=" '$(PkgOpenCVSharp)' == '' ">C:\Users\nooth\.nuget\packages\opencvsharp\2.4.0</PkgOpenCVSharp>
+  </PropertyGroup>
 </Project>

@@ -186,5 +186,17 @@ namespace billiard_laser
                 videoCaptureDevice = null;
             }
         }
+
+        private void buttonSaveImage_Click(object sender, EventArgs e)
+        {
+            CueBallDetector cueBallDetector = new CueBallDetector();
+            cueBallDetector.ProcessImage(pictureBoxImage);
+        }
+
+        private void buttonDetectBalls_Click(object sender, EventArgs e)
+        {
+            //CueBallDetector ballsDetector = new CueBallDetector();
+            //ballsDetector.houghCircles(pictureBoxImage);
+        }
     }
 }

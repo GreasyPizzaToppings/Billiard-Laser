@@ -77,6 +77,22 @@
               "target": "Package",
               "version": "[4.8.1.5350, )"
             },
+            "FRC.OpenCvSharp": {
+              "target": "Package",
+              "version": "[1.0.3, )"
+            },
+            "OpenCVSharp": {
+              "target": "Package",
+              "version": "[2.4.0, )"
+            },
+            "OpenCvSharp4": {
+              "target": "Package",
+              "version": "[4.9.0.20240103, )"
+            },
+            "OpenCvSharpExtension": {
+              "target": "Package",
+              "version": "[2.0.0.2, )"
+            },
             "System.IO.Ports": {
               "target": "Package",
               "version": "[8.0.0, )"
