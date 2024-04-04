@@ -34,7 +34,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
@@ -47,7 +47,19 @@
               "ViewState": "AQIAAL8AAAAAAAAAAAAewMwAAAAMAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-19T03:22:40.954Z",
-              "IsPinned": true,
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CueBallDetector.cs",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\CueBallDetector.cs",
+              "RelativeDocumentMoniker": "CueBallDetector.cs",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\CueBallDetector.cs*",
+              "RelativeToolTip": "CueBallDetector.cs*",
+              "ViewState": "AQIAAJoAAAAAAAAAAAAAAK8AAAAkAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-03-28T01:18:01.005Z",
               "EditorCaption": ""
             },
             {
@@ -60,21 +72,7 @@
               "RelativeToolTip": "obj\\Debug\\net6.0-windows7.0\\billiard-laser.AssemblyInfo.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAcAAAAEAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-04-02T02:13:29.405Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "CueBallDetector.cs",
-              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\CueBallDetector.cs",
-              "RelativeDocumentMoniker": "CueBallDetector.cs",
-              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\CueBallDetector.cs*",
-              "RelativeToolTip": "CueBallDetector.cs*",
-              "ViewState": "AQIAAJ0AAAAAAAAAAAAewK8AAAAOAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-28T01:18:01.005Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-02T02:13:29.405Z"
             },
             {
               "$type": "Document",
@@ -85,8 +83,7 @@
               "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.cs [Design]",
               "RelativeToolTip": "Form1.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-28T01:18:03.404Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2024-03-28T01:18:03.404Z"
             },
             {
               "$type": "Document",
@@ -98,8 +95,7 @@
               "RelativeToolTip": "billiard-laser.csproj",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAABgAAAAtAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-03-22T01:47:04.895Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-22T01:47:04.895Z"
             },
             {
               "$type": "Document",
@@ -111,8 +107,7 @@
               "RelativeToolTip": "Form1.Designer.cs",
               "ViewState": "AQIAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-19T03:38:03.384Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-19T03:38:03.384Z"
             }
           ]
         }

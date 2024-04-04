@@ -163,31 +163,60 @@ public class CueBallDetector
         // Assuming pictureBox1 contains the image
         Bitmap bmp = new Bitmap(pictureBox1.Image);
         Image<Bgr, byte> image = bmp.ToImage<Bgr, byte>();
+        Image<Gray, float> laplacianImage = new Image<Gray, float>(image.Size);
+        CvInvoke.Laplacian(image, laplacianImage, DepthType.Cv32F, ksize: 1);
 
+        // Convert to 8-bit grayscale for visualization
+        Image<Gray, byte> outputImage = laplacianImage.ConvertScale<byte>(scale: 1, shift: 128);
+
+        Image<Gray, byte> grayImage = outputImage.Convert<Gray,byte>();
+        
+        grayImage._GammaCorrect(3.0d);
+        grayImage.Mul(3.0f);
+        //grayImage._EqualizeHist();
+
+
+        Bitmap newBitmap = new Bitmap(grayImage.Width, grayImage.Height);
+
+        //for (int x = 0; x < grayImage.Width; x++)
+        //{
+        //    for (int y = 0; y < grayImage.Height; y++)
+        //    {
+        //        byte grayValue = (byte)grayImage[y, x].Intensity; // Get grayscale value
+        //        Color pixelColor = Color.FromArgb(grayValue, grayValue, grayValue);
+        //        newBitmap.SetPixel(x, y, pixelColor); // Set pixel color
+        //    }
+        //}
+
+        // Assign the newBitmap to your PictureBox
+        //pictureBox1.Image = newBitmap;
+        //pictureBox1.Image = grayImage.;
+        //Mat mat = new Mat(image);
         // Now you can use the image with Emgu CV as before
         // For example, using Hough Circle Transform to detect circles
-        double cannyThreshold = 80;
-        double circleAccumulatorThreshold = 1;
+        double cannyThreshold = 100;
+        double circleAccumulatorThreshold = 18;
 
         CircleF[] circles = CvInvoke.HoughCircles(
-            image.Convert<Gray, byte>().PyrDown().PyrUp(),
+            grayImage.PyrDown().PyrUp(),
             HoughModes.Gradient,
-            1.0, // Resolution of the accumulator used to detect centers of the circles
+            1.5, // Resolution of the accumulator used to detect centers of the circles
             10, // Minimum distance between the centers of the detected circles
             cannyThreshold, // The higher threshold of the two passed to Canny edge detector
             circleAccumulatorThreshold, // Accumulator threshold for the circle centers at the detection stage
-            0, // Minimum radius of detected circle
-            5 // Maximum radius of detected circle
+            5,
+            10// Minimum radius of detected circle
+              // Maximum radius of detected circle
         );
 
-        // Process detected circles
+        //// Process detected circles
         foreach (CircleF circle in circles)
         {
             // Draw circles on the image
             image.Draw(circle, new Bgr(Color.Red), 2);
         }
 
-        // Display the result back in pictureBox1
+        //// Display the result back in pictureBox1
         pictureBox1.Image = image.ToBitmap();
 
         //// Define thresholds
