@@ -1,3 +1,5 @@
+using System.Windows.Forms;
+
 namespace billiard_laser
 {
     public partial class Form1 : Form
@@ -5,6 +7,7 @@ namespace billiard_laser
         private ArduinoController arduinoController;
         private CameraController cameraController;
         private VideoProcessor videoProcessor;
+        private CueBallDetector cueBallDetector;
 
         private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
@@ -20,6 +23,7 @@ namespace billiard_laser
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(pictureBoxImage, cboCamera);
             videoProcessor = new VideoProcessor();
+            cueBallDetector = new CueBallDetector();
         }
 
 
@@ -76,13 +80,7 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            HighlightCueball(pictureBoxImage, 150);
-        }
-
-        private void HighlightCueball(PictureBox pictureBox, int threshold)
-        {
-            CueBallDetector detector = new CueBallDetector();
-            detector.FindAndDrawCueBall(pictureBox, threshold);
+            cueBallDetector.FindAndDrawCueBall(pictureBoxImage, 150);
         }
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
