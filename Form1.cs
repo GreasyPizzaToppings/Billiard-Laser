@@ -26,7 +26,6 @@ namespace billiard_laser
             cueBallDetector = new CueBallDetector();
         }
 
-
         private void btnLaserOn_Click(object sender, EventArgs e)
         {
             arduinoController.LaserOn();
