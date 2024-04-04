@@ -1,34 +1,15 @@
-using System;
-using System.Data;
-using System.Linq;
-using System.Drawing;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
-using System.IO;
 using System.Windows.Forms;
-using System.IO.Ports;
-using System.CodeDom;
-using System.Net;
-using Emgu.CV;
-using AForge.Video.DirectShow;
-using AForge.Video;
-
 
 namespace billiard_laser
 {
     public partial class Form1 : Form
     {
-        SerialPort serialPort;
-        const string LASER_OFF = "0";
-        const string LASER_ON = "1";
-        const string LEFT = "l";
-        const string RIGHT = "r";
-        const string UP = "u";
-        const string DOWN = "d";
+        private ArduinoController arduinoController;
+        private CameraController cameraController;
+        private VideoProcessor videoProcessor;
+        private CueBallDetector cueBallDetector;
 
-        FilterInfoCollection filterInfoCollection;
-        VideoCaptureDevice videoCaptureDevice;
+        private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         public Form1()
         {
@@ -39,49 +20,41 @@ namespace billiard_laser
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
 
-            // try connect to arduino. close serial monitor in arduino ide if not working
-            try
-            {
-                serialPort = new SerialPort("COM3", 9600);
-                serialPort.Open();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
-
-            // fill combo box with camera options
-            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-            foreach (FilterInfo Device in filterInfoCollection)
-                cboCamera.Items.Add(Device.Name);
-            cboCamera.SelectedIndex = 0;
-
-            videoCaptureDevice = new VideoCaptureDevice();
+            arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
+            cameraController = new CameraController(pictureBoxImage, cboCamera);
+            videoProcessor = new VideoProcessor();
+            cueBallDetector = new CueBallDetector();
         }
 
 
         private void btnLaserOn_Click(object sender, EventArgs e)
         {
-            try
-            {
-                serialPort.WriteLine(LASER_ON); // Send "on" command to Arduino to turn on the laser
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            arduinoController.LaserOn();
         }
 
         private void btnLaserOff_Click(object sender, EventArgs e)
         {
-            try
-            {
-                serialPort.WriteLine(LASER_OFF); // Send "off" command to Arduino to turn off the laser
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            arduinoController.LaserOff();
+        }
+
+        private void btnUp_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveUp();
+        }
+
+        private void btnLeft_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveLeft();
+        }
+
+        private void btnRight_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveRight();
+        }
+
+        private void btnDown_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveDown();
         }
 
         private void btnLoadImage_Click(object sender, EventArgs e)
@@ -107,95 +80,31 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            CueBallDetector detector = new CueBallDetector();
-            detector.FindAndDrawCueBall(pictureBoxImage, 150);
+            cueBallDetector.FindAndDrawCueBall(pictureBoxImage, 150);
         }
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
-            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cboCamera.SelectedIndex].MonikerString);
-            videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
-            videoCaptureDevice.Start();
-        }
-
-        private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
-        {
-            pictureBoxImage.Image = (Bitmap)eventArgs.Frame.Clone();
-        }
-
-
-        private void btnUp_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                serialPort.WriteLine(UP);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
-        }
-
-        private void btnLeft_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                serialPort.WriteLine(LEFT);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
-        }
-
-        private void btnRight_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                serialPort.WriteLine(RIGHT);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
-        }
-
-        private void btnDown_Click(object sender, EventArgs e)
-        {
-            try
-            {
-                serialPort.WriteLine(DOWN);
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show(ex.GetBaseException().Message);
-            }
+            cameraController.StartCameraCapture();
         }
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (videoCaptureDevice != null)
+            cameraController.StopCameraCapture();
+        }
+
+        private void btnFindCueballInVideo_Click(object sender, EventArgs e)
+        {
+            //show dialog for video
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Video Files (*.mp4;*.avi;*.mkv)|*.mp4;*.avi;*.mkv";
+            openFileDialog.Title = "Select a Video File";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                videoCaptureDevice.SignalToStop();
+                string selectedVideoPath = openFileDialog.FileName;
 
-                // wait ~ 3 seconds
-                for (int i = 0; i < 30; i++)
-                {
-                    if (!videoCaptureDevice.IsRunning)
-                    {
-                        break;
-                    }
-                    System.Threading.Thread.Sleep(100);
-                }
-
-                if (videoCaptureDevice.IsRunning)
-                {
-                    videoCaptureDevice.Stop();
-                }
-
-                videoCaptureDevice.Stop();
-
-                videoCaptureDevice = null;
+                videoProcessor.ProcessVideoAndDetectCueBall(selectedVideoPath, outputVideoResolution, pictureBoxImage, labelFrameRate); 
             }
         }
     }
