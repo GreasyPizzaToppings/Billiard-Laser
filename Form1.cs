@@ -8,9 +8,9 @@ namespace billiard_laser
 {
     public partial class Form1 : Form
     {
-        ArduinoController arduinoController;
-        private FilterInfoCollection filterInfoCollection;
-        private VideoCaptureDevice videoCaptureDevice;
+        private ArduinoController arduinoController;
+        private CameraController cameraController;
+
         private OpenCvSharp.Size size = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         public Form1()
@@ -21,20 +21,11 @@ namespace billiard_laser
         private void Form1_Load(object sender, EventArgs e)
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
+
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
-            PopulateCameraComboBox();
+            cameraController = new CameraController(pictureBoxImage, cboCamera);
         }
 
-
-        private void PopulateCameraComboBox()
-        {
-            filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
-            foreach (FilterInfo Device in filterInfoCollection)
-                cboCamera.Items.Add(Device.Name);
-            cboCamera.SelectedIndex = 0;
-
-            videoCaptureDevice = new VideoCaptureDevice();
-        }
 
         private void btnLaserOn_Click(object sender, EventArgs e)
         {
@@ -100,9 +91,7 @@ namespace billiard_laser
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
-            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[cboCamera.SelectedIndex].MonikerString);
-            videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
-            videoCaptureDevice.Start();
+            cameraController.StartCameraCapture();
         }
 
         private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
@@ -110,38 +99,9 @@ namespace billiard_laser
             pictureBoxImage.Image = (Bitmap)eventArgs.Frame.Clone();
         }
 
-
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
-            StopVideoCaptureDevice();
-        }
-
-        private void StopVideoCaptureDevice()
-        {
-            if (videoCaptureDevice != null)
-            {
-                videoCaptureDevice.SignalToStop();
-
-                // wait ~ 3 seconds
-                for (int i = 0; i < 30; i++)
-                {
-                    if (!videoCaptureDevice.IsRunning)
-                    {
-                        break;
-                    }
-                    System.Threading.Thread.Sleep(100);
-                }
-
-                if (videoCaptureDevice.IsRunning)
-                {
-                    videoCaptureDevice.Stop();
-                }
-
-                videoCaptureDevice.Stop();
-
-                videoCaptureDevice = null;
-            }
+            cameraController.StopCameraCapture();
         }
 
         public static List<Bitmap> GetVideoFrames(string videoPath, OpenCvSharp.Size? resolution = null)
