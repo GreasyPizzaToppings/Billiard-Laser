@@ -1,17 +1,12 @@
-using System.IO.Ports;
-using AForge.Video;
-using AForge.Video.DirectShow;
-using OpenCvSharp;
-using OpenCvSharp.Extensions;
-
 namespace billiard_laser
 {
     public partial class Form1 : Form
     {
         private ArduinoController arduinoController;
         private CameraController cameraController;
+        private VideoProcessor videoProcessor;
 
-        private OpenCvSharp.Size size = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
+        private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         public Form1()
         {
@@ -24,6 +19,7 @@ namespace billiard_laser
 
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(pictureBoxImage, cboCamera);
+            videoProcessor = new VideoProcessor();
         }
 
 
@@ -94,50 +90,9 @@ namespace billiard_laser
             cameraController.StartCameraCapture();
         }
 
-        private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
-        {
-            pictureBoxImage.Image = (Bitmap)eventArgs.Frame.Clone();
-        }
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
-        }
-
-        public static List<Bitmap> GetVideoFrames(string videoPath, OpenCvSharp.Size? resolution = null)
-        {
-            var frames = new List<Bitmap>();
-            var capture = new VideoCapture(videoPath);
-
-            if (resolution.HasValue)
-            {
-                // Set the desired frame resolution
-                capture.Set(VideoCaptureProperties.FrameWidth, resolution.Value.Width);
-                capture.Set(VideoCaptureProperties.FrameHeight, resolution.Value.Height);
-            }
-
-            while (capture.IsOpened())
-            {
-                var image = new Mat();
-
-                // Read next frame in video file
-                capture.Read(image);
-
-                if (image.Empty())
-                {
-                    break;
-                }
-
-                // Resize the frame to the specified resolution
-                if (resolution.HasValue)
-                {
-                    Cv2.Resize(image, image, resolution.Value);
-                }
-
-                frames.Add(BitmapConverter.ToBitmap(image));
-            }
-
-            return frames;
         }
 
         private void btnFindCueballInVideo_Click(object sender, EventArgs e)
@@ -151,34 +106,7 @@ namespace billiard_laser
             {
                 string selectedVideoPath = openFileDialog.FileName;
 
-                // get video frames
-                List<Bitmap> images = GetVideoFrames(selectedVideoPath, size);
-
-                // detect cue ball in each frame
-                System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-                double totalDetectionTime = 0;
-
-                foreach (var image in images)
-                {
-                    pictureBoxImage.Image = image;
-
-                    // start the stopwatch
-                    stopwatch.Restart();
-
-                    // detect the cue ball in the current frame
-                    HighlightCueball(pictureBoxImage, 150);
-
-                    // stop the stopwatch and add the elapsed time to the total
-                    stopwatch.Stop();
-                    totalDetectionTime += stopwatch.Elapsed.TotalSeconds;
-
-                    // update the labelFPS with the current average FPS
-                    double averageFps = images.IndexOf(image) / totalDetectionTime;
-                    labelFrameRate.Text = $"FPS: {averageFps:F2}";
-
-                    // refresh the UI to show the updated image and FPS
-                    Application.DoEvents();
-                }
+                videoProcessor.ProcessVideoAndDetectCueBall(selectedVideoPath, outputVideoResolution, pictureBoxImage, labelFrameRate); 
             }
         }
     }
