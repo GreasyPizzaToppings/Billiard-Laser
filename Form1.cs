@@ -78,7 +78,9 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            cueBallDetector.FindAndDrawCueBall(pictureBoxImage, 150);
+            Bitmap drawnImage = cueBallDetector.HighlightCueBall(pictureBoxImage.Image, 100);
+
+            pictureBoxImage.Image = drawnImage;
         }
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)

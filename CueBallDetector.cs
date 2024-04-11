@@ -1,9 +1,10 @@
 ﻿
 public class CueBallDetector
 {
-    public void FindAndDrawCueBall(PictureBox pictureBoxImage, int threshold = 50)
+
+    public Bitmap HighlightCueBall(Image inputImage, int threshold = 50)
     {
-        Bitmap image = new Bitmap(pictureBoxImage.Image);
+        Bitmap image = new Bitmap(inputImage);
         Bitmap grayImage = GrayscaleBitmap(image);
 
         int maxX = 0, maxY = 0;
@@ -46,7 +47,7 @@ public class CueBallDetector
         Brush brush = new SolidBrush(Color.Blue);
         g.FillEllipse(brush, centerX - 2, centerY - 2, 4, 4);
 
-        pictureBoxImage.Image = image;
+        return image;
     }
 
     private int FindEdge(Bitmap grayImage, int startX, int startY, int directionX, int directionY, int maxBrightness, int threshold)

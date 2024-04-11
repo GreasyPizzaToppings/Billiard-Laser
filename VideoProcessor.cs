@@ -15,6 +15,18 @@ public class VideoProcessor
         this.outputResolution = outputResolution;
     }
 
+
+    public List<Bitmap> GetCueballDetectionFrames()
+    {
+        List<Bitmap> frames = GetVideoFrames();
+
+        foreach (Bitmap frame in frames) { 
+            
+        }
+
+        return frames;
+    }
+
     private List<Bitmap> GetVideoFrames()
     {
         var frames = new List<Bitmap>();
@@ -57,7 +69,8 @@ public class VideoProcessor
             stopwatch.Restart();
 
             // Detect the cue ball in the current frame
-            cueBallDetector.FindAndDrawCueBall(pictureBox, 150);
+            Bitmap highlightedImage = cueBallDetector.HighlightCueBall(pictureBox.Image, 150);
+            pictureBox.Image = highlightedImage;
 
             // Stop the stopwatch and add the elapsed time to the total
             stopwatch.Stop();
