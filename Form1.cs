@@ -6,10 +6,13 @@ namespace billiard_laser
     {
         private ArduinoController arduinoController;
         private CameraController cameraController;
-        private VideoProcessor videoProcessor;
         private CueBallDetector cueBallDetector;
 
         private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
+
+        private List<VideoProcessor.VideoFrame> videoFrames;
+
+        private Boolean playingVideo = false;
 
         public Form1()
         {
@@ -93,7 +96,7 @@ namespace billiard_laser
             cameraController.StopCameraCapture();
         }
 
-        private void btnFindCueballInVideo_Click(object sender, EventArgs e)
+        private void buttonLoadVideo_Click(object sender, EventArgs e)
         {
             //show dialog for video
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -103,10 +106,119 @@ namespace billiard_laser
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string selectedVideoPath = openFileDialog.FileName;
-                VideoProcessor videoProcessor = new VideoProcessor(selectedVideoPath, outputVideoResolution);
 
-                videoProcessor.ProcessVideoAndDetectCueBall(pictureBoxImage, labelFrameRate);
+                videoFrames = VideoProcessor.GetVideoFrames(selectedVideoPath, outputVideoResolution);
             }
+
+            //enable the start button
+            btnProcessVideo.Enabled = true;
+        }
+
+        /// <summary>
+        /// for each frame in the video, highlight the cue ball and show processed frames in the picturebox and listbox
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnProcessVideo_Click(object sender, EventArgs e)
+        {
+            playingVideo = true;
+            buttonResume.Enabled = false;
+            buttonNextFrame.Enabled = false;
+
+            // setup timer for fps
+            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
+            double totalDetectionTime = 0;
+
+            foreach (var videoFrame in videoFrames)
+            {
+                // Start the stopwatch
+                stopwatch.Restart();
+
+                // Detect the cue ball in the current frame
+                videoFrame.frame = cueBallDetector.HighlightCueBall(videoFrame.frame, 150);
+
+                // Stop the stopwatch and add the elapsed time to the total
+                stopwatch.Stop();
+                totalDetectionTime += stopwatch.Elapsed.TotalSeconds;
+
+                //add to list box
+                listBoxProcessedFrames.Items.Add(videoFrame);
+
+                //show in pic box, only if in 'playing' mode
+                if (playingVideo)
+                {
+                    buttonNextFrame.Enabled = false;
+                    listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+                    pictureBoxImage.Image = videoFrame.frame;
+                }
+                else buttonNextFrame.Enabled = true;
+
+                // Update the FPS label with the current average FPS
+                double averageFps = videoFrame.index / totalDetectionTime;
+                labelFrameRate.Text = $"FPS: {averageFps:F2}";
+
+                // Refresh the UI to show the updated image and FPS
+                Application.DoEvents();
+            }
+
+            playingVideo = false;
+        }
+
+        private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            // Check if any item is selected
+            if (listBoxProcessedFrames.SelectedItem != null)
+            {
+                // Get the selected frame from the list
+                VideoProcessor.VideoFrame selectedFrame = (VideoProcessor.VideoFrame)listBoxProcessedFrames.SelectedItem;
+
+                // Display the selected frame in the PictureBox
+                pictureBoxImage.Image = selectedFrame.frame;
+            }
+        }
+
+        private void buttonLastFrame_Click(object sender, EventArgs e)
+        {
+            buttonNextFrame.Enabled = true;
+
+            //stop the video from playing
+            playingVideo = false;
+
+            if (listBoxProcessedFrames.SelectedIndex > 0)
+            {
+                listBoxProcessedFrames.SelectedIndex -= 1;
+
+                //show that image in the picturebox
+                var frame = (VideoProcessor.VideoFrame)listBoxProcessedFrames.SelectedItem;
+                pictureBoxImage.Image = frame.frame;
+            }
+
+            buttonResume.Enabled = true;
+        }
+
+        private void buttonNextFrame_Click(object sender, EventArgs e)
+        {
+            if (playingVideo) return; //cant skip frame when at the latest frame
+
+            //stop the video from playing
+            playingVideo = false;
+
+            if (listBoxProcessedFrames.SelectedIndex < listBoxProcessedFrames.Items.Count)
+            {
+                listBoxProcessedFrames.SelectedIndex += 1;
+
+                //show that image in the picturebox
+                var frame = (VideoProcessor.VideoFrame)listBoxProcessedFrames.SelectedItem;
+                pictureBoxImage.Image = frame.frame;
+            }
+
+            buttonResume.Enabled = true;
+        }
+
+        private void buttonResume_Click(object sender, EventArgs e)
+        {
+            playingVideo = true;
+            buttonResume.Enabled = false;
         }
     }
 }
