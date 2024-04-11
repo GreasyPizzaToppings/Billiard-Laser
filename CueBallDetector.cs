@@ -1,7 +1,59 @@
 ﻿
+
 public class CueBallDetector
 {
+    
+    //creates a new cueball from the image or try and find and existing one that has moved
+    public Ball FindCueBall(Ball prevBall, Image inputImage, int threshold = 150)
+    {
+        
+        //find position based on old position
+        if (prevBall != null) { 
+        
+        }
 
+        Bitmap image = new Bitmap(inputImage);
+        Bitmap grayImage = GrayscaleBitmap(image);
+
+        int maxX = 0, maxY = 0;
+        int maxBrightness = 0;
+
+        // Find the brightest pixel (assuming it's the cue ball)
+        for (int x = 0; x < grayImage.Width; x++)
+        {
+            for (int y = 0; y < grayImage.Height; y++)
+            {
+                int brightness = grayImage.GetPixel(x, y).R;
+                if (brightness > maxBrightness)
+                {
+                    maxBrightness = brightness;
+                    maxX = x;
+                    maxY = y;
+                }
+            }
+        }
+
+        // Find the top, bottom, left, and right edges of the ball
+        int leftEdge = FindEdge(grayImage, maxX, maxY, -1, 0, maxBrightness, threshold);
+        int rightEdge = FindEdge(grayImage, maxX, maxY, 1, 0, maxBrightness, threshold);
+        int topEdge = FindEdge(grayImage, maxX, maxY, 0, -1, maxBrightness, threshold);
+        int bottomEdge = FindEdge(grayImage, maxX, maxY, 0, 1, maxBrightness, threshold);
+
+        // Calculate the radius and center coordinates of the circle
+        int radius = Math.Max(rightEdge - leftEdge, bottomEdge - topEdge) / 2;
+        int centerX = leftEdge + radius;
+        int centerY = topEdge + radius;
+
+        // Print the center coordinates to the console
+        Console.WriteLine($"Center coordinates: ({centerX}, {centerY})");
+
+        //Create cue ball
+        return new Ball(new Point(centerX, centerY), radius);
+
+    }
+
+    //todo deprecate?
+    //draws a circle around a cueball in an image
     public Bitmap HighlightCueBall(Image inputImage, int threshold = 50)
     {
         Bitmap image = new Bitmap(inputImage);

@@ -81,9 +81,18 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            Bitmap drawnImage = cueBallDetector.HighlightCueBall(pictureBoxImage.Image, 100);
+            //new cueball
+            drawBallInPictureBox(cueBallDetector.FindCueBall(null, pictureBoxImage.Image));
+        }
 
-            pictureBoxImage.Image = drawnImage;
+        private void drawBallInPictureBox(Ball ball) {
+            //draw
+            Bitmap image = new Bitmap(pictureBoxImage.Image);
+            Graphics g = Graphics.FromImage(image);
+            Pen pen = new Pen(Color.Red, 2);
+            g.DrawEllipse(pen, ball.centre.X - ball.radius, ball.centre.Y - ball.radius, 2 * ball.radius, 2 * ball.radius);
+
+            pictureBoxImage.Image = image;
         }
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
@@ -129,13 +138,18 @@ namespace billiard_laser
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             double totalDetectionTime = 0;
 
+            Ball cueBall = new Ball();
+
             foreach (var videoFrame in videoFrames)
             {
                 // Start the stopwatch
                 stopwatch.Restart();
 
                 // Detect the cue ball in the current frame
-                videoFrame.frame = cueBallDetector.HighlightCueBall(videoFrame.frame, 150);
+                cueBall = cueBallDetector.FindCueBall(cueBall, pictureBoxImage.Image);
+                drawBallInPictureBox(cueBall);
+
+                //videoFrame.frame = cueBallDetector.HighlightCueBall(videoFrame.frame, 150);
 
                 // Stop the stopwatch and add the elapsed time to the total
                 stopwatch.Stop();
