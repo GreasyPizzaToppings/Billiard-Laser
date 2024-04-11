@@ -1,23 +1,50 @@
-﻿using System;
-
-public class Ball
+﻿public class Ball
 {
+    public PointF CurrentPosition { get; set; }
+    public PointF PreviousPosition { get; set; }
+    public float Radius { get; set; }
+    public Velocity Velocity { get; set; }
 
-	
-    public PointF prevCentre { get; set; } //where it came from
-    public PointF centre { get; set; } //where it is now
+    public Ball(PointF position, float radius)
+    {
+        CurrentPosition = position;
+        PreviousPosition = position;
+        Radius = radius;
+        Velocity = new Velocity(0, 0);
+    }
 
-    public float radius { get; set; }
-	public float velocityX { get; set; }
-	public float velocityY { get; set; }
+    public void UpdateBallPositionAndVelocity(PointF newPosition, float deltaTime)
+    {
+        // Store the previous position
+        PreviousPosition = CurrentPosition;
 
+        // Update the current position
+        CurrentPosition = newPosition;
 
-    public Ball(PointF centre, float radius)
-	{
-		this.centre = centre;
-		this.prevCentre = centre;
-		this.radius = radius;
-	}
+        // Calculate the displacement
+        float displacementX = newPosition.X - PreviousPosition.X;
+        float displacementY = newPosition.Y - PreviousPosition.Y;
 
-	public Ball() { }
+        // Calculate the velocity
+        float velocityX = displacementX / deltaTime;
+        float velocityY = displacementY / deltaTime;
+
+        // Update the ball's velocity
+        Velocity = new Velocity(velocityX, velocityY);
+
+        Console.WriteLine("DEBUG: Position: ({0},{1})", CurrentPosition.X, CurrentPosition.Y); //debug
+        Console.WriteLine("DEBUG: Ball velocity: X{0}, Y{1}", Velocity.X, Velocity.Y); //debug
+    }
+}
+
+public class Velocity
+{
+    public float X { get; set; }
+    public float Y { get; set; }
+
+    public Velocity(float x, float y)
+    {
+        X = x;
+        Y = y;
+    }
 }

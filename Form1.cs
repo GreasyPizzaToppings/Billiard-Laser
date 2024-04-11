@@ -90,7 +90,7 @@ namespace billiard_laser
             //draw
             Graphics g = Graphics.FromImage(image);
             Pen pen = new Pen(Color.DeepPink, 2f);
-            g.DrawEllipse(pen, ball.centre.X - ball.radius, ball.centre.Y - ball.radius, 2 * ball.radius, 2 * ball.radius);
+            g.DrawEllipse(pen, ball.CurrentPosition.X - ball.Radius, ball.CurrentPosition.Y - ball.Radius, 2 * ball.Radius, 2 * ball.Radius);
 
             return image;
         }
@@ -152,10 +152,10 @@ namespace billiard_laser
                 stopwatch.Restart();
 
                 // Detect the cue ball in the current frame
-                cueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame);
+                Ball newCueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame);
 
-                //debugging: print info
-                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}\n\n", i, cueBall.centre.X, cueBall.centre.Y, cueBall.radius); 
+                float deltaTimeMs = 1000 / 24; //24 fps
+                cueBall.UpdateBallPositionAndVelocity(newCueBall.CurrentPosition, deltaTimeMs);
 
                 // Stop the stopwatch and add the elapsed time to the total
                 stopwatch.Stop();

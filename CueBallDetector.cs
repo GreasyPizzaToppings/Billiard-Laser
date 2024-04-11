@@ -12,16 +12,16 @@ public class CueBallDetector
         int maxBrightness = 0;
 
         // Find the brightest pixel (assuming it's the cue ball)
-        //if we know past position of cue ball, search in a limited area (5 radiuses either side of the prev center)
+        // if we know past position of cue ball, search in a limited area (5 radiuses either side of the prev center)
         if (prevBall != null)
         {
-            for (int x = (int)(prevBall.centre.X - Math.Abs((int)(prevBall.radius * 5))); x <= prevBall.centre.X + Math.Abs((int)(prevBall.radius * 5)); x++)
+            for (int x = (int)(prevBall.CurrentPosition.X - Math.Abs((int)(prevBall.Radius * 5))); x <= prevBall.CurrentPosition.X + Math.Abs((int)(prevBall.Radius * 5)); x++)
             {
                 //check for boundaries of the image
                 if (x > inputImage.Width) continue;
                 if (x < 0) continue;
 
-                for (int y = (int)(prevBall.centre.Y - Math.Abs((int)(prevBall.radius * 5))); y <= prevBall.centre.Y + Math.Abs((int)(prevBall.radius * 5)); y++)
+                for (int y = (int)(prevBall.CurrentPosition.Y - Math.Abs((int)(prevBall.Radius * 5))); y <= prevBall.CurrentPosition.Y + Math.Abs((int)(prevBall.Radius * 5)); y++)
                 {
                     //check for boundaries of the image
                     if (y > inputImage.Height) continue;
