@@ -2,33 +2,56 @@
 
 public class CueBallDetector
 {
-    
+
     //creates a new cueball from the image or try and find and existing one that has moved
     public Ball FindCueBall(Ball prevBall, Image inputImage, int threshold = 150)
     {
-        
-        //find position based on old position
-        if (prevBall != null) { 
-        
-        }
-
         Bitmap image = new Bitmap(inputImage);
         Bitmap grayImage = GrayscaleBitmap(image);
-
         int maxX = 0, maxY = 0;
         int maxBrightness = 0;
 
         // Find the brightest pixel (assuming it's the cue ball)
-        for (int x = 0; x < grayImage.Width; x++)
+        //if we know past position of cue ball, search in a limited area (5 radiuses either side of the prev center)
+        if (prevBall != null)
         {
-            for (int y = 0; y < grayImage.Height; y++)
+            for (int x = (int)(prevBall.centre.X - Math.Abs((int)(prevBall.radius * 5))); x <= prevBall.centre.X + Math.Abs((int)(prevBall.radius * 5)); x++)
             {
-                int brightness = grayImage.GetPixel(x, y).R;
-                if (brightness > maxBrightness)
+                //check for boundaries of the image
+                if (x > inputImage.Width) continue;
+                if (x < 0) continue;
+
+                for (int y = (int)(prevBall.centre.Y - Math.Abs((int)(prevBall.radius * 5))); y <= prevBall.centre.Y + Math.Abs((int)(prevBall.radius * 5)); y++)
                 {
-                    maxBrightness = brightness;
-                    maxX = x;
-                    maxY = y;
+                    //check for boundaries of the image
+                    if (y > inputImage.Height) continue;
+                    if (y < 0) continue;
+
+                    //find brightest pixel
+                    int brightness = grayImage.GetPixel(x, y).R;
+                    if (brightness > maxBrightness)
+                    {
+                        maxBrightness = brightness;
+                        maxX = x;
+                        maxY = y;
+                    }
+                }
+            }
+        }
+        else
+        {
+            //else look the whole image for it
+            for (int x = 0; x < grayImage.Width; x++)
+            {
+                for (int y = 0; y < grayImage.Height; y++)
+                {
+                    int brightness = grayImage.GetPixel(x, y).R;
+                    if (brightness > maxBrightness)
+                    {
+                        maxBrightness = brightness;
+                        maxX = x;
+                        maxY = y;
+                    }
                 }
             }
         }
@@ -39,67 +62,19 @@ public class CueBallDetector
         int topEdge = FindEdge(grayImage, maxX, maxY, 0, -1, maxBrightness, threshold);
         int bottomEdge = FindEdge(grayImage, maxX, maxY, 0, 1, maxBrightness, threshold);
 
-        // Calculate the radius and center coordinates of the circle
-        int radius = Math.Max(rightEdge - leftEdge, bottomEdge - topEdge) / 2;
-        int centerX = leftEdge + radius;
-        int centerY = topEdge + radius;
+        // Calculate the horizontal and vertical radii as float values
+        float horizontalRadius = (rightEdge - leftEdge) / 2f;
+        float verticalRadius = (bottomEdge - topEdge) / 2f;
 
-        // Print the center coordinates to the console
-        Console.WriteLine($"Center coordinates: ({centerX}, {centerY})");
+        // Calculate the average radius as a float value
+        float radius = (horizontalRadius + verticalRadius) / 2f;
+
+        // Calculate the center coordinates of the circle as float values
+        float centerX = leftEdge + horizontalRadius;
+        float centerY = topEdge + verticalRadius;
 
         //Create cue ball
-        return new Ball(new Point(centerX, centerY), radius);
-
-    }
-
-    //todo deprecate?
-    //draws a circle around a cueball in an image
-    public Bitmap HighlightCueBall(Image inputImage, int threshold = 50)
-    {
-        Bitmap image = new Bitmap(inputImage);
-        Bitmap grayImage = GrayscaleBitmap(image);
-
-        int maxX = 0, maxY = 0;
-        int maxBrightness = 0;
-
-        // Find the brightest pixel (assuming it's the cue ball)
-        for (int x = 0; x < grayImage.Width; x++)
-        {
-            for (int y = 0; y < grayImage.Height; y++)
-            {
-                int brightness = grayImage.GetPixel(x, y).R;
-                if (brightness > maxBrightness)
-                {
-                    maxBrightness = brightness;
-                    maxX = x;
-                    maxY = y;
-                }
-            }
-        }
-
-        // Find the top, bottom, left, and right edges of the ball
-        int leftEdge = FindEdge(grayImage, maxX, maxY, -1, 0, maxBrightness, threshold);
-        int rightEdge = FindEdge(grayImage, maxX, maxY, 1, 0, maxBrightness, threshold);
-        int topEdge = FindEdge(grayImage, maxX, maxY, 0, -1, maxBrightness, threshold);
-        int bottomEdge = FindEdge(grayImage, maxX, maxY, 0, 1, maxBrightness, threshold);
-
-        // Calculate the radius and center coordinates of the circle
-        int radius = Math.Max(rightEdge - leftEdge, bottomEdge - topEdge) / 2;
-        int centerX = leftEdge + radius;
-        int centerY = topEdge + radius;
-
-        // Print the center coordinates to the console
-        Console.WriteLine($"Center coordinates: ({centerX}, {centerY})");
-
-        Graphics g = Graphics.FromImage(image);
-        Pen pen = new Pen(Color.Red, 3);
-        g.DrawEllipse(pen, centerX - radius, centerY - radius, 2 * radius, 2 * radius);
-
-        // Draw a dot in the middle of the cue ball area
-        Brush brush = new SolidBrush(Color.Blue);
-        g.FillEllipse(brush, centerX - 2, centerY - 2, 4, 4);
-
-        return image;
+        return new Ball(new PointF(centerX, centerY), radius);
     }
 
     private int FindEdge(Bitmap grayImage, int startX, int startY, int directionX, int directionY, int maxBrightness, int threshold)

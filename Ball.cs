@@ -4,16 +4,15 @@ public class Ball
 {
 
 	
-    public Point prevCentre { get; set; } //where it came from
-    public Point centre { get; set; } //where it is now
+    public PointF prevCentre { get; set; } //where it came from
+    public PointF centre { get; set; } //where it is now
 
-    public int radius { get; set; }
-	public int velocityX { get; set; }
-	public int velocityY { get; set; }
+    public float radius { get; set; }
+	public float velocityX { get; set; }
+	public float velocityY { get; set; }
 
-	
 
-    public Ball(Point centre, int radius)
+    public Ball(PointF centre, float radius)
 	{
 		this.centre = centre;
 		this.prevCentre = centre;
