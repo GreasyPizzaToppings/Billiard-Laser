@@ -22,7 +22,6 @@ namespace billiard_laser
 
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(pictureBoxImage, cboCamera);
-            videoProcessor = new VideoProcessor();
             cueBallDetector = new CueBallDetector();
         }
 
@@ -102,8 +101,9 @@ namespace billiard_laser
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string selectedVideoPath = openFileDialog.FileName;
+                VideoProcessor videoProcessor = new VideoProcessor(selectedVideoPath, outputVideoResolution);
 
-                videoProcessor.ProcessVideoAndDetectCueBall(selectedVideoPath, outputVideoResolution, pictureBoxImage, labelFrameRate); 
+                videoProcessor.ProcessVideoAndDetectCueBall(pictureBoxImage, labelFrameRate);
             }
         }
     }

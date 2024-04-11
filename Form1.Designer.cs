@@ -44,6 +44,9 @@ namespace billiard_laser
             btnFindCueballInVideo = new Button();
             pictureBoxImage = new PictureBox();
             labelFrameRate = new Label();
+            listBoxFrames = new ListBox();
+            label1 = new Label();
+            labelShots = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
@@ -206,11 +209,42 @@ namespace billiard_laser
             labelFrameRate.TabIndex = 16;
             labelFrameRate.Text = "FPS: ";
             // 
+            // listBoxFrames
+            // 
+            listBoxFrames.FormattingEnabled = true;
+            listBoxFrames.ItemHeight = 15;
+            listBoxFrames.Location = new Point(997, 45);
+            listBoxFrames.Name = "listBoxFrames";
+            listBoxFrames.Size = new Size(281, 484);
+            listBoxFrames.TabIndex = 17;
+            // 
+            // label1
+            // 
+            label1.AutoSize = true;
+            label1.Location = new Point(0, 0);
+            label1.Name = "label1";
+            label1.Size = new Size(38, 15);
+            label1.TabIndex = 18;
+            label1.Text = "label1";
+            // 
+            // labelShots
+            // 
+            labelShots.AutoSize = true;
+            labelShots.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            labelShots.Location = new Point(997, 12);
+            labelShots.Name = "labelShots";
+            labelShots.Size = new Size(160, 21);
+            labelShots.TabIndex = 19;
+            labelShots.Text = "Ball Detection Frames";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(992, 535);
+            ClientSize = new Size(1286, 535);
+            Controls.Add(labelShots);
+            Controls.Add(label1);
+            Controls.Add(listBoxFrames);
             Controls.Add(labelFrameRate);
             Controls.Add(pictureBoxImage);
             Controls.Add(btnFindCueballInVideo);
@@ -252,5 +286,8 @@ namespace billiard_laser
         private Button btnFindCueballInVideo;
         private PictureBox pictureBoxImage;
         private Label labelFrameRate;
+        private ListBox listBoxFrames;
+        private Label label1;
+        private Label labelShots;
     }
 }

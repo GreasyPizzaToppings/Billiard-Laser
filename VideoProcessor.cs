@@ -5,23 +5,20 @@ public class VideoProcessor
 {
 
     private CueBallDetector cueBallDetector;
+    private string videoPath;
+    private OpenCvSharp.Size outputResolution;
 
-    public VideoProcessor()
+    public VideoProcessor(string videoPath, OpenCvSharp.Size outputResolution)
     {
         cueBallDetector = new CueBallDetector();
+        this.videoPath = videoPath;
+        this.outputResolution = outputResolution;
     }
 
-    public List<Bitmap> GetVideoFrames(string videoPath, OpenCvSharp.Size? resolution = null)
+    private List<Bitmap> GetVideoFrames()
     {
         var frames = new List<Bitmap>();
         var capture = new VideoCapture(videoPath);
-
-        if (resolution.HasValue)
-        {
-            // Set the desired frame resolution
-            capture.Set(VideoCaptureProperties.FrameWidth, resolution.Value.Width);
-            capture.Set(VideoCaptureProperties.FrameHeight, resolution.Value.Height);
-        }
 
         while (capture.IsOpened())
         {
@@ -35,23 +32,18 @@ public class VideoProcessor
                 break;
             }
 
-            // Resize the frame to the specified resolution
-            if (resolution.HasValue)
-            {
-                Cv2.Resize(image, image, resolution.Value);
-            }
-
+            Cv2.Resize(image, image, outputResolution);
+            
             frames.Add(BitmapConverter.ToBitmap(image));
         }
 
         return frames;
     }
 
-
-    public void ProcessVideoAndDetectCueBall(string videoPath, OpenCvSharp.Size? resolution, PictureBox pictureBox, Label fpsLabel)
+    public void ProcessVideoAndDetectCueBall(PictureBox pictureBox, Label fpsLabel)
     {
         // Get video frames
-        List<Bitmap> frames = GetVideoFrames(videoPath, resolution);
+        List<Bitmap> frames = GetVideoFrames();
 
         // Detect cue ball in each frame
         System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
