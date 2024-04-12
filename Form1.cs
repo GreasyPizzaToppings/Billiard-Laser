@@ -94,16 +94,8 @@ namespace billiard_laser
                 g.DrawImage(pictureBoxImage.Image, Point.Empty);
                 // Draw the ball on the new bitmap
                 drawnImage = drawBallOnImage(cueBall, drawnImage);
+                pictureBoxImage.Image = drawnImage;
             }
-
-            // Dispose of the old image
-            if (pictureBoxImage.Image != null)
-            {
-                pictureBoxImage.Image.Dispose();
-            }
-
-            // Assign the new image to the PictureBox
-            pictureBoxImage.Image = drawnImage;
         }
 
         private Bitmap drawBallOnImage(Ball ball, Bitmap image)
@@ -111,9 +103,8 @@ namespace billiard_laser
             using (Graphics g = Graphics.FromImage(image))
             using (Pen pen = new Pen(Color.DeepPink, 2f))
             {
-                g.DrawEllipse(pen, ball.CurrentPosition.X - ball.Radius, ball.CurrentPosition.Y - ball.Radius, 2 * ball.Radius, 2 * ball.Radius);
+                g.DrawEllipse(pen, ball.centre.X - ball.radius, ball.centre.Y - ball.radius, 2 * ball.radius, 2 * ball.radius);
             }
-
             return image;
         }
 
@@ -126,35 +117,21 @@ namespace billiard_laser
         {
             cameraController.StopCameraCapture();
 
-            // Dispose of the PictureBox image
+            // Clear and dispose of the video frames
+            if (videoFrames != null)
+            {
+                videoFrames.Clear();
+                videoFrames = null;
+            }
+
+            // Clear the processed frames list box
+            listBoxProcessedFrames.Items.Clear();
+
+            // Dispose of the picture box image
             if (pictureBoxImage.Image != null)
             {
                 pictureBoxImage.Image.Dispose();
                 pictureBoxImage.Image = null;
-            }
-
-            // Dispose of the processed video frames
-            if (videoFrames != null)
-            {
-                foreach (var frame in videoFrames)
-                {
-                    frame.frame.Dispose();
-                }
-                videoFrames.Clear();         
-            }
-
-            // Dispose of the processed frames in the ListBox
-            if (listBoxProcessedFrames.Items.Count > 0)
-            {
-                foreach (var item in listBoxProcessedFrames.Items)
-                {
-                    var frame = item as VideoProcessor.VideoFrame;
-                    if (frame != null)
-                    {
-                        frame.frame.Dispose();
-                    }
-                }
-                listBoxProcessedFrames.Items.Clear();
             }
         }
 
@@ -168,6 +145,8 @@ namespace billiard_laser
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string selectedVideoPath = openFileDialog.FileName;
+
+                videoFrames = new List<VideoFrame>();
 
                 videoFrames = VideoProcessor.GetVideoFrames(selectedVideoPath, outputVideoResolution);
             }
@@ -195,7 +174,11 @@ namespace billiard_laser
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             double totalDetectionTime = 0;
 
-            Ball cueBall = new Ball(new Point(43,41), -1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
+            //Ball cueBall = new Ball(new Point(43,41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
+            //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
+            //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
+            //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
+            Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
 
             List<VideoFrame> processedFrames = new List<VideoFrame>();
 
@@ -205,12 +188,12 @@ namespace billiard_laser
                 stopwatch.Restart();
 
                 // Detect the cue ball in the current frame
-                Ball newCueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame);
+                cueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame, 125);
 
-                float deltaTimeMs = 1000 / 24; //24 fps
-                Console.WriteLine("Frame {0}", i);
-                cueBall.UpdateBallPositionAndVelocity(newCueBall.CurrentPosition, deltaTimeMs);
-
+                //debugging: print info
+                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", i, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
+                Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.deltaX, cueBall.deltaY);
+                    
                 // Stop the stopwatch and add the elapsed time to the total
                 stopwatch.Stop();
                 totalDetectionTime += stopwatch.Elapsed.TotalSeconds;
@@ -232,8 +215,6 @@ namespace billiard_laser
                     buttonNextFrame.Enabled = false;
                     listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
 
-
-                    if (pictureBoxImage.Image != null) pictureBoxImage.Image.Dispose(); //dispose of old image
                     pictureBoxImage.Image = processedFrame.frame;
                 }
                 else buttonNextFrame.Enabled = true;
