@@ -70,6 +70,7 @@ namespace billiard_laser
                 {
                     try
                     {
+                        if (pictureBoxImage.Image != null) pictureBoxImage.Image.Dispose(); //dispose of old image
                         pictureBoxImage.Image = new Bitmap(openfiledialog.FileName);
                     }
                     catch (Exception ex)
@@ -82,15 +83,36 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            //new cueball
-            pictureBoxImage.Image = drawBallOnImage(cueBallDetector.FindCueBall(null, pictureBoxImage.Image), (Bitmap)pictureBoxImage.Image);
+            // Get a new cueball
+            Ball cueBall = cueBallDetector.FindCueBall(null, pictureBoxImage.Image);
+
+            // Create a new bitmap to draw the ball on
+            Bitmap drawnImage = new Bitmap(pictureBoxImage.Image.Width, pictureBoxImage.Image.Height);
+
+            using (Graphics g = Graphics.FromImage(drawnImage))
+            {
+                g.DrawImage(pictureBoxImage.Image, Point.Empty);
+                // Draw the ball on the new bitmap
+                drawnImage = drawBallOnImage(cueBall, drawnImage);
+            }
+
+            // Dispose of the old image
+            if (pictureBoxImage.Image != null)
+            {
+                pictureBoxImage.Image.Dispose();
+            }
+
+            // Assign the new image to the PictureBox
+            pictureBoxImage.Image = drawnImage;
         }
 
-        private Bitmap drawBallOnImage(Ball ball, Bitmap image) {
-            //draw
-            Graphics g = Graphics.FromImage(image);
-            Pen pen = new Pen(Color.DeepPink, 2f);
-            g.DrawEllipse(pen, ball.CurrentPosition.X - ball.Radius, ball.CurrentPosition.Y - ball.Radius, 2 * ball.Radius, 2 * ball.Radius);
+        private Bitmap drawBallOnImage(Ball ball, Bitmap image)
+        {
+            using (Graphics g = Graphics.FromImage(image))
+            using (Pen pen = new Pen(Color.DeepPink, 2f))
+            {
+                g.DrawEllipse(pen, ball.CurrentPosition.X - ball.Radius, ball.CurrentPosition.Y - ball.Radius, 2 * ball.Radius, 2 * ball.Radius);
+            }
 
             return image;
         }
@@ -103,6 +125,37 @@ namespace billiard_laser
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
+
+            // Dispose of the PictureBox image
+            if (pictureBoxImage.Image != null)
+            {
+                pictureBoxImage.Image.Dispose();
+                pictureBoxImage.Image = null;
+            }
+
+            // Dispose of the processed video frames
+            if (videoFrames != null)
+            {
+                foreach (var frame in videoFrames)
+                {
+                    frame.frame.Dispose();
+                }
+                videoFrames.Clear();         
+            }
+
+            // Dispose of the processed frames in the ListBox
+            if (listBoxProcessedFrames.Items.Count > 0)
+            {
+                foreach (var item in listBoxProcessedFrames.Items)
+                {
+                    var frame = item as VideoProcessor.VideoFrame;
+                    if (frame != null)
+                    {
+                        frame.frame.Dispose();
+                    }
+                }
+                listBoxProcessedFrames.Items.Clear();
+            }
         }
 
         private void buttonLoadVideo_Click(object sender, EventArgs e)
@@ -155,6 +208,7 @@ namespace billiard_laser
                 Ball newCueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame);
 
                 float deltaTimeMs = 1000 / 24; //24 fps
+                Console.WriteLine("Frame {0}", i);
                 cueBall.UpdateBallPositionAndVelocity(newCueBall.CurrentPosition, deltaTimeMs);
 
                 // Stop the stopwatch and add the elapsed time to the total
@@ -177,6 +231,9 @@ namespace billiard_laser
                 {
                     buttonNextFrame.Enabled = false;
                     listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+
+
+                    if (pictureBoxImage.Image != null) pictureBoxImage.Image.Dispose(); //dispose of old image
                     pictureBoxImage.Image = processedFrame.frame;
                 }
                 else buttonNextFrame.Enabled = true;

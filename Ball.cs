@@ -32,8 +32,8 @@
         // Update the ball's velocity
         Velocity = new Velocity(velocityX, velocityY);
 
-        Console.WriteLine("DEBUG: Position: ({0},{1})", CurrentPosition.X, CurrentPosition.Y); //debug
-        Console.WriteLine("DEBUG: Ball velocity: X{0}, Y{1}", Velocity.X, Velocity.Y); //debug
+        Console.WriteLine("\nDEBUG: Position: ({0},{1})", CurrentPosition.X, CurrentPosition.Y); //debug
+        Console.WriteLine("DEBUG: Velocity: X{0}, Y{1}]\n", Velocity.X, Velocity.Y); //debug
     }
 }
 
