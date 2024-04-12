@@ -1,6 +1,3 @@
-using System.Drawing;
-using System.Security.AccessControl;
-using System.Windows.Forms;
 using static VideoProcessor;
 
 namespace billiard_laser
@@ -15,7 +12,6 @@ namespace billiard_laser
         private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         private List<VideoProcessor.VideoFrame> videoFrames;
-        private List<PointF> shots;
 
         private Boolean playingVideo = false;
 
@@ -33,7 +29,6 @@ namespace billiard_laser
             cueBallDetector = new CueBallDetector();
 
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
-            shots = new List<PointF>();
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e)
@@ -423,6 +418,5 @@ namespace billiard_laser
             labelMouseCoordinates.Text = string.Format("Mouse: ({0},{1})", e.X, e.Y);
         }
 
-        
     }
 }
