@@ -13,6 +13,11 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
 using OpenCvSharp.WpfExtensions;
 using System.Drawing;
+using Emgu.CV.XPhoto;
+//using OpenCvSharp;
+using Emgu.CV.Reg;
+using Accord;
+using Point = System.Drawing.Point;
 public class CueBallDetector
 {
    
@@ -158,156 +163,94 @@ public class CueBallDetector
     //    //Cv.SaveImage("Gray.jpg", gray);
 
     //}
-    public void ProcessImage(PictureBox pictureBox1)
+    public void Filter(PictureBox pictureBox1)
     {
-        // Assuming pictureBox1 contains the image
+        UMat cannyEdges = new UMat();
+        UMat gray = new UMat();
+        double brightness = 1.0; // Increase brightness by 100% (1.0 means no change)
+        double contrast = 3.0; // Increase contrast by 200%
+        // theory of image: 
+        // turn into gray image so filtering is easier 
+        // remove the noise of the gray image. 
+        // can be by brightening the things hard. 
         Bitmap bmp = new Bitmap(pictureBox1.Image);
         Image<Bgr, byte> image = bmp.ToImage<Bgr, byte>();
-        Image<Gray, float> laplacianImage = new Image<Gray, float>(image.Size);
-        CvInvoke.Laplacian(image, laplacianImage, DepthType.Cv32F, ksize: 1);
-
-        // Convert to 8-bit grayscale for visualization
-        Image<Gray, byte> outputImage = laplacianImage.ConvertScale<byte>(scale: 1, shift: 128);
-
-        Image<Gray, byte> grayImage = outputImage.Convert<Gray,byte>();
+        Image<Gray, float> grayImage = image.Convert<Gray, float>();
         
-        grayImage._GammaCorrect(3.0d);
-        grayImage.Mul(3.0f);
-        //grayImage._EqualizeHist();
+
+        // Adjust brightness and contrast
+        CvInvoke.cvConvertScale(grayImage, grayImage, contrast, brightness);
+        Emgu.CV.CvInvoke.GaussianBlur(grayImage, grayImage, new System.Drawing.Size(3, 3), 1);
+        Image<Gray, float> sobelImage = grayImage.Sobel(1, 0, 11).Add(grayImage.Sobel(0, 1,11)).AbsDiff(new Gray(0.0));
+        Bitmap bmp1 = sobelImage.ToBitmap();
+        pictureBox1.Image = bmp1;
+        Mat grey = sobelImage.Convert<Gray, byte>().Mat;
+        //cleaning the noise
 
 
-        Bitmap newBitmap = new Bitmap(grayImage.Width, grayImage.Height);
 
-        //for (int x = 0; x < grayImage.Width; x++)
+        double cannyThreshold = 120;
+        double circleAccumulatorThreshold = 120;
+        double cannyThresholdLinking = 130.0;
+        // Canny function 
+        Emgu.CV.CvInvoke.Canny(grey, cannyEdges, cannyThreshold, cannyThresholdLinking);
+
+        LineSegment2D[] lines = Emgu.CV.CvInvoke.HoughLinesP(
+                    cannyEdges,
+                    1, //Distance resolution in pixel-related units
+                    Math.PI / 45.0, //Angle resolution measured in radians.
+                    20, //threshold
+                    30, //min Line width
+                    10); //gap between lines
+                         //        Image<Gray, byte> imageCV = grayImage;
+
+        // circle detection region
+        CircleF[] circles = Emgu.CV.CvInvoke.HoughCircles(cannyEdges, HoughModes.Gradient, 2.0, 20.0, cannyThreshold, circleAccumulatorThreshold, 5);
+
+        //region canny and edge detection
+        //circls
+        Emgu.CV.Mat circleImage = new Mat(grey.Size, DepthType.Cv8U, 3);
+        circleImage.SetTo(new MCvScalar(0));
+        foreach (CircleF circle in circles)
+            CvInvoke.Circle(circleImage, Point.Round(circle.Center), (int)circle.Radius,
+                new Bgr(Color.Gray).MCvScalar, 2);
+
+        //Drawing a light gray frame around the image
+        CvInvoke.Rectangle(circleImage,
+            new Rectangle(Point.Empty, new Size(circleImage.Width - 1, circleImage.Height - 1)),
+            new MCvScalar(120, 120, 120));
+        //Draw the labels
+        CvInvoke.PutText(circleImage, "Circles", new Point(20, 20), FontFace.HersheyDuplex, 0.5,
+            new MCvScalar(120, 120, 120));
+
+        //end region
+        Mat lineImage = new Mat(grey.Size, DepthType.Cv8U, 3);
+        //lines
+        lineImage.SetTo(new MCvScalar(0));
+        foreach (LineSegment2D line in lines)
+            CvInvoke.Line(lineImage, line.P1, line.P2, new Bgr(Color.Green).MCvScalar, 2);
+        //Drawing a light gray frame around the image
+        CvInvoke.Rectangle(lineImage,
+            new Rectangle(Point.Empty, new Size(lineImage.Width - 1, lineImage.Height - 1)),
+            new MCvScalar(120, 120, 120));
+        //Draw the labels
+        CvInvoke.PutText(lineImage, "Lines", new Point(20, 20), FontFace.HersheyDuplex, 0.5,
+            new MCvScalar(120, 120, 120));
+        Mat result = new Mat();
+        CvInvoke.VConcat(new Mat[] { image.Mat, circleImage, lineImage }, result);
+
+        Image<Bgr, byte> resultImage = result.ToImage<Bgr, byte>();
+
+        pictureBox1.Image = resultImage.ToBitmap<Bgr,byte>();
+        //foreach (CircleF[] circle in seq)
         //{
-        //    for (int y = 0; y < grayImage.Height; y++)
+        //    foreach (CircleF singleCircle in circle)
         //    {
-        //        byte grayValue = (byte)grayImage[y, x].Intensity; // Get grayscale value
-        //        Color pixelColor = Color.FromArgb(grayValue, grayValue, grayValue);
-        //        newBitmap.SetPixel(x, y, pixelColor); // Set pixel color
+        //        image.Draw(singleCircle, new Bgr(Color.Red), 2);
         //    }
         //}
+        //pictureBox1.Image = image.ToBitmap();
 
-        // Assign the newBitmap to your PictureBox
-        //pictureBox1.Image = newBitmap;
-        //pictureBox1.Image = grayImage.;
-        //Mat mat = new Mat(image);
-        // Now you can use the image with Emgu CV as before
-        // For example, using Hough Circle Transform to detect circles
-        double cannyThreshold = 100;
-        double circleAccumulatorThreshold = 18;
-
-        CircleF[] circles = CvInvoke.HoughCircles(
-            grayImage.PyrDown().PyrUp(),
-            HoughModes.Gradient,
-            1.5, // Resolution of the accumulator used to detect centers of the circles
-            10, // Minimum distance between the centers of the detected circles
-            cannyThreshold, // The higher threshold of the two passed to Canny edge detector
-            circleAccumulatorThreshold, // Accumulator threshold for the circle centers at the detection stage
-            5,
-            10// Minimum radius of detected circle
-              // Maximum radius of detected circle
-        );
-
-        //// Process detected circles
-        foreach (CircleF circle in circles)
-        {
-            // Draw circles on the image
-            image.Draw(circle, new Bgr(Color.Red), 2);
-        }
-
-        //// Display the result back in pictureBox1
-        pictureBox1.Image = image.ToBitmap();
-
-        //// Define thresholds
-        //double cannyThreshold = 180;
-        //double circleAccumulatorThreshold = 120;
-        //Bitmap image = (Bitmap)pictureBox1.Image;
-        //// Convert image to grayscale
-        //Image<Gray, byte> grayImage = image.ToImage<Gray, byte>();
-
-        //// Use Hough Circle Transform to detect circles
-        //CircleF[] circles = CvInvoke.HoughCircles(
-        //    grayImage,
-        //    HoughModes.Gradient,
-        //    2.0, // Resolution of the accumulator used to detect centers of the circles
-        //    20, // Minimum distance between the centers of the detected circles
-        //    cannyThreshold, // The higher threshold of the two passed to Canny edge detector
-        //    circleAccumulatorThreshold, // Accumulator threshold for the circle centers at the detection stage
-        //    5, // Minimum radius of detected circle
-        //    0 // Maximum radius of detected circle
-        //);
-
-        //// Process detected circles
-        //foreach (CircleF circle in circles)
-        //{
-        //    // Draw circles on the image
-        //    pictureBox1.Image.Draw(circle, new Bgr(Color.Red), 2);
-        //}
-
-        ////Bitmap image = (Bitmap)pictureBox1.Image;
-
-        //// Convert the Bitmap to an EmguCV Image<Bgr, byte>
-        //Image<Bgr, byte> imagee = image.ToImage<Bgr,byte>();
-
-        //// Get the Mat from the Image
-        //Mat img = imagee.Mat;
-        //using (UMat gray = new UMat())
-        //using (UMat cannyEdges = new UMat())
-        ////using (Emgu.CV.Mat triangleRectangleImage = new Emgu.CV.Mat(img.Size, DepthType.Cv8U, 3)) //image to draw triangles and rectangles on
-        //using (Emgu.CV.Mat circleImage = new Emgu.CV.Mat(image.Size, DepthType.Cv8U, 3)) //image to draw circles on
-        ////using (Emgu.CV.Mat lineImage = new Emgu.CV.Mat(img.Size, DepthType.Cv8U, 3)) //image to drtaw lines on
-        //{
-        //    //Convert the image to grayscale and filter out the noise
-        //    Emgu.CV.CvInvoke.CvtColor(imagee, gray, Emgu.CV.CvEnum.ColorConversion.Bgr2Gray);
-
-        //    //Remove noise
-        //    CvInvoke.GaussianBlur(gray, gray, new Size(3, 3), 1);
-
-        //    #region circle detection
-        //    double cannyThreshold = 180.0;
-        //    double circleAccumulatorThreshold = 120;
-        //    CircleF[] circles = CvInvoke.HoughCircles(gray, HoughModes.Gradient, 2.0, 20.0, cannyThreshold,
-        //        circleAccumulatorThreshold, 5);
-        //    #endregion
-
-        //    #region Canny and edge detection
-        //    double cannyThresholdLinking = 120.0;
-        //    CvInvoke.Canny(gray, cannyEdges, cannyThreshold, cannyThresholdLinking);
-        //    LineSegment2D[] lines = CvInvoke.HoughLinesP(
-        //        cannyEdges,
-        //        1, //Distance resolution in pixel-related units
-        //        Math.PI / 45.0, //Angle resolution measured in radians.
-        //        20, //threshold
-        //        30, //min Line width
-        //        10); //gap between lines
-        //    #endregion
-
-        //    #region draw circles
-        //    circleImage.SetTo(new MCvScalar(0));
-        //    foreach (CircleF circle in circles)
-        //        CvInvoke.Circle(circleImage, Point.Round(circle.Center), (int)circle.Radius,
-        //            new Bgr(Color.Brown).MCvScalar, 2);
-
-        //    //Drawing a light gray frame around the image
-        //    CvInvoke.Rectangle(circleImage,
-        //        new Rectangle(Point.Empty, new Size(circleImage.Width - 1, circleImage.Height - 1)),
-        //        new MCvScalar(120, 120, 120));
-        //    //Draw the labels
-        //    CvInvoke.PutText(circleImage, "Circles", new Point(20, 20), FontFace.HersheyDuplex, 0.5,
-        //        new MCvScalar(120, 120, 120));
-        //    #endregion
-
-
-
-        //    Emgu.CV.Mat result = new Emgu.CV.Mat();
-        //    CvInvoke.VConcat(new Emgu.CV.Mat[] { img,  circleImage }, result);
-        //    Bitmap resultBitmap = result.ToBitmap();
-
-        //    // Display the Bitmap in the PictureBox
-        //    pictureBox1.Image = resultBitmap;
-        //    //return result;
-        //}
     }
 
 
