@@ -1,3 +1,5 @@
+using System.Drawing;
+using System.Security.AccessControl;
 using System.Windows.Forms;
 using static VideoProcessor;
 
@@ -108,6 +110,32 @@ namespace billiard_laser
             return image;
         }
 
+        //debug
+        private Bitmap drawPoint(PointF point, Bitmap image) {
+
+            using (Graphics g = Graphics.FromImage(image))
+            using (Brush brush = new SolidBrush(Color.Black))
+            {
+                RectangleF dotRect = new RectangleF(point.X - 1, point.Y - 1, 1, 1);
+                g.FillRectangle(brush, dotRect);
+            }
+
+            return image;
+        }
+
+        //debug
+        private Bitmap drawPolygon(Point[] points, Bitmap image)
+        {
+
+            using (Graphics g = Graphics.FromImage(image))
+            using (Pen pen = new Pen(Color.LimeGreen, 1f))
+            {
+                g.DrawPolygon(pen, points);
+            }
+
+            return image;
+        }
+
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
             cameraController.StartCameraCapture();
@@ -187,13 +215,25 @@ namespace billiard_laser
                 // Start the stopwatch
                 stopwatch.Restart();
 
-                // Detect the cue ball in the current frame
-                cueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame, 125);
 
-                //debugging: print info
+
+
+                // Detect the cue ball in the current frame
+                //cueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame, 125);
+                object[] objects = cueBallDetector.FindCueBallDebug(cueBall, videoFrames[i].frame, 125); //TESTING. todo remove
+
+                cueBall = (Ball)objects[0];
+                PointF brightSpot = (PointF)objects[1];
+                Point[] searchArea = (Point[])objects[2];
+
+
+
+                //DEBUGGING: print info
                 Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", i, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
                 Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.deltaX, cueBall.deltaY);
                     
+
+
                 // Stop the stopwatch and add the elapsed time to the total
                 stopwatch.Stop();
                 totalDetectionTime += stopwatch.Elapsed.TotalSeconds;
@@ -201,7 +241,23 @@ namespace billiard_laser
                 //draw the cue ball on the frame
                 Bitmap rawImage = videoFrames[i].frame;
                 Bitmap drawnImage = drawBallOnImage(cueBall, rawImage);
+
+
+                //DEBUGGING: draw search area
+                drawnImage = drawPolygon(searchArea, drawnImage);
+
+                //DEBUGGING: draw middle and search area
+                drawnImage = drawPoint(brightSpot, drawnImage);
+
+
                 VideoFrame processedFrame = new VideoFrame(drawnImage, i);
+
+
+
+
+
+
+
 
                 //add to processed frames list
                 processedFrames.Add(processedFrame);
