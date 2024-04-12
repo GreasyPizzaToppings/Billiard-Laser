@@ -15,6 +15,7 @@ namespace billiard_laser
         private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         private List<VideoProcessor.VideoFrame> videoFrames;
+        private List<PointF> shots;
 
         private Boolean playingVideo = false;
 
@@ -30,8 +31,9 @@ namespace billiard_laser
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(pictureBoxImage, cboCamera);
             cueBallDetector = new CueBallDetector();
-            
+
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
+            shots = new List<PointF>();
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e)
@@ -274,16 +276,10 @@ namespace billiard_laser
 
         private void ShotDetector_ShotFinished(object sender, List<PointF> shot)
         {
-            // display in listBoxShots a piece of text with the start and end frame
-
-            // Get the start and end frame numbers from the ShotDetector
             int startFrame = shotDetector.shotStartFrame;
             int endFrame = shotDetector.shotEndFrame;
 
-            // Create a string with the start and end frame numbers
             string shotInfo = $"{startFrame} - {endFrame}";
-
-            // Add the shot information to the ListBox
             listBoxShots.Items.Add(shotInfo);
         }
 
@@ -299,6 +295,50 @@ namespace billiard_laser
                 // Display the selected frame in the PictureBox
                 pictureBoxImage.Image = selectedFrame.frame;
             }
+        }
+
+        private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxShots.SelectedIndex >= 0)
+            {
+                int selectedIndex = listBoxShots.SelectedIndex;
+
+                List<PointF> selectedShot = shotDetector.Shots[selectedIndex];
+
+                // Draw the path of the selected shot in the PictureBox
+                using (Graphics g = pictureBoxImage.CreateGraphics())
+                {
+                    using (Pen pen = new Pen(Color.Red, 2))
+                    {
+                        if (selectedShot.Count > 1)
+                        {
+                            g.DrawLines(pen, ScalePoints(selectedShot, new Size(outputVideoResolution.Width, outputVideoResolution.Height) , pictureBoxImage.Size).ToArray());
+                        }
+                        else if (selectedShot.Count == 1)
+                        {
+                            g.DrawRectangle(pen, selectedShot[0].X - 1, selectedShot[0].Y - 1, 2, 2);
+                        }
+                    }
+                }
+            }
+        }
+
+        private List<PointF> ScalePoints(List<PointF> points, Size original, Size target) {
+            
+            // Calculate scaling factors
+            float scaleX = (float)target.Width / original.Width;
+            float scaleY = (float)target.Height / original.Height;
+            
+            List<PointF> scaledPoints = new List<PointF>();
+
+            foreach (PointF point in  points)
+            {
+                float scaledX = point.X * scaleX;
+                float scaledY = point.Y * scaleY;
+                scaledPoints.Add(new PointF(scaledX, scaledY));
+            }
+
+            return scaledPoints;
         }
 
         //go back a frame
@@ -382,5 +422,7 @@ namespace billiard_laser
             //update label with picturebox mouse x,y position
             labelMouseCoordinates.Text = string.Format("Mouse: ({0},{1})", e.X, e.Y);
         }
+
+        
     }
 }

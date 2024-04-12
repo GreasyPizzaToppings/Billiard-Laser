@@ -1,7 +1,10 @@
 ﻿public class ShotDetector
 {
-    private bool isCueBallMoving;
+    public List<List<PointF>> Shots { get; private set; }
+    
     private List<PointF> currentShot;
+
+    private bool isCueBallMoving;
     private int stationaryFrameCount;
 
     private const int StationaryThreshold = 75; // Adjust this value as needed
@@ -16,6 +19,7 @@
         isCueBallMoving = false;
         currentShot = new List<PointF>();
         stationaryFrameCount = 0;
+        Shots = new List<List<PointF>>();
     }
 
     public void ProcessFrame(Ball cueBall, int frameIndex)
@@ -39,6 +43,7 @@
             }
             currentShot.Add(cueBall.centre);
         }
+
         else
         {
             if (isCueBallMoving)
@@ -59,6 +64,7 @@
 
     protected virtual void OnShotFinished(List<PointF> shot)
     {
+        Shots.Add(shot);
         ShotFinished?.Invoke(this, shot);
     }
 }

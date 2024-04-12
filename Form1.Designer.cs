@@ -304,6 +304,7 @@ namespace billiard_laser
             listBoxShots.Name = "listBoxShots";
             listBoxShots.Size = new Size(99, 264);
             listBoxShots.TabIndex = 25;
+            listBoxShots.SelectedIndexChanged += listBoxShots_SelectedIndexChanged;
             // 
             // label1
             // 
