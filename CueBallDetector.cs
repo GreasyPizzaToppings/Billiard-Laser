@@ -5,83 +5,6 @@ using static System.Windows.Forms.AxHost;
 public class CueBallDetector
 {
 
-    //new ai test code
-    /*
-    public Ball FindCueBall(Ball prevBall, Image inputImage, int threshold = 100)
-    {
-        Bitmap image = new Bitmap(inputImage);
-        Bitmap grayImage = GrayscaleBitmap(image);
-        int maxX = 0, maxY = 0;
-        int maxBrightness = 0;
-
-        // Calculate the search area based on the previous cue ball position and velocity
-        int searchRadiusX = (int)Math.Abs(prevBall.radius * 7);
-        int searchRadiusY = (int)Math.Abs(prevBall.radius * 7);
-        int searchStartX = (int)(prevBall.centre.X + prevBall.velocityX);
-        int searchStartY = (int)(prevBall.centre.Y + prevBall.velocityY);
-        int searchEndX = (int)(prevBall.centre.X + prevBall.velocityX + searchRadiusX);
-        int searchEndY = (int)(prevBall.centre.Y + prevBall.velocityY + searchRadiusY);
-
-        // Clamp the search area within the image boundaries
-        searchStartX = Math.Max(0, searchStartX);
-        searchStartY = Math.Max(0, searchStartY);
-        searchEndX = Math.Min(grayImage.Width - 1, searchEndX);
-        searchEndY = Math.Min(grayImage.Height - 1, searchEndY);
-
-        // Search for the brightest pixel within the search area
-        for (int x = searchStartX; x <= searchEndX; x++)
-        {
-            for (int y = searchStartY; y <= searchEndY; y++)
-            {
-                int brightness = grayImage.GetPixel(x, y).R;
-                if (brightness > maxBrightness)
-                {
-                    maxBrightness = brightness;
-                    maxX = x;
-                    maxY = y;
-                }
-            }
-        }
-
-        // Find the top, bottom, left, and right edges of the ball
-        int leftEdge = FindEdge(grayImage, maxX, maxY, -1, 0, maxBrightness, threshold);
-        int rightEdge = FindEdge(grayImage, maxX, maxY, 1, 0, maxBrightness, threshold);
-        int topEdge = FindEdge(grayImage, maxX, maxY, 0, -1, maxBrightness, threshold);
-        int bottomEdge = FindEdge(grayImage, maxX, maxY, 0, 1, maxBrightness, threshold);
-
-        // Calculate the horizontal and vertical radii as float values
-        float horizontalRadius = (rightEdge - leftEdge) / 2f;
-        float verticalRadius = (bottomEdge - topEdge) / 2f;
-
-        // Calculate the average radius as a float value
-        float radius = (horizontalRadius + verticalRadius) / 2f;
-
-        // Never let radius be too small, otherwise it breaks
-        if (Math.Abs(radius) < 1f)
-        {
-            radius = -1f;
-        }
-
-        // Calculate the center coordinates of the circle as float values
-        float centerX = leftEdge + horizontalRadius;
-        float centerY = topEdge + verticalRadius;
-
-        // Update the cue ball velocity
-        float velocityX = centerX - prevBall.centre.X;
-        float velocityY = centerY - prevBall.centre.Y;
-
-        // Create and return the updated cue ball
-        return new Ball(new PointF(centerX, centerY), radius)
-        {
-            prevCentre = prevBall.centre,
-            velocityX = velocityX,
-            velocityY = velocityY
-        };
-    }
-    */
-
-    //creates a new cueball from the image or try and find and existing one that has moved
-    
     public Ball FindCueBall(Ball prevBall, Image inputImage, int threshold = 100)
     {
         Bitmap image = new Bitmap(inputImage);
@@ -103,43 +26,43 @@ public class CueBallDetector
             //ball moving right
             if (prevBall.deltaX > 0)
             {
-                startX = (int)(prevBall.centre.X);
-                endX = (int)(prevBall.centre.X + prevBall.radius * 7);
+                startX = (int)(prevBall.centre.X - (prevBall.radius * 3));
+                endX = (int)(prevBall.centre.X + prevBall.radius * 10);
             }
 
             //ball moving left
             else if (prevBall.deltaX < 0)
             {
-                startX = (int)(prevBall.centre.X - prevBall.radius * 7);
-                endX = (int)(prevBall.centre.X);
+                startX = (int)(prevBall.centre.X - prevBall.radius * 10);
+                endX = (int)(prevBall.centre.X + (prevBall.radius * 3));
             }
 
 
             //ball not moving left or right
             else { 
-                startX = (int)(prevBall.centre.X - (prevBall.radius * 4));
-                endX = (int)(prevBall.centre.X + (prevBall.radius * 4));
+                startX = (int)(prevBall.centre.X - (prevBall.radius * 5));
+                endX = (int)(prevBall.centre.X + (prevBall.radius * 5));
             }
 
 
             //ball moving down
             if (prevBall.deltaY > 0)
             {
-                startY = (int)prevBall.centre.Y;
-                endY = (int)(prevBall.centre.Y + prevBall.radius * 7);
+                startY = (int)(prevBall.centre.Y - (prevBall.radius * 3));
+                endY = (int)(prevBall.centre.Y + prevBall.radius * 10);
             }
 
             //ball moving up
             else if (prevBall.deltaY < 0)
             {
-                startY = (int)(prevBall.centre.Y - prevBall.radius * 7);
-                endY = (int)prevBall.centre.Y;
+                startY = (int)(prevBall.centre.Y - prevBall.radius * 10);
+                endY = (int)(prevBall.centre.Y + (prevBall.radius * 3));
             }
 
             //ball not moving up or down
             else {
-                startY = (int)(prevBall.centre.Y - prevBall.radius * 4);
-                endY = (int)(prevBall.centre.Y + prevBall.radius * 4);
+                startY = (int)(prevBall.centre.Y - prevBall.radius * 5);
+                endY = (int)(prevBall.centre.Y + prevBall.radius * 5);
             }
 
 
