@@ -162,11 +162,11 @@ namespace billiard_laser
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             double totalDetectionTime = 0;
 
-            //Ball cueBall = new Ball(new Point(43,41), -1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
-            //Ball cueBall = new Ball(new Point(140, 57), -2); //missedBlack.mp4
-            //Ball cueBall = new Ball(new Point(47, 85), -0.5f); //73 break mp4
-            //Ball cueBall = new Ball(new Point(109, 40), -0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            Ball cueBall = new Ball(new Point(16, 87), -0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
+            //Ball cueBall = new Ball(new Point(43,41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
+            //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
+            //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
+            //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
+            Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
 
             List<VideoFrame> processedFrames = new List<VideoFrame>();
 
@@ -179,8 +179,9 @@ namespace billiard_laser
                 cueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame, 125);
 
                 //debugging: print info
-                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}\n\n", i, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
-
+                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", i, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
+                Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.deltaX, cueBall.deltaY);
+                    
                 // Stop the stopwatch and add the elapsed time to the total
                 stopwatch.Stop();
                 totalDetectionTime += stopwatch.Elapsed.TotalSeconds;

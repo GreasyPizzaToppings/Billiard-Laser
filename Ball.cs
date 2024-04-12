@@ -8,8 +8,8 @@ public class Ball
     public PointF centre { get; set; } //where it is now
 
     public float radius { get; set; }
-	public float velocityX { get; set; }
-	public float velocityY { get; set; }
+	public float deltaX { get; set; }
+	public float deltaY { get; set; }
 
 
     public Ball(PointF centre, float radius)
@@ -19,5 +19,7 @@ public class Ball
 		this.radius = radius;
 	}
 
-	public Ball() { }
+    public Ball() { }
+
+
 }
