@@ -4,7 +4,7 @@ public class CueBallDetector
 {
 
     //creates a new cueball from the image or try and find and existing one that has moved
-    public Ball FindCueBall(Ball prevBall, Image inputImage, int threshold = 150)
+    public Ball FindCueBall(Ball prevBall, Image inputImage, int threshold = 100)
     {
         Bitmap image = new Bitmap(inputImage);
         Bitmap grayImage = GrayscaleBitmap(image);
@@ -15,16 +15,16 @@ public class CueBallDetector
         //if we know past position of cue ball, search in a limited area (5 radiuses either side of the prev center)
         if (prevBall != null)
         {
-            for (int x = (int)(prevBall.centre.X - Math.Abs((int)(prevBall.radius * 5))); x <= prevBall.centre.X + Math.Abs((int)(prevBall.radius * 5)); x++)
+            for (int x = (int)(prevBall.centre.X - Math.Abs((int)(prevBall.radius * 7))); x <= prevBall.centre.X + Math.Abs((int)(prevBall.radius * 7)); x++)
             {
                 //check for boundaries of the image
-                if (x > inputImage.Width) continue;
+                if ((x+1) > inputImage.Width) continue;
                 if (x < 0) continue;
 
-                for (int y = (int)(prevBall.centre.Y - Math.Abs((int)(prevBall.radius * 5))); y <= prevBall.centre.Y + Math.Abs((int)(prevBall.radius * 5)); y++)
+                for (int y = (int)(prevBall.centre.Y - Math.Abs((int)(prevBall.radius * 7))); y <= prevBall.centre.Y + Math.Abs((int)(prevBall.radius * 7)); y++)
                 {
                     //check for boundaries of the image
-                    if (y > inputImage.Height) continue;
+                    if ((y+1) > inputImage.Height) continue;
                     if (y < 0) continue;
 
                     //find brightest pixel
@@ -68,6 +68,11 @@ public class CueBallDetector
 
         // Calculate the average radius as a float value
         float radius = (horizontalRadius + verticalRadius) / 2f;
+
+        //never let radius be too small, otherwise it breaks
+        if (Math.Abs(radius) < 1f) {
+            radius = -1f;
+        }
 
         // Calculate the center coordinates of the circle as float values
         float centerX = leftEdge + horizontalRadius;

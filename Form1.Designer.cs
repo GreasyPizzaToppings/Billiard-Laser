@@ -285,7 +285,7 @@ namespace billiard_laser
             // buttonResume
             // 
             buttonResume.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonResume.Location = new Point(1059, 494);
+            buttonResume.Location = new Point(1061, 494);
             buttonResume.Margin = new Padding(3, 2, 3, 2);
             buttonResume.Name = "buttonResume";
             buttonResume.Size = new Size(84, 26);
