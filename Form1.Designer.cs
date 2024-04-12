@@ -53,6 +53,7 @@ namespace billiard_laser
             buttonResume = new Button();
             listBoxShots = new ListBox();
             label1 = new Label();
+            labelMouseCoordinates = new Label();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             SuspendLayout();
             // 
@@ -114,7 +115,7 @@ namespace billiard_laser
             // btnLeft
             // 
             btnLeft.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLeft.Location = new Point(12, 419);
+            btnLeft.Location = new Point(13, 401);
             btnLeft.Margin = new Padding(3, 2, 3, 2);
             btnLeft.Name = "btnLeft";
             btnLeft.Size = new Size(31, 32);
@@ -126,7 +127,7 @@ namespace billiard_laser
             // btnRight
             // 
             btnRight.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnRight.Location = new Point(49, 419);
+            btnRight.Location = new Point(50, 401);
             btnRight.Margin = new Padding(3, 2, 3, 2);
             btnRight.Name = "btnRight";
             btnRight.Size = new Size(31, 32);
@@ -138,7 +139,7 @@ namespace billiard_laser
             // btnUp
             // 
             btnUp.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUp.Location = new Point(32, 383);
+            btnUp.Location = new Point(33, 365);
             btnUp.Margin = new Padding(3, 2, 3, 2);
             btnUp.Name = "btnUp";
             btnUp.Size = new Size(31, 32);
@@ -150,7 +151,7 @@ namespace billiard_laser
             // btnDown
             // 
             btnDown.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDown.Location = new Point(32, 455);
+            btnDown.Location = new Point(33, 437);
             btnDown.Margin = new Padding(3, 2, 3, 2);
             btnDown.Name = "btnDown";
             btnDown.Size = new Size(31, 32);
@@ -162,7 +163,7 @@ namespace billiard_laser
             // lblServos
             // 
             lblServos.AutoSize = true;
-            lblServos.Location = new Point(9, 356);
+            lblServos.Location = new Point(10, 338);
             lblServos.Name = "lblServos";
             lblServos.Size = new Size(84, 15);
             lblServos.TabIndex = 10;
@@ -207,6 +208,7 @@ namespace billiard_laser
             pictureBoxImage.Size = new Size(876, 517);
             pictureBoxImage.TabIndex = 15;
             pictureBoxImage.TabStop = false;
+            pictureBoxImage.MouseMove += pictureBoxImage_MouseMove;
             // 
             // labelFrameRate
             // 
@@ -313,11 +315,22 @@ namespace billiard_laser
             label1.TabIndex = 26;
             label1.Text = "Detected Shots";
             // 
+            // labelMouseCoordinates
+            // 
+            labelMouseCoordinates.AutoSize = true;
+            labelMouseCoordinates.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMouseCoordinates.Location = new Point(7, 494);
+            labelMouseCoordinates.Name = "labelMouseCoordinates";
+            labelMouseCoordinates.Size = new Size(72, 15);
+            labelMouseCoordinates.TabIndex = 27;
+            labelMouseCoordinates.Text = "Mouse: (0,0)";
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1215, 537);
+            ClientSize = new Size(1215, 532);
+            Controls.Add(labelMouseCoordinates);
             Controls.Add(label1);
             Controls.Add(listBoxShots);
             Controls.Add(buttonResume);
@@ -377,5 +390,6 @@ namespace billiard_laser
         private Button buttonResume;
         private ListBox listBoxShots;
         private Label label1;
+        private Label labelMouseCoordinates;
     }
 }

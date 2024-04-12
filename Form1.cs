@@ -10,6 +10,7 @@ namespace billiard_laser
         private ArduinoController arduinoController;
         private CameraController cameraController;
         private CueBallDetector cueBallDetector;
+        ShotDetector shotDetector = new ShotDetector();
 
         private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
@@ -29,6 +30,8 @@ namespace billiard_laser
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(pictureBoxImage, cboCamera);
             cueBallDetector = new CueBallDetector();
+            
+            shotDetector.ShotFinished += ShotDetector_ShotFinished;
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e)
@@ -111,7 +114,8 @@ namespace billiard_laser
         }
 
         //debug
-        private Bitmap drawPoint(PointF point, Bitmap image) {
+        private Bitmap drawPoint(PointF point, Bitmap image)
+        {
 
             using (Graphics g = Graphics.FromImage(image))
             using (Brush brush = new SolidBrush(Color.Black))
@@ -139,28 +143,6 @@ namespace billiard_laser
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
             cameraController.StartCameraCapture();
-        }
-
-        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            cameraController.StopCameraCapture();
-
-            // Clear and dispose of the video frames
-            if (videoFrames != null)
-            {
-                videoFrames.Clear();
-                videoFrames = null;
-            }
-
-            // Clear the processed frames list box
-            listBoxProcessedFrames.Items.Clear();
-
-            // Dispose of the picture box image
-            if (pictureBoxImage.Image != null)
-            {
-                pictureBoxImage.Image.Dispose();
-                pictureBoxImage.Image = null;
-            }
         }
 
         private void buttonLoadVideo_Click(object sender, EventArgs e)
@@ -202,13 +184,16 @@ namespace billiard_laser
             System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
             double totalDetectionTime = 0;
 
-            //Ball cueBall = new Ball(new Point(43,41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
+            //DEBUGGING: test cueballs with known starting position
+
+            Ball cueBall = new Ball(new Point(43, 41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
+            //Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
 
             List<VideoFrame> processedFrames = new List<VideoFrame>();
+
 
             for (int i = 0; i < videoFrames.Count; i++)
             {
@@ -226,12 +211,15 @@ namespace billiard_laser
                 PointF brightSpot = (PointF)objects[1];
                 Point[] searchArea = (Point[])objects[2];
 
+                // Process the frame to detect shots
+                shotDetector.ProcessFrame(cueBall, i);
+
 
 
                 //DEBUGGING: print info
                 Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", i, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
                 Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.deltaX, cueBall.deltaY);
-                    
+
 
 
                 // Stop the stopwatch and add the elapsed time to the total
@@ -251,10 +239,6 @@ namespace billiard_laser
 
 
                 VideoFrame processedFrame = new VideoFrame(drawnImage, i);
-
-
-
-
 
 
 
@@ -285,6 +269,22 @@ namespace billiard_laser
 
             playingVideo = false;
             buttonResume.Enabled = false;
+            shotDetector.ShotFinished -= ShotDetector_ShotFinished;
+        }
+
+        private void ShotDetector_ShotFinished(object sender, List<PointF> shot)
+        {
+            // display in listBoxShots a piece of text with the start and end frame
+
+            // Get the start and end frame numbers from the ShotDetector
+            int startFrame = shotDetector.shotStartFrame;
+            int endFrame = shotDetector.shotEndFrame;
+
+            // Create a string with the start and end frame numbers
+            string shotInfo = $"{startFrame} - {endFrame}";
+
+            // Add the shot information to the ListBox
+            listBoxShots.Items.Add(shotInfo);
         }
 
         //display a selected individual frame of the video
@@ -353,6 +353,34 @@ namespace billiard_laser
             listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
             VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
             pictureBoxImage.Image = frame.frame;
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            cameraController.StopCameraCapture();
+
+            // Clear and dispose of the video frames
+            if (videoFrames != null)
+            {
+                videoFrames.Clear();
+                videoFrames = null;
+            }
+
+            // Clear the processed frames list box
+            listBoxProcessedFrames.Items.Clear();
+
+            // Dispose of the picture box image
+            if (pictureBoxImage.Image != null)
+            {
+                pictureBoxImage.Image.Dispose();
+                pictureBoxImage.Image = null;
+            }
+        }
+
+        private void pictureBoxImage_MouseMove(object sender, MouseEventArgs e)
+        {
+            //update label with picturebox mouse x,y position
+            labelMouseCoordinates.Text = string.Format("Mouse: ({0},{1})", e.X, e.Y);
         }
     }
 }

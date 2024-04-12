@@ -215,7 +215,7 @@ public class CueBallDetector
             }
 
 
-            //search for the moving ball with our set range
+            //search for the moving ball with our determined range
             for (int x = startX; x <= endX; x++)
             {
                 //check for boundaries of the image
