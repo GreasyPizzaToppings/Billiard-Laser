@@ -183,11 +183,11 @@ namespace billiard_laser
 
             //DEBUGGING: test cueballs with known starting position
 
-            Ball cueBall = new Ball(new Point(43, 41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
+            //Ball cueBall = new Ball(new Point(43, 41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            //Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
+            Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
 
             List<VideoFrame> processedFrames = new List<VideoFrame>();
 
@@ -307,7 +307,7 @@ namespace billiard_laser
                     {
                         if (selectedShot.Count > 1)
                         {
-                            g.DrawLines(pen, ScalePoints(selectedShot, new Size(outputVideoResolution.Width, outputVideoResolution.Height) , pictureBoxImage.Size).ToArray());
+                            g.DrawLines(pen, ScalePoints(selectedShot, new Size(outputVideoResolution.Width, outputVideoResolution.Height), pictureBoxImage.Size).ToArray());
                         }
                         else if (selectedShot.Count == 1)
                         {
@@ -318,15 +318,16 @@ namespace billiard_laser
             }
         }
 
-        private List<PointF> ScalePoints(List<PointF> points, Size original, Size target) {
-            
+        private List<PointF> ScalePoints(List<PointF> points, Size original, Size target)
+        {
+
             // Calculate scaling factors
             float scaleX = (float)target.Width / original.Width;
             float scaleY = (float)target.Height / original.Height;
-            
+
             List<PointF> scaledPoints = new List<PointF>();
 
-            foreach (PointF point in  points)
+            foreach (PointF point in points)
             {
                 float scaledX = point.X * scaleX;
                 float scaledY = point.Y * scaleY;
@@ -377,19 +378,6 @@ namespace billiard_laser
             buttonResume.Enabled = true;
         }
 
-        //skip to latest
-        private void buttonResume_Click(object sender, EventArgs e)
-        {
-            playingVideo = true;
-            buttonResume.Enabled = false;
-            buttonNextFrame.Enabled = false;
-
-            //show latest processed frame from list box in the picturebox
-            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-            VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
-            pictureBoxImage.Image = frame.frame;
-        }
-
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
@@ -418,5 +406,27 @@ namespace billiard_laser
             labelMouseCoordinates.Text = string.Format("Mouse: ({0},{1})", e.X, e.Y);
         }
 
+        //skip to latest
+        private void buttonResume_Click(object sender, EventArgs e)
+        {
+            playingVideo = true;
+            buttonResume.Enabled = false;
+            buttonNextFrame.Enabled = false;
+
+            //show latest processed frame from list box in the picturebox
+            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+            VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
+            pictureBoxImage.Image = frame.frame;
+        }
+
+        private void buttonPause_Click(object sender, EventArgs e)
+        {
+            // Stop processing more frames
+            playingVideo = false;
+
+            // Enable the resume button
+            buttonResume.Enabled = true;
+            buttonNextFrame.Enabled = true;
+        }
     }
 }

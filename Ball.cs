@@ -3,7 +3,6 @@
 public class Ball
 {
 
-	
     public PointF prevCentre { get; set; } //where it came from
     public PointF centre { get; set; } //where it is now
 
@@ -20,6 +19,5 @@ public class Ball
 	}
 
     public Ball() { }
-
 
 }
