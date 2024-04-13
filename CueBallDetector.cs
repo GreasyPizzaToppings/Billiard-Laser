@@ -150,8 +150,7 @@ public class CueBallDetector
 
 
     // the same as other but returns more data
-
-    public object[] FindCueBallDebug(Ball prevBall, Image inputImage, int threshold = 100)
+    public object[] FindCueBallDebug(Ball prevBall, Image inputImage, int threshold = 125)
     {
         Bitmap image = new Bitmap(inputImage);
         Bitmap grayImage = GrayscaleBitmap(image);

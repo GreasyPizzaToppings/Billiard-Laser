@@ -46,7 +46,7 @@ namespace billiard_laser
             labelFrameRate = new Label();
             listBoxProcessedFrames = new ListBox();
             labelFrames = new Label();
-            buttonLoadVideo = new Button();
+            btnLoadVideo = new Button();
             labelVideoControls = new Label();
             buttonLastFrame = new Button();
             buttonNextFrame = new Button();
@@ -198,7 +198,7 @@ namespace billiard_laser
             btnProcessVideo.TabIndex = 14;
             btnProcessVideo.Text = "Start ";
             btnProcessVideo.UseVisualStyleBackColor = true;
-            btnProcessVideo.Click += btnProcessVideo_Click;
+            btnProcessVideo.Click += btnProcessVideo_ClickAsync;
             // 
             // pictureBoxImage
             // 
@@ -240,16 +240,16 @@ namespace billiard_laser
             labelFrames.TabIndex = 19;
             labelFrames.Text = "Frames";
             // 
-            // buttonLoadVideo
+            // btnLoadVideo
             // 
-            buttonLoadVideo.Location = new Point(1013, 59);
-            buttonLoadVideo.Margin = new Padding(3, 2, 3, 2);
-            buttonLoadVideo.Name = "buttonLoadVideo";
-            buttonLoadVideo.Size = new Size(84, 26);
-            buttonLoadVideo.TabIndex = 20;
-            buttonLoadVideo.Text = "Load Video";
-            buttonLoadVideo.UseVisualStyleBackColor = true;
-            buttonLoadVideo.Click += buttonLoadVideo_Click;
+            btnLoadVideo.Location = new Point(1013, 59);
+            btnLoadVideo.Margin = new Padding(3, 2, 3, 2);
+            btnLoadVideo.Name = "btnLoadVideo";
+            btnLoadVideo.Size = new Size(84, 26);
+            btnLoadVideo.TabIndex = 20;
+            btnLoadVideo.Text = "Load Video";
+            btnLoadVideo.UseVisualStyleBackColor = true;
+            btnLoadVideo.Click += btnLoadVideo_Click;
             // 
             // labelVideoControls
             // 
@@ -352,7 +352,7 @@ namespace billiard_laser
             Controls.Add(buttonNextFrame);
             Controls.Add(buttonLastFrame);
             Controls.Add(labelVideoControls);
-            Controls.Add(buttonLoadVideo);
+            Controls.Add(btnLoadVideo);
             Controls.Add(labelFrames);
             Controls.Add(listBoxProcessedFrames);
             Controls.Add(labelFrameRate);
@@ -398,7 +398,7 @@ namespace billiard_laser
         private Label labelFrameRate;
         private ListBox listBoxProcessedFrames;
         private Label labelFrames;
-        private Button buttonLoadVideo;
+        private Button btnLoadVideo;
         private Label labelVideoControls;
         private Button buttonLastFrame;
         private Button buttonNextFrame;

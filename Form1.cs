@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using static VideoProcessor;
 
 namespace billiard_laser
@@ -143,9 +144,8 @@ namespace billiard_laser
             cameraController.StartCameraCapture();
         }
 
-        private void buttonLoadVideo_Click(object sender, EventArgs e)
+        private void btnLoadVideo_Click(object sender, EventArgs e)
         {
-            //show dialog for video
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Video Files (*.mp4;*.avi;*.mkv)|*.mp4;*.avi;*.mkv";
             openFileDialog.Title = "Select a Video File";
@@ -153,35 +153,24 @@ namespace billiard_laser
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 string selectedVideoPath = openFileDialog.FileName;
-
-                videoFrames = new List<VideoFrame>();
-
-                videoFrames = VideoProcessor.GetVideoFrames(selectedVideoPath, outputVideoResolution);
+                LoadVideo(selectedVideoPath);
             }
+        }
 
-            //enable the start button
+        //todo make async?
+        private void LoadVideo(string videoPath)
+        {
+            videoFrames = VideoProcessor.GetVideoFrames(videoPath, outputVideoResolution);
             btnProcessVideo.Enabled = true;
         }
 
+        //lots of debugging stuff in it
         /// <summary>
-        /// for each frame in the video, highlight the cue ball and show processed frames in the picturebox and listbox
+        /// Find cueball, draw cueball, find shots, record shots
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void btnProcessVideo_Click(object sender, EventArgs e)
+        /// <returns></returns>
+        private async Task ProcessVideoAsync()
         {
-            //clear out list box
-            listBoxProcessedFrames.Items.Clear();
-
-            //media controls
-            playingVideo = true;
-            buttonResume.Enabled = false;
-            buttonNextFrame.Enabled = false;
-
-            // setup timer for fps
-            System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-            double totalDetectionTime = 0;
-
             //DEBUGGING: test cueballs with known starting position
 
             //Ball cueBall = new Ball(new Point(43, 41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
@@ -190,80 +179,115 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
             Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
 
-            List<VideoFrame> processedFrames = new List<VideoFrame>();
 
+            var processedFrames = new List<VideoFrame>();
+            Stopwatch stopwatch = new Stopwatch();
+            double totalProcessingTime = 0;
 
-            for (int i = 0; i < videoFrames.Count; i++)
+            foreach (var frame in videoFrames)
             {
-                // Start the stopwatch
+                //time how long it takes to process frame
                 stopwatch.Restart();
 
-
-
-
-                // Detect the cue ball in the current frame
-                //cueBall = cueBallDetector.FindCueBall(cueBall, videoFrames[i].frame, 125);
-                object[] objects = cueBallDetector.FindCueBallDebug(cueBall, videoFrames[i].frame, 125); //TESTING. todo remove
+                object[] objects = cueBallDetector.FindCueBallDebug(cueBall, frame.frame, 125);
+                
+                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
 
                 cueBall = (Ball)objects[0];
+
+                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", frame.index, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
+                Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.deltaX, cueBall.deltaY);
+
                 PointF brightSpot = (PointF)objects[1];
                 Point[] searchArea = (Point[])objects[2];
 
-                // Process the frame to detect shots
-                shotDetector.ProcessFrame(cueBall, i);
+                // detect shots
+                shotDetector.ProcessFrame(cueBall, frame.index);
 
+                // Draw the cue ball on the frame
+                var drawnImage = DrawBallOnImage(cueBall, frame.frame);
 
+                // Draw the search area (for debugging)
+                drawnImage = DrawPolygon(searchArea, drawnImage);
 
-                //DEBUGGING: print info
-                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", i, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
-                Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.deltaX, cueBall.deltaY);
+                // Draw the bright spot (for debugging)
+                drawnImage = DrawPoint(brightSpot, drawnImage);
 
-
-
-                // Stop the stopwatch and add the elapsed time to the total
-                stopwatch.Stop();
-                totalDetectionTime += stopwatch.Elapsed.TotalSeconds;
-
-                //draw the cue ball on the frame
-                Bitmap rawImage = videoFrames[i].frame;
-                Bitmap drawnImage = drawBallOnImage(cueBall, rawImage);
-
-
-                //DEBUGGING: draw search area
-                drawnImage = drawPolygon(searchArea, drawnImage);
-
-                //DEBUGGING: draw middle and search area
-                drawnImage = drawPoint(brightSpot, drawnImage);
-
-
-                VideoFrame processedFrame = new VideoFrame(drawnImage, i);
-
-
-
-
-                //add to processed frames list
+                // Create a new processed frame
+                var processedFrame = new VideoFrame(drawnImage, frame.index);
+                
                 processedFrames.Add(processedFrame);
-
-                //add frame to list box
                 listBoxProcessedFrames.Items.Add(processedFrame);
+                
+                stopwatch.Stop();
+                UpdateFpsLabel(totalProcessingTime, frame.index);
 
-                //show in pic box, only if in 'playing' mode
                 if (playingVideo)
                 {
                     buttonNextFrame.Enabled = false;
                     listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-
                     pictureBoxImage.Image = processedFrame.frame;
                 }
-                else buttonNextFrame.Enabled = true;
+                else
+                {
+                    buttonNextFrame.Enabled = true;
+                }
 
-                // Update the FPS label with the current average FPS
-                double averageFps = i / totalDetectionTime;
-                labelFrameRate.Text = $"FPS: {averageFps:F2}";
-
-                // Refresh the UI to show the updated image and FPS
                 Application.DoEvents();
             }
+        }
+
+        private void UpdateFpsLabel(double totalTime, int index)
+        {
+            var fps = index / totalTime;
+            labelFrameRate.Text = $"FPS: {fps:F2}";
+        }
+
+        private Bitmap DrawBallOnImage(Ball ball, Bitmap image)
+        {
+            using (var graphics = Graphics.FromImage(image))
+            using (var pen = new Pen(Color.DeepPink, 2f))
+            {
+                var rect = new Rectangle(
+                    (int)(ball.centre.X - ball.radius),
+                    (int)(ball.centre.Y - ball.radius),
+                    (int)(2 * ball.radius),
+                    (int)(2 * ball.radius));
+                graphics.DrawEllipse(pen, rect);
+            }
+            return image;
+        }
+
+        private Bitmap DrawPoint(PointF point, Bitmap image)
+        {
+            using (var graphics = Graphics.FromImage(image))
+            using (var brush = new SolidBrush(Color.Black))
+            {
+                var rect = new RectangleF(point.X - 1, point.Y - 1, 2, 2);
+                graphics.FillRectangle(brush, rect);
+            }
+            return image;
+        }
+
+        private Bitmap DrawPolygon(Point[] points, Bitmap image)
+        {
+            using (var graphics = Graphics.FromImage(image))
+            using (var pen = new Pen(Color.LimeGreen, 1f))
+            {
+                graphics.DrawPolygon(pen, points);
+            }
+            return image;
+        }
+
+        private async void btnProcessVideo_ClickAsync(object sender, EventArgs e)
+        {
+            listBoxProcessedFrames.Items.Clear();
+
+            playingVideo = true;
+            buttonResume.Enabled = false;
+            buttonNextFrame.Enabled = false;
+
+            await ProcessVideoAsync();
 
             playingVideo = false;
             buttonResume.Enabled = false;
@@ -414,6 +438,29 @@ namespace billiard_laser
             buttonResume.Enabled = true;
         }
 
+        //skip to latest
+        private void buttonResume_Click(object sender, EventArgs e)
+        {
+            playingVideo = true;
+            buttonResume.Enabled = false;
+            buttonNextFrame.Enabled = false;
+
+            //show latest processed frame from list box in the picturebox
+            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+            VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
+            pictureBoxImage.Image = frame.frame;
+        }
+
+        private void buttonPause_Click(object sender, EventArgs e)
+        {
+            // Stop processing more frames
+            playingVideo = false;
+
+            // Enable the resume button
+            buttonResume.Enabled = true;
+            buttonNextFrame.Enabled = true;
+        }
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
@@ -440,29 +487,6 @@ namespace billiard_laser
         {
             //update label with picturebox mouse x,y position
             labelMouseCoordinates.Text = string.Format("Mouse: ({0},{1})", e.X, e.Y);
-        }
-
-        //skip to latest
-        private void buttonResume_Click(object sender, EventArgs e)
-        {
-            playingVideo = true;
-            buttonResume.Enabled = false;
-            buttonNextFrame.Enabled = false;
-
-            //show latest processed frame from list box in the picturebox
-            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-            VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
-            pictureBoxImage.Image = frame.frame;
-        }
-
-        private void buttonPause_Click(object sender, EventArgs e)
-        {
-            // Stop processing more frames
-            playingVideo = false;
-
-            // Enable the resume button
-            buttonResume.Enabled = true;
-            buttonNextFrame.Enabled = true;
         }
     }
 }
