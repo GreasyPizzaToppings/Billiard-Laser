@@ -112,33 +112,6 @@ namespace billiard_laser
             return image;
         }
 
-        //debug
-        private Bitmap drawPoint(PointF point, Bitmap image)
-        {
-
-            using (Graphics g = Graphics.FromImage(image))
-            using (Brush brush = new SolidBrush(Color.Black))
-            {
-                RectangleF dotRect = new RectangleF(point.X - 1, point.Y - 1, 1, 1);
-                g.FillRectangle(brush, dotRect);
-            }
-
-            return image;
-        }
-
-        //debug
-        private Bitmap drawPolygon(Point[] points, Bitmap image)
-        {
-
-            using (Graphics g = Graphics.FromImage(image))
-            using (Pen pen = new Pen(Color.LimeGreen, 1f))
-            {
-                g.DrawPolygon(pen, points);
-            }
-
-            return image;
-        }
-
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
             cameraController.StartCameraCapture();
