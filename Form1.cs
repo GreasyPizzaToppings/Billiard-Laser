@@ -14,6 +14,7 @@ namespace billiard_laser
         private List<VideoProcessor.VideoFrame> videoFrames;
 
         private Boolean playingVideo = false;
+        private bool replayInProgress = false;
 
         public Form1()
         {
@@ -292,28 +293,63 @@ namespace billiard_laser
             }
         }
 
-        private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
+
+        private async void ReplayShotWithBallPath(int startFrame, int endFrame, int replayFPS)
         {
-            if (listBoxShots.SelectedIndex >= 0)
+            if (replayInProgress)
+                return;
+
+            replayInProgress = true;
+
+            List<PointF> selectedShot = shotDetector.Shots[listBoxShots.SelectedIndex];
+            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
+
+            for (int i = startFrame; i <= endFrame; i++)
             {
-                int selectedIndex = listBoxShots.SelectedIndex;
-
-                List<PointF> selectedShot = shotDetector.Shots[selectedIndex];
-
-                // Draw the path of the selected shot in the PictureBox
-                using (Graphics g = pictureBoxImage.CreateGraphics())
+                if (i >= 0 && i < listBoxProcessedFrames.Items.Count)
                 {
-                    using (Pen pen = new Pen(Color.Red, 2))
+                    listBoxProcessedFrames.SelectedIndex = i;
+                    VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
+
+                    // Draw the path of the selected shot on the current frame
+                    using (Graphics g = Graphics.FromImage(frame.frame))
                     {
-                        if (selectedShot.Count > 1)
+                        using (Pen pen = new Pen(Color.Red, 2))
                         {
-                            g.DrawLines(pen, ScalePoints(selectedShot, new Size(outputVideoResolution.Width, outputVideoResolution.Height), pictureBoxImage.Size).ToArray());
-                        }
-                        else if (selectedShot.Count == 1)
-                        {
-                            g.DrawRectangle(pen, selectedShot[0].X - 1, selectedShot[0].Y - 1, 2, 2);
+                            if (selectedShot.Count > 1)
+                            {
+                                g.DrawLines(pen, ScalePoints(selectedShot, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size).ToArray());
+                            }
+                            else if (selectedShot.Count == 1)
+                            {
+                                g.DrawRectangle(pen, selectedShot[0].X - 1, selectedShot[0].Y - 1, 2, 2);
+                            }
                         }
                     }
+
+                    pictureBoxImage.Image = frame.frame;
+                    pictureBoxImage.Refresh();
+
+                    // Delay to control the replay speed (adjust the delay as needed)
+                    await Task.Delay(delay);
+                }
+            }
+
+            replayInProgress = false;
+        }
+
+
+        private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
+        {
+
+            if (listBoxShots.SelectedIndex >= 0)
+            {
+                string selectedShotInfo = listBoxShots.SelectedItem.ToString();
+                string[] frameIndices = selectedShotInfo.Split('-');
+
+                if (frameIndices.Length == 2 && int.TryParse(frameIndices[0], out int startFrame) && int.TryParse(frameIndices[1], out int endFrame))
+                {
+                    ReplayShotWithBallPath(startFrame, endFrame, 60);
                 }
             }
         }
