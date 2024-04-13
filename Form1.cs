@@ -162,9 +162,10 @@ namespace billiard_laser
                 //time how long it takes to process frame
                 stopwatch.Restart();
 
-                object[] objects = cueBallDetector.FindCueBallDebug(cueBall, frame.frame, 125);
+                object[] objects = await Task.Run(() => cueBallDetector.FindCueBallDebug(cueBall, frame.frame, 125));
                 
                 totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+
 
                 cueBall = (Ball)objects[0];
 
