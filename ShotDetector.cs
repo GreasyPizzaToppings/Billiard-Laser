@@ -12,8 +12,10 @@
     public int shotStartFrame = 0;
     public int shotEndFrame = 0;
 
-    private double totalSpeed;
-    private Queue<double> lastTenSpeeds;
+
+    //todo? just use a list of all distances travelled?
+    private double totalDistanceTravelled;
+    private Queue<double> lastTenDistanceTravelled;
 
     public event EventHandler<Shot> ShotFinished;
 
@@ -24,18 +26,17 @@
         stationaryFrameCount = 0;
         Shots = new List<Shot>();
 
-        totalSpeed = 0;
-        lastTenSpeeds = new Queue<double>();
+        totalDistanceTravelled = 0;
+        lastTenDistanceTravelled = new Queue<double>();
     }
 
     public void ProcessFrame(Ball cueBall, int frameIndex)
     {
-        // Calculate the speed of the cue ball
-        double speed = Math.Sqrt(cueBall.deltaX * cueBall.deltaX + cueBall.deltaY * cueBall.deltaY);
-        Console.WriteLine(speed);
+        double distanceTravelled = Math.Sqrt((cueBall.DeltaX * cueBall.DeltaX) + (cueBall.DeltaY * cueBall.DeltaY));
+        Console.WriteLine("Distance travelled in 1 frame: " + distanceTravelled);
 
         // Check if the cue ball is moving
-        if (speed > 0.05)
+        if (distanceTravelled > 0.05)
         {
             // Cue ball started moving, start a new shot
             if (!isCueBallMoving)
@@ -46,17 +47,17 @@
 
                 shotStartFrame = frameIndex;
                 shotEndFrame = 0;
-                totalSpeed = 0;
-                lastTenSpeeds = new Queue<double>();
+                totalDistanceTravelled = 0;
+                lastTenDistanceTravelled = new Queue<double>();
             }
 
-            currentShot.AddPointToPath(cueBall.centre);
-            totalSpeed += speed;
+            currentShot.AddPointToPath(cueBall.Centre);
+            totalDistanceTravelled += distanceTravelled;
 
-            lastTenSpeeds.Enqueue(speed);
-            if (lastTenSpeeds.Count > 10)
+            lastTenDistanceTravelled.Enqueue(distanceTravelled);
+            if (lastTenDistanceTravelled.Count > 10)
             {
-                totalSpeed -= lastTenSpeeds.Dequeue();
+                totalDistanceTravelled -= lastTenDistanceTravelled.Dequeue();
             }
         }
 
@@ -72,8 +73,8 @@
                     // Cue ball has been stationary for the specified duration, end the current shot
                     isCueBallMoving = false;
                     shotEndFrame = frameIndex;
-                    double averageSpeed = totalSpeed / currentShot.Path.Count;
-                    double averageSpeedLastTen = lastTenSpeeds.Count > 0 ? lastTenSpeeds.Average() : 0;
+                    double averageSpeed = totalDistanceTravelled / currentShot.Path.Count;
+                    double averageSpeedLastTen = lastTenDistanceTravelled.Count > 0 ? lastTenDistanceTravelled.Average() : 0;
                     OnShotFinished(currentShot, averageSpeed, averageSpeedLastTen);
                 }
             }

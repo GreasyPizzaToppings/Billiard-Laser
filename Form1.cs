@@ -107,7 +107,7 @@ namespace billiard_laser
             using (Graphics g = Graphics.FromImage(image))
             using (Pen pen = new Pen(Color.DeepPink, 2f))
             {
-                g.DrawEllipse(pen, ball.centre.X - ball.radius, ball.centre.Y - ball.radius, 2 * ball.radius, 2 * ball.radius);
+                g.DrawEllipse(pen, ball.Centre.X - ball.Radius, ball.Centre.Y - ball.Radius, 2 * ball.Radius, 2 * ball.Radius);
             }
             return image;
         }
@@ -150,7 +150,7 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
+            Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
             
             //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece
             //Ball cueBall = new Ball(new Point(200, 60), 1f); //180p: 3 pots, overhead, light. cropped
@@ -171,8 +171,8 @@ namespace billiard_laser
 
                 cueBall = (Ball)objects[0];
 
-                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", frame.index, cueBall.centre.X, cueBall.centre.Y, cueBall.radius);
-                Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.deltaX, cueBall.deltaY);
+                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", frame.index, cueBall.Centre.X, cueBall.Centre.Y, cueBall.Radius);
+                Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.DeltaX, cueBall.DeltaY);
 
                 PointF brightSpot = (PointF)objects[1];
                 Point[] searchArea = (Point[])objects[2];
@@ -225,10 +225,10 @@ namespace billiard_laser
             using (var pen = new Pen(Color.DeepPink, 2f))
             {
                 var rect = new Rectangle(
-                    (int)(ball.centre.X - ball.radius),
-                    (int)(ball.centre.Y - ball.radius),
-                    (int)(2 * ball.radius),
-                    (int)(2 * ball.radius));
+                    (int)(ball.Centre.X - ball.Radius),
+                    (int)(ball.Centre.Y - ball.Radius),
+                    (int)(2 * ball.Radius),
+                    (int)(2 * ball.Radius));
                 graphics.DrawEllipse(pen, rect);
             }
             return image;
