@@ -173,13 +173,13 @@ public class CueBallDetector
             if (prevBall.deltaX > 0)
             {
                 startX = (int)(prevBall.centre.X - (prevBall.radius * 3));
-                endX = (int)(prevBall.centre.X + prevBall.radius * 10);
+                endX = (int)(prevBall.centre.X + prevBall.radius * 7);
             }
 
             //ball moving left
             else if (prevBall.deltaX < 0)
             {
-                startX = (int)(prevBall.centre.X - prevBall.radius * 10);
+                startX = (int)(prevBall.centre.X - prevBall.radius * 7);
                 endX = (int)(prevBall.centre.X + (prevBall.radius * 3));
             }
 
@@ -187,8 +187,8 @@ public class CueBallDetector
             //ball not moving left or right
             else
             {
-                startX = (int)(prevBall.centre.X - (prevBall.radius * 5));
-                endX = (int)(prevBall.centre.X + (prevBall.radius * 5));
+                startX = (int)(prevBall.centre.X - (prevBall.radius * 4));
+                endX = (int)(prevBall.centre.X + (prevBall.radius * 4));
             }
 
 
@@ -196,21 +196,21 @@ public class CueBallDetector
             if (prevBall.deltaY > 0)
             {
                 startY = (int)(prevBall.centre.Y - (prevBall.radius * 3));
-                endY = (int)(prevBall.centre.Y + prevBall.radius * 10);
+                endY = (int)(prevBall.centre.Y + prevBall.radius * 7);
             }
 
             //ball moving up
             else if (prevBall.deltaY < 0)
             {
-                startY = (int)(prevBall.centre.Y - prevBall.radius * 10);
+                startY = (int)(prevBall.centre.Y - prevBall.radius * 7);
                 endY = (int)(prevBall.centre.Y + (prevBall.radius * 3));
             }
 
             //ball not moving up or down
             else
             {
-                startY = (int)(prevBall.centre.Y - prevBall.radius * 5);
-                endY = (int)(prevBall.centre.Y + prevBall.radius * 5);
+                startY = (int)(prevBall.centre.Y - prevBall.radius * 4);
+                endY = (int)(prevBall.centre.Y + prevBall.radius * 4);
             }
 
 

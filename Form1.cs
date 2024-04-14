@@ -10,7 +10,7 @@ namespace billiard_laser
         private CueBallDetector cueBallDetector;
         ShotDetector shotDetector = new ShotDetector();
 
-        private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(255, 144); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
+        private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(319, 180); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         private List<VideoProcessor.VideoFrame> videoFrames;
 
@@ -150,8 +150,11 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            Ball cueBall = new Ball(new Point(16, 87), 0.5f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
-
+            Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 radius search
+            
+            //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece
+            //Ball cueBall = new Ball(new Point(200, 60), 1f); //180p: 3 pots, overhead, light. cropped
+            //Ball cueBall = new Ball(new Point(70, 114), 2f); //180p: 2 pots overhead, cropped
 
             var processedFrames = new List<VideoFrame>();
             Stopwatch stopwatch = new Stopwatch();
@@ -165,7 +168,6 @@ namespace billiard_laser
                 object[] objects = await Task.Run(() => cueBallDetector.FindCueBallDebug(cueBall, frame.frame, 125));
                 
                 totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
 
                 cueBall = (Ball)objects[0];
 
@@ -268,7 +270,7 @@ namespace billiard_laser
             shotDetector.ShotFinished -= ShotDetector_ShotFinished;
         }
 
-        private void ShotDetector_ShotFinished(object sender, List<PointF> shot)
+        private void ShotDetector_ShotFinished(object sender, Shot shot)
         {
             int startFrame = shotDetector.shotStartFrame;
             int endFrame = shotDetector.shotEndFrame;
@@ -291,7 +293,6 @@ namespace billiard_laser
             }
         }
 
-
         private async void ReplayShotWithBallPath(int startFrame, int endFrame, int replayFPS)
         {
             if (replayInProgress)
@@ -299,7 +300,7 @@ namespace billiard_laser
 
             replayInProgress = true;
 
-            List<PointF> selectedShot = shotDetector.Shots[listBoxShots.SelectedIndex];
+            Shot selectedShot = shotDetector.Shots[listBoxShots.SelectedIndex];
             int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
 
             for (int i = startFrame; i <= endFrame; i++)
@@ -314,13 +315,13 @@ namespace billiard_laser
                     {
                         using (Pen pen = new Pen(Color.Red, 2))
                         {
-                            if (selectedShot.Count > 1)
+                            if (selectedShot.Path.Count > 1)
                             {
-                                g.DrawLines(pen, ScalePoints(selectedShot, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size).ToArray());
+                                g.DrawLines(pen, ScalePoints(selectedShot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size).ToArray());
                             }
-                            else if (selectedShot.Count == 1)
+                            else if (selectedShot.Path.Count == 1)
                             {
-                                g.DrawRectangle(pen, selectedShot[0].X - 1, selectedShot[0].Y - 1, 2, 2);
+                                g.DrawRectangle(pen, selectedShot.Path[0].X - 1, selectedShot.Path[0].Y - 1, 2, 2);
                             }
                         }
                     }
@@ -335,7 +336,6 @@ namespace billiard_laser
 
             replayInProgress = false;
         }
-
 
         private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
         {

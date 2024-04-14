@@ -50,5 +50,4 @@ public class VideoProcessor
 
         return frames;
     }
-
 }

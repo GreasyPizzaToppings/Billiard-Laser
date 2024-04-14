@@ -1,13 +1,13 @@
 ﻿public class ShotDetector
 {
-    public List<List<PointF>> Shots { get; private set; }
+    public List<Shot> Shots { get; private set; }
     
-    private List<PointF> currentShot;
+    private Shot currentShot;
 
     private bool isCueBallMoving;
     private int stationaryFrameCount;
 
-    private const int StationaryThreshold = 70; // Adjust this value as needed
+    private const int StationaryThreshold = 60; // Adjust this value as needed
     
     public int shotStartFrame = 0;
     public int shotEndFrame = 0;
@@ -15,14 +15,14 @@
     private double totalSpeed;
     private Queue<double> lastTenSpeeds;
 
-    public event EventHandler<List<PointF>> ShotFinished;
+    public event EventHandler<Shot> ShotFinished;
 
     public ShotDetector()
     {
         isCueBallMoving = false;
-        currentShot = new List<PointF>();
+        currentShot = new Shot();
         stationaryFrameCount = 0;
-        Shots = new List<List<PointF>>();
+        Shots = new List<Shot>();
 
         totalSpeed = 0;
         lastTenSpeeds = new Queue<double>();
@@ -35,13 +35,13 @@
         Console.WriteLine(speed);
 
         // Check if the cue ball is moving
-        if (speed > 0)
+        if (speed > 0.05)
         {
             // Cue ball started moving, start a new shot
             if (!isCueBallMoving)
             {
                 isCueBallMoving = true;
-                currentShot.Clear();
+                currentShot = new Shot();
                 stationaryFrameCount = 0;
 
                 shotStartFrame = frameIndex;
@@ -50,7 +50,7 @@
                 lastTenSpeeds = new Queue<double>();
             }
 
-            currentShot.Add(cueBall.centre);
+            currentShot.AddPointToPath(cueBall.centre);
             totalSpeed += speed;
 
             lastTenSpeeds.Enqueue(speed);
@@ -72,15 +72,15 @@
                     // Cue ball has been stationary for the specified duration, end the current shot
                     isCueBallMoving = false;
                     shotEndFrame = frameIndex;
-                    double averageSpeed = totalSpeed / currentShot.Count;
+                    double averageSpeed = totalSpeed / currentShot.Path.Count;
                     double averageSpeedLastTen = lastTenSpeeds.Count > 0 ? lastTenSpeeds.Average() : 0;
-                    OnShotFinished(new List<PointF>(currentShot), averageSpeed, averageSpeedLastTen);
+                    OnShotFinished(currentShot, averageSpeed, averageSpeedLastTen);
                 }
             }
         }
     }
 
-    protected virtual void OnShotFinished(List<PointF> shot, double averageSpeed, double averageSpeedLastTen)
+    protected virtual void OnShotFinished(Shot shot, double averageSpeed, double averageSpeedLastTen)
     {
         Shots.Add(shot);
         ShotFinished?.Invoke(this, shot);
