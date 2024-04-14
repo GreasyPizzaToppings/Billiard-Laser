@@ -160,7 +160,7 @@ namespace billiard_laser
             Stopwatch stopwatch = new Stopwatch();
             double totalProcessingTime = 0;
 
-            foreach (var frame in videoFrames)
+            foreach (VideoFrame frame in videoFrames)
             {
                 //time how long it takes to process frame
                 stopwatch.Restart();
@@ -178,7 +178,7 @@ namespace billiard_laser
                 Point[] searchArea = (Point[])objects[2];
 
                 // detect shots
-                shotDetector.ProcessFrame(cueBall, frame.index);
+                shotDetector.ProcessFrame(cueBall, frame);
 
                 // Draw the cue ball on the frame
                 var drawnImage = DrawBallOnImage(cueBall, frame.frame);
@@ -272,11 +272,7 @@ namespace billiard_laser
 
         private void ShotDetector_ShotFinished(object sender, Shot shot)
         {
-            int startFrame = shotDetector.shotStartFrame;
-            int endFrame = shotDetector.shotEndFrame;
-
-            string shotInfo = $"{startFrame} - {endFrame}";
-            listBoxShots.Items.Add(shotInfo);
+            listBoxShots.Items.Add(shot);
         }
 
         //display a selected individual frame of the video

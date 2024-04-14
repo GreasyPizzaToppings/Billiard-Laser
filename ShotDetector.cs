@@ -5,8 +5,8 @@
     private bool isCueBallMoving;
     private int stationaryFrameCount;
     private const int StationaryThreshold = 60; // Adjust this value as needed
-    public int shotStartFrame = 0;
-    public int shotEndFrame = 0;
+
+
     private List<double> distancesTravelled;
 
     public event EventHandler<Shot> ShotFinished;
@@ -20,13 +20,17 @@
         distancesTravelled = new List<double>();
     }
 
-    public void ProcessFrame(Ball cueBall, int frameIndex)
+    public void ProcessFrame(Ball cueBall, VideoProcessor.VideoFrame frame)
     {
         double distanceTravelled = Math.Sqrt((cueBall.DeltaX * cueBall.DeltaX) + (cueBall.DeltaY * cueBall.DeltaY));
         Console.WriteLine("Distance travelled in 1 frame: " + distanceTravelled);
 
+        currentShot.AddFrameToShot(frame);
+        currentShot.AddPointToPath(cueBall.Centre);
+        distancesTravelled.Add(distanceTravelled);
+
         // Check if the cue ball is moving
-        if (distanceTravelled > 0.05)
+        if (distanceTravelled > 0.05) //todo find better way
         {
             // Cue ball started moving, start a new shot
             if (!isCueBallMoving)
@@ -34,40 +38,35 @@
                 isCueBallMoving = true;
                 currentShot = new Shot();
                 stationaryFrameCount = 0;
-                shotStartFrame = frameIndex;
-                shotEndFrame = 0;
                 distancesTravelled.Clear();
             }
-
-            currentShot.AddPointToPath(cueBall.Centre);
-            distancesTravelled.Add(distanceTravelled);
         }
+
         else
         {
+            // ball not moving
             if (isCueBallMoving)
             {
-                // Cue ball has stopped moving
                 stationaryFrameCount++;
+                
+                // if shot ended
                 if (stationaryFrameCount >= StationaryThreshold)
                 {
-                    // Cue ball has been stationary for the specified duration, end the current shot
                     isCueBallMoving = false;
-                    shotEndFrame = frameIndex;
-                    double averageSpeed = distancesTravelled.Count > 0 ? distancesTravelled.Average() : 0;
-                    double averageSpeedLastTen = distancesTravelled.Count > 10
-                        ? distancesTravelled.Skip(distancesTravelled.Count - 10).Average()
-                        : averageSpeed;
-                    OnShotFinished(currentShot, averageSpeed, averageSpeedLastTen);
+
+                    //should not be doing this here?
+                    //set a bunch of statistics for the shot
+                    currentShot.AverageSpeed = distancesTravelled.Count > 0 ? distancesTravelled.Sum() / distancesTravelled.Count : 0;
+                    
+                    OnShotFinished(currentShot);
                 }
             }
         }
     }
 
-    protected virtual void OnShotFinished(Shot shot, double averageSpeed, double averageSpeedLastTen)
+    protected virtual void OnShotFinished(Shot shot)
     {
         Shots.Add(shot);
         ShotFinished?.Invoke(this, shot);
-        Console.WriteLine($"Average speed over the whole shot: {averageSpeed}");
-        Console.WriteLine($"Average speed for the last 10 frames: {averageSpeedLastTen}");
     }
 }
