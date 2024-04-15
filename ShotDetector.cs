@@ -48,9 +48,20 @@
             // ball marked as not moving already
             if (isCueBallMoving)
             {
-                isCueBallMoving = false;
-                OnShotFinished(currentShot);
+                if (currentShot.DistanceTravelled > 1)
+                {
+                    OnShotFinished(currentShot);
+                    
+                }
+
+                // The shot is invalid (false shot), discard it
+                else
+                {
+                    Console.WriteLine("False shot detected, discarding...");
+                }
+
                 currentShot = new Shot();
+                isCueBallMoving = false;
             }
         }
     }

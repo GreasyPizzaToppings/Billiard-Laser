@@ -126,8 +126,8 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             
-            Ball cueBall = new Ball(new System.Drawing.Point((int)(0.43f * outputVideoResolution.Width), (int)(0.24f * outputVideoResolution.Height)), 1f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            //Ball cueBall = new Ball(new System.Drawing.Point((int)(0.06f * outputVideoResolution.Width), (int)(0.61f * outputVideoResolution.Height)), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
+            //Ball cueBall = new Ball(new System.Drawing.Point((int)(0.43f * outputVideoResolution.Width), (int)(0.24f * outputVideoResolution.Height)), 1f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
+            Ball cueBall = new Ball(new System.Drawing.Point((int)(0.06f * outputVideoResolution.Width), (int)(0.61f * outputVideoResolution.Height)), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
 
             //footage from my house
             //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece

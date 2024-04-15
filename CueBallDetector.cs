@@ -38,45 +38,45 @@ public class CueBallDetector
             //ball moving right
             if (prevBall.DeltaX > 0)
             {
-                startX = (int)(prevBall.Centre.X - (prevBall.Radius * 3));
-                endX = (int)(prevBall.Centre.X + prevBall.Radius * 8);
+                startX = (int)(prevBall.Centre.X - (prevBall.Radius * 4));
+                endX = (int)(prevBall.Centre.X + prevBall.Radius * 10);
             }
 
             //ball moving left
             else if (prevBall.DeltaX < 0)
             {
-                startX = (int)(prevBall.Centre.X - prevBall.Radius * 8);
-                endX = (int)(prevBall.Centre.X + (prevBall.Radius * 3));
+                startX = (int)(prevBall.Centre.X - prevBall.Radius * 10);
+                endX = (int)(prevBall.Centre.X + (prevBall.Radius * 4));
             }
 
 
             //ball not moving left or right
             else
             {
-                startX = (int)(prevBall.Centre.X - (prevBall.Radius * 4));
-                endX = (int)(prevBall.Centre.X + (prevBall.Radius * 4));
+                startX = (int)(prevBall.Centre.X - (prevBall.Radius * 5));
+                endX = (int)(prevBall.Centre.X + (prevBall.Radius * 5));
             }
 
 
             //ball moving down
             if (prevBall.DeltaY > 0)
             {
-                startY = (int)(prevBall.Centre.Y - (prevBall.Radius * 3));
-                endY = (int)(prevBall.Centre.Y + prevBall.Radius * 8);
+                startY = (int)(prevBall.Centre.Y - (prevBall.Radius * 4));
+                endY = (int)(prevBall.Centre.Y + prevBall.Radius * 10);
             }
 
             //ball moving up
             else if (prevBall.DeltaY < 0)
             {
-                startY = (int)(prevBall.Centre.Y - prevBall.Radius * 8);
-                endY = (int)(prevBall.Centre.Y + (prevBall.Radius * 3));
+                startY = (int)(prevBall.Centre.Y - prevBall.Radius * 10);
+                endY = (int)(prevBall.Centre.Y + (prevBall.Radius * 4));
             }
 
             //ball not moving up or down
             else
             {
-                startY = (int)(prevBall.Centre.Y - prevBall.Radius * 4);
-                endY = (int)(prevBall.Centre.Y + prevBall.Radius * 4);
+                startY = (int)(prevBall.Centre.Y - prevBall.Radius * 5);
+                endY = (int)(prevBall.Centre.Y + prevBall.Radius * 5);
             }
 
 
