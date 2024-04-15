@@ -6,9 +6,6 @@
     private int stationaryFrameCount;
     private const int StationaryThreshold = 60; // Adjust this value as needed
 
-
-    private List<double> distancesTravelled;
-
     public event EventHandler<Shot> ShotFinished;
 
     public ShotDetector()
@@ -17,7 +14,6 @@
         currentShot = new Shot();
         stationaryFrameCount = 0;
         Shots = new List<Shot>();
-        distancesTravelled = new List<double>();
     }
 
     public void ProcessFrame(Ball cueBall, VideoProcessor.VideoFrame frame)
@@ -27,7 +23,6 @@
 
         currentShot.AddFrameToShot(frame);
         currentShot.AddPointToPath(cueBall.Centre);
-        distancesTravelled.Add(distanceTravelled);
 
         // Check if the cue ball is moving
         if (distanceTravelled > 0.05) //todo find better way
@@ -38,7 +33,6 @@
                 isCueBallMoving = true;
                 currentShot = new Shot();
                 stationaryFrameCount = 0;
-                distancesTravelled.Clear();
             }
         }
 
@@ -54,6 +48,7 @@
                 {
                     isCueBallMoving = false;
                     OnShotFinished(currentShot);
+                    currentShot = new Shot();
                 }
             }
         }

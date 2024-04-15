@@ -218,32 +218,26 @@ namespace billiard_laser
             }
         }
 
-        private async void ReplayShotWithBallPath(int startFrame, int endFrame, int replayFPS)
+        private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
         {
             if (replayInProgress)
                 return;
 
             replayInProgress = true;
 
-            Shot selectedShot = shotDetector.Shots[listBoxShots.SelectedIndex];
             int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
 
-            for (int i = startFrame; i <= endFrame; i++)
-            {
-                if (i >= 0 && i < listBoxProcessedFrames.Items.Count)
-                {
-                    listBoxProcessedFrames.SelectedIndex = i;
-                    VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
+            foreach (VideoFrame frame in shot.ShotFrames) {
+                listBoxProcessedFrames.SelectedIndex = frame.index;
 
-                    // Draw the path of the selected shot on the current frame
-                    Bitmap drawnImage = DrawingHelper.DrawBallPath(selectedShot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
+                // Draw the path of the selected shot on the current frame
+                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
 
-                    pictureBoxImage.Image = drawnImage;
-                    pictureBoxImage.Refresh();
+                pictureBoxImage.Image = drawnImage;
+                pictureBoxImage.Refresh();
 
-                    // Delay to control the replay speed (adjust the delay as needed)
-                    await Task.Delay(delay);
-                }
+                // Delay to control the replay speed (adjust the delay as needed)
+                await Task.Delay(delay);
             }
 
             replayInProgress = false;
@@ -254,7 +248,7 @@ namespace billiard_laser
             if (listBoxShots.SelectedIndex >= 0)
             {
                 Shot selectedShot = (Shot)listBoxShots.SelectedItem;
-                ReplayShotWithBallPath(selectedShot.ShotFrames.First().index , selectedShot.ShotFrames.Last().index, 60);
+                ReplayShotWithBallPath(selectedShot, 60);
 
 
                 // show graphs
