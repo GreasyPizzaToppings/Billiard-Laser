@@ -73,9 +73,15 @@ public static class DrawingHelper
             }
 
             // Calculate the scaling factors
-            double maxAcceleration = shot.AccelerationOverTime.Max();
-            double scaleX = (image.Width - 40) / (double)(shot.AccelerationOverTime.Count - 1);
-            double scaleY = xAxisHeight / maxAcceleration;
+            double maxSpeed = shot.FrameDistances.Max();
+
+            double scaleX = 0;
+            if (shot.FrameDistances.Count > 1) scaleX = (image.Width - 40) / (double)(shot.AccelerationOverTime.Count - 1);
+            else scaleX = (image.Width - 40);
+
+            double scaleY = 0;
+            if (maxSpeed != 0) scaleY = (image.Height - 40) / maxSpeed;
+            else scaleY = image.Height - 40;
 
             // Draw the acceleration line
             using (Pen linePen = new Pen(Color.Blue))
@@ -111,7 +117,10 @@ public static class DrawingHelper
             // Calculate the scaling factors
             double maxDistance = shot.DistanceTravelledOverTime.Max();
             double scaleX = (image.Width - 40) / (double)(shot.DistanceTravelledOverTime.Count - 1);
-            double scaleY = (image.Height - 40) / maxDistance;
+            double scaleY;
+            if (maxDistance > 0) scaleY = (image.Height - 40) / maxDistance;
+            else scaleY = (image.Height - image.Height / 2);
+
 
             // Draw the distance travelled line
             using (Pen linePen = new Pen(Color.Green))
@@ -145,8 +154,14 @@ public static class DrawingHelper
 
             // Calculate the scaling factors
             double maxSpeed = shot.FrameDistances.Max();
-            double scaleX = (image.Width - 40) / (double)(shot.FrameDistances.Count - 1);
-            double scaleY = (image.Height - 40) / maxSpeed;
+
+            double scaleX = 0;
+            if (shot.FrameDistances.Count > 1) scaleX = (image.Width - 40) / (double)(shot.FrameDistances.Count - 1);
+            else scaleX = (image.Width - 40);
+            
+            double scaleY = 0;
+            if (maxSpeed != 0) scaleY = (image.Height - 40) / maxSpeed;
+            else scaleY = image.Height - 40;
 
             // Draw the speed over time line
             using (Pen linePen = new Pen(Color.Orange))
