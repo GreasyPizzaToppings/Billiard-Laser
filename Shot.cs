@@ -2,7 +2,7 @@
 
 public class Shot
 {
-    private List<PointF> path;
+    private List<PointF> path = new List<PointF>();
     public List<PointF> Path
     {
         get { return path; }
@@ -16,8 +16,8 @@ public class Shot
     /// <summary>
     /// distance travelled per frame
     /// </summary>
-    public List<double> FrameDistances => Path.Zip(Path.Skip(1), CalculateDistance).ToList();
-    
+    public List<double> FrameDistances => Path.Count > 1 ? Path.Zip(Path.Skip(1), CalculateDistance).ToList() : new List<double>();
+
     /// <summary>
     /// sum total of distance travelled over the frames of its path
     /// </summary>
@@ -53,7 +53,7 @@ public class Shot
 
     public void AddFrameToShot(VideoProcessor.VideoFrame frame) { frames.Add(frame); }
 
-    private double CalculateDistance(PointF point1, PointF point2)
+    public static double CalculateDistance(PointF point1, PointF point2)
     {
         double dx = point2.X - point1.X;
         double dy = point2.Y - point1.Y;

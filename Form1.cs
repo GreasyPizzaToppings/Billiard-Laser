@@ -1,3 +1,4 @@
+using Accord;
 using System.Diagnostics;
 using static VideoProcessor;
 
@@ -10,7 +11,16 @@ namespace billiard_laser
         private CueBallDetector cueBallDetector;
         ShotDetector shotDetector = new ShotDetector();
 
-        private OpenCvSharp.Size outputVideoResolution = new OpenCvSharp.Size(319, 180); //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
+
+        //selection of output resolutions
+        private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(200, 200/1.77);
+        private static OpenCvSharp.Size p250 = new OpenCvSharp.Size(250, 250 / 1.77);
+        private static OpenCvSharp.Size p360 = new OpenCvSharp.Size(360, 203);
+        private static OpenCvSharp.Size p480 = new OpenCvSharp.Size(480, 271);
+        private static OpenCvSharp.Size p720 = new OpenCvSharp.Size(720, 407);
+
+
+        private OpenCvSharp.Size outputVideoResolution = p360; //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         private List<VideoProcessor.VideoFrame> videoFrames;
 
@@ -74,7 +84,7 @@ namespace billiard_laser
 
             using (Graphics g = Graphics.FromImage(drawnImage))
             {
-                g.DrawImage(pictureBoxImage.Image, Point.Empty);
+                g.DrawImage(pictureBoxImage.Image, System.Drawing.Point.Empty);
 
                 // Draw the ball on the new bitmap
                 drawnImage = DrawingHelper.DrawBallOnImage(cueBall, drawnImage);
@@ -116,7 +126,7 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
+            Ball cueBall = new Ball(new System.Drawing.Point((int)(0.06f * outputVideoResolution.Width), (int)(0.61f * outputVideoResolution.Height)), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
 
             //footage from my house
             //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece
@@ -143,7 +153,7 @@ namespace billiard_laser
                 Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.DeltaX, cueBall.DeltaY);
 
                 PointF brightSpot = (PointF)objects[1];
-                Point[] searchArea = (Point[])objects[2];
+                System.Drawing.Point[] searchArea = (System.Drawing.Point[])objects[2];
 
                 // detect shots
                 shotDetector.ProcessFrame(cueBall, frame);
@@ -308,7 +318,7 @@ namespace billiard_laser
             //stop the video from playing
             playingVideo = false;
 
-            if (listBoxProcessedFrames.SelectedIndex < listBoxProcessedFrames.Items.Count)
+            if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1))
             {
                 listBoxProcessedFrames.SelectedIndex += 1;
 

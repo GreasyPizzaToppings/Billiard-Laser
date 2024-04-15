@@ -5,7 +5,7 @@ public static class DrawingHelper
     public static Bitmap DrawBallOnImage(Ball ball, Bitmap image)
     {
         using (var graphics = Graphics.FromImage(image))
-        using (var pen = new Pen(Color.DeepPink, 2f))
+        using (var pen = new Pen(Color.LightBlue, 3f))
         {
             var rect = new Rectangle(
                 (int)(ball.Centre.X - ball.Radius),
@@ -31,7 +31,7 @@ public static class DrawingHelper
     public static Bitmap DrawPolygon(Point[] points, Bitmap image)
     {
         using (var graphics = Graphics.FromImage(image))
-        using (var pen = new Pen(Color.LimeGreen, 1f))
+        using (var pen = new Pen(Color.Magenta, 1f))
         {
             graphics.DrawPolygon(pen, points);
         }
@@ -41,7 +41,7 @@ public static class DrawingHelper
     public static Bitmap DrawBallPath(List<PointF> ballPath, Size originalSize, Size targetSize, Bitmap image)
     {
         using (Graphics g = Graphics.FromImage(image))
-        using (Pen pen = new Pen(Color.Red, 2))
+        using (Pen pen = new Pen(Color.Orange, 1f))
         {
             List<PointF> scaledPoints = ScalePoints(ballPath, originalSize, targetSize);
             if (scaledPoints.Count > 1)
@@ -63,17 +63,19 @@ public static class DrawingHelper
             // Clear the graph
             graphics.Clear(Color.White);
 
+            int xAxisHeight = image.Height - (image.Height / 2);
+
             // Draw the axes
             using (Pen axisPen = new Pen(Color.Black))
             {
-                graphics.DrawLine(axisPen, 0, image.Height - 20, image.Width, image.Height - 20); // X-axis
+                graphics.DrawLine(axisPen, 0, xAxisHeight, image.Width, xAxisHeight); // X-axis
                 graphics.DrawLine(axisPen, 20, 0, 20, image.Height); // Y-axis
             }
 
             // Calculate the scaling factors
             double maxAcceleration = shot.AccelerationOverTime.Max();
             double scaleX = (image.Width - 40) / (double)(shot.AccelerationOverTime.Count - 1);
-            double scaleY = (image.Height - 40) / maxAcceleration;
+            double scaleY = xAxisHeight / maxAcceleration;
 
             // Draw the acceleration line
             using (Pen linePen = new Pen(Color.Blue))
@@ -81,9 +83,9 @@ public static class DrawingHelper
                 for (int i = 0; i < shot.AccelerationOverTime.Count - 1; i++)
                 {
                     float x1 = (float)(20 + i * scaleX);
-                    float y1 = (float)(image.Height - 20 - shot.AccelerationOverTime[i] * scaleY);
+                    float y1 = (float)(xAxisHeight - shot.AccelerationOverTime[i] * scaleY);
                     float x2 = (float)(20 + (i + 1) * scaleX);
-                    float y2 = (float)(image.Height - 20 - shot.AccelerationOverTime[i + 1] * scaleY);
+                    float y2 = (float)(xAxisHeight - shot.AccelerationOverTime[i + 1] * scaleY);
                     graphics.DrawLine(linePen, x1, y1, x2, y2);
                 }
             }

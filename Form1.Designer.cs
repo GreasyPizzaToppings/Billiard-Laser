@@ -239,7 +239,7 @@ namespace billiard_laser
             // 
             // pictureBoxSpeedOverTime
             // 
-            pictureBoxSpeedOverTime.Location = new Point(17, 77);
+            pictureBoxSpeedOverTime.Location = new Point(13, 81);
             pictureBoxSpeedOverTime.Name = "pictureBoxSpeedOverTime";
             pictureBoxSpeedOverTime.Size = new Size(160, 120);
             pictureBoxSpeedOverTime.TabIndex = 32;
@@ -247,7 +247,7 @@ namespace billiard_laser
             // 
             // pictureBoxAccelerationOverTime
             // 
-            pictureBoxAccelerationOverTime.Location = new Point(17, 236);
+            pictureBoxAccelerationOverTime.Location = new Point(13, 240);
             pictureBoxAccelerationOverTime.Name = "pictureBoxAccelerationOverTime";
             pictureBoxAccelerationOverTime.Size = new Size(160, 120);
             pictureBoxAccelerationOverTime.TabIndex = 33;
@@ -255,7 +255,7 @@ namespace billiard_laser
             // 
             // pictureBoxDistanceOverTime
             // 
-            pictureBoxDistanceOverTime.Location = new Point(17, 392);
+            pictureBoxDistanceOverTime.Location = new Point(13, 396);
             pictureBoxDistanceOverTime.Name = "pictureBoxDistanceOverTime";
             pictureBoxDistanceOverTime.Size = new Size(160, 120);
             pictureBoxDistanceOverTime.TabIndex = 34;
@@ -285,7 +285,7 @@ namespace billiard_laser
             // 
             labelAverageAcceleration.AutoSize = true;
             labelAverageAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelAverageAcceleration.Location = new Point(182, 273);
+            labelAverageAcceleration.Location = new Point(173, 277);
             labelAverageAcceleration.Name = "labelAverageAcceleration";
             labelAverageAcceleration.Size = new Size(36, 19);
             labelAverageAcceleration.TabIndex = 43;
@@ -295,7 +295,7 @@ namespace billiard_laser
             // 
             labelMaxAcceleration.AutoSize = true;
             labelMaxAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaxAcceleration.Location = new Point(182, 245);
+            labelMaxAcceleration.Location = new Point(173, 249);
             labelMaxAcceleration.Name = "labelMaxAcceleration";
             labelMaxAcceleration.Size = new Size(38, 19);
             labelMaxAcceleration.TabIndex = 42;
@@ -305,7 +305,7 @@ namespace billiard_laser
             // 
             labelDistanceTravelled.AutoSize = true;
             labelDistanceTravelled.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDistanceTravelled.Location = new Point(182, 407);
+            labelDistanceTravelled.Location = new Point(173, 411);
             labelDistanceTravelled.Name = "labelDistanceTravelled";
             labelDistanceTravelled.Size = new Size(41, 19);
             labelDistanceTravelled.TabIndex = 41;
@@ -315,7 +315,7 @@ namespace billiard_laser
             // 
             labelAvgSpeed.AutoSize = true;
             labelAvgSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelAvgSpeed.Location = new Point(182, 116);
+            labelAvgSpeed.Location = new Point(173, 120);
             labelAvgSpeed.Name = "labelAvgSpeed";
             labelAvgSpeed.Size = new Size(36, 19);
             labelAvgSpeed.TabIndex = 40;
@@ -325,7 +325,7 @@ namespace billiard_laser
             // 
             labelMaxSpeed.AutoSize = true;
             labelMaxSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaxSpeed.Location = new Point(182, 92);
+            labelMaxSpeed.Location = new Point(173, 96);
             labelMaxSpeed.Name = "labelMaxSpeed";
             labelMaxSpeed.Size = new Size(38, 19);
             labelMaxSpeed.TabIndex = 39;
@@ -335,7 +335,7 @@ namespace billiard_laser
             // 
             Acceleration.AutoSize = true;
             Acceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            Acceleration.Location = new Point(17, 214);
+            Acceleration.Location = new Point(13, 218);
             Acceleration.Name = "Acceleration";
             Acceleration.Size = new Size(83, 19);
             Acceleration.TabIndex = 38;
@@ -345,7 +345,7 @@ namespace billiard_laser
             // 
             labelDistance.AutoSize = true;
             labelDistance.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDistance.Location = new Point(17, 370);
+            labelDistance.Location = new Point(13, 374);
             labelDistance.Name = "labelDistance";
             labelDistance.Size = new Size(118, 19);
             labelDistance.TabIndex = 37;
@@ -355,7 +355,7 @@ namespace billiard_laser
             // 
             labelSpeed.AutoSize = true;
             labelSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelSpeed.Location = new Point(17, 55);
+            labelSpeed.Location = new Point(13, 59);
             labelSpeed.Name = "labelSpeed";
             labelSpeed.Size = new Size(46, 19);
             labelSpeed.TabIndex = 36;

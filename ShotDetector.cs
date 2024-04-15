@@ -3,8 +3,6 @@
     public List<Shot> Shots { get; private set; }
     private Shot currentShot;
     private bool isCueBallMoving;
-    private int stationaryFrameCount;
-    private const int StationaryThreshold = 60; // Adjust this value as needed
 
     public event EventHandler<Shot> ShotFinished;
 
@@ -12,44 +10,47 @@
     {
         isCueBallMoving = false;
         currentShot = new Shot();
-        stationaryFrameCount = 0;
         Shots = new List<Shot>();
     }
 
     public void ProcessFrame(Ball cueBall, VideoProcessor.VideoFrame frame)
     {
-        double distanceTravelled = Math.Sqrt((cueBall.DeltaX * cueBall.DeltaX) + (cueBall.DeltaY * cueBall.DeltaY));
-        Console.WriteLine("Distance travelled in 1 frame: " + distanceTravelled);
 
         currentShot.AddFrameToShot(frame);
         currentShot.AddPointToPath(cueBall.Centre);
 
-        // Check if the cue ball is moving
-        if (distanceTravelled > 0.05) //todo find better way
+
+        Boolean ballNotMoving = false;
+        if (isCueBallMoving && currentShot != null && currentShot.ShotFrameCount >= 25 && currentShot.FrameDistances.TakeLast(25).Sum() < 2) {
+            ballNotMoving = true;
+        }
+        
+        double distanceTravelled = Shot.CalculateDistance(cueBall.Centre, cueBall.PrevCentre);
+        Boolean ballMoving = distanceTravelled > 1;
+
+        Console.WriteLine("Distance travelled in 1 frame: " + distanceTravelled);
+        Console.WriteLine("Distance in Last 25: " + currentShot.FrameDistances.TakeLast(25).Sum());
+
+        if (ballMoving)
         {
-            // Cue ball started moving, start a new shot
+            //mark as moving if not already
             if (!isCueBallMoving)
             {
                 isCueBallMoving = true;
                 currentShot = new Shot();
-                stationaryFrameCount = 0;
+                currentShot.AddFrameToShot(frame);
+                currentShot.AddPointToPath(cueBall.Centre);
             }
         }
 
-        else
+        else if (ballNotMoving)
         {
-            // ball not moving
+            // ball marked as not moving already
             if (isCueBallMoving)
             {
-                stationaryFrameCount++;
-                
-                // if shot ended
-                if (stationaryFrameCount >= StationaryThreshold)
-                {
-                    isCueBallMoving = false;
-                    OnShotFinished(currentShot);
-                    currentShot = new Shot();
-                }
+                isCueBallMoving = false;
+                OnShotFinished(currentShot);
+                currentShot = new Shot();
             }
         }
     }

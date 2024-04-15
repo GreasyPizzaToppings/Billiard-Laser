@@ -39,13 +39,13 @@ public class CueBallDetector
             if (prevBall.DeltaX > 0)
             {
                 startX = (int)(prevBall.Centre.X - (prevBall.Radius * 3));
-                endX = (int)(prevBall.Centre.X + prevBall.Radius * 7);
+                endX = (int)(prevBall.Centre.X + prevBall.Radius * 8);
             }
 
             //ball moving left
             else if (prevBall.DeltaX < 0)
             {
-                startX = (int)(prevBall.Centre.X - prevBall.Radius * 7);
+                startX = (int)(prevBall.Centre.X - prevBall.Radius * 8);
                 endX = (int)(prevBall.Centre.X + (prevBall.Radius * 3));
             }
 
@@ -62,13 +62,13 @@ public class CueBallDetector
             if (prevBall.DeltaY > 0)
             {
                 startY = (int)(prevBall.Centre.Y - (prevBall.Radius * 3));
-                endY = (int)(prevBall.Centre.Y + prevBall.Radius * 7);
+                endY = (int)(prevBall.Centre.Y + prevBall.Radius * 8);
             }
 
             //ball moving up
             else if (prevBall.DeltaY < 0)
             {
-                startY = (int)(prevBall.Centre.Y - prevBall.Radius * 7);
+                startY = (int)(prevBall.Centre.Y - prevBall.Radius * 8);
                 endY = (int)(prevBall.Centre.Y + (prevBall.Radius * 3));
             }
 
