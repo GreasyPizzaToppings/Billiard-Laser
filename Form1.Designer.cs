@@ -48,9 +48,9 @@ namespace billiard_laser
             pictureBoxAccelerationOverTime = new PictureBox();
             pictureBoxDistanceOverTime = new PictureBox();
             groupBoxShotInfo = new GroupBox();
-            label3 = new Label();
-            label4 = new Label();
-            label2 = new Label();
+            labelAverageAcceleration = new Label();
+            labelMaxAcceleration = new Label();
+            labelDistanceTravelled = new Label();
             labelAvgSpeed = new Label();
             labelMaxSpeed = new Label();
             Acceleration = new Label();
@@ -239,33 +239,33 @@ namespace billiard_laser
             // 
             // pictureBoxSpeedOverTime
             // 
-            pictureBoxSpeedOverTime.Location = new Point(19, 66);
+            pictureBoxSpeedOverTime.Location = new Point(17, 77);
             pictureBoxSpeedOverTime.Name = "pictureBoxSpeedOverTime";
-            pictureBoxSpeedOverTime.Size = new Size(130, 97);
+            pictureBoxSpeedOverTime.Size = new Size(160, 120);
             pictureBoxSpeedOverTime.TabIndex = 32;
             pictureBoxSpeedOverTime.TabStop = false;
             // 
             // pictureBoxAccelerationOverTime
             // 
-            pictureBoxAccelerationOverTime.Location = new Point(19, 357);
+            pictureBoxAccelerationOverTime.Location = new Point(17, 236);
             pictureBoxAccelerationOverTime.Name = "pictureBoxAccelerationOverTime";
-            pictureBoxAccelerationOverTime.Size = new Size(130, 97);
+            pictureBoxAccelerationOverTime.Size = new Size(160, 120);
             pictureBoxAccelerationOverTime.TabIndex = 33;
             pictureBoxAccelerationOverTime.TabStop = false;
             // 
             // pictureBoxDistanceOverTime
             // 
-            pictureBoxDistanceOverTime.Location = new Point(19, 205);
+            pictureBoxDistanceOverTime.Location = new Point(17, 392);
             pictureBoxDistanceOverTime.Name = "pictureBoxDistanceOverTime";
-            pictureBoxDistanceOverTime.Size = new Size(130, 97);
+            pictureBoxDistanceOverTime.Size = new Size(160, 120);
             pictureBoxDistanceOverTime.TabIndex = 34;
             pictureBoxDistanceOverTime.TabStop = false;
             // 
             // groupBoxShotInfo
             // 
-            groupBoxShotInfo.Controls.Add(label3);
-            groupBoxShotInfo.Controls.Add(label4);
-            groupBoxShotInfo.Controls.Add(label2);
+            groupBoxShotInfo.Controls.Add(labelAverageAcceleration);
+            groupBoxShotInfo.Controls.Add(labelMaxAcceleration);
+            groupBoxShotInfo.Controls.Add(labelDistanceTravelled);
             groupBoxShotInfo.Controls.Add(labelAvgSpeed);
             groupBoxShotInfo.Controls.Add(labelMaxSpeed);
             groupBoxShotInfo.Controls.Add(Acceleration);
@@ -281,41 +281,41 @@ namespace billiard_laser
             groupBoxShotInfo.TabIndex = 35;
             groupBoxShotInfo.TabStop = false;
             // 
-            // label3
+            // labelAverageAcceleration
             // 
-            label3.AutoSize = true;
-            label3.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            label3.Location = new Point(155, 385);
-            label3.Name = "label3";
-            label3.Size = new Size(36, 19);
-            label3.TabIndex = 43;
-            label3.Text = "Avg:";
+            labelAverageAcceleration.AutoSize = true;
+            labelAverageAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelAverageAcceleration.Location = new Point(182, 273);
+            labelAverageAcceleration.Name = "labelAverageAcceleration";
+            labelAverageAcceleration.Size = new Size(36, 19);
+            labelAverageAcceleration.TabIndex = 43;
+            labelAverageAcceleration.Text = "Avg:";
             // 
-            // label4
+            // labelMaxAcceleration
             // 
-            label4.AutoSize = true;
-            label4.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            label4.Location = new Point(155, 357);
-            label4.Name = "label4";
-            label4.Size = new Size(38, 19);
-            label4.TabIndex = 42;
-            label4.Text = "Max:";
+            labelMaxAcceleration.AutoSize = true;
+            labelMaxAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaxAcceleration.Location = new Point(182, 245);
+            labelMaxAcceleration.Name = "labelMaxAcceleration";
+            labelMaxAcceleration.Size = new Size(38, 19);
+            labelMaxAcceleration.TabIndex = 42;
+            labelMaxAcceleration.Text = "Max:";
             // 
-            // label2
+            // labelDistanceTravelled
             // 
-            label2.AutoSize = true;
-            label2.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            label2.Location = new Point(155, 205);
-            label2.Name = "label2";
-            label2.Size = new Size(41, 19);
-            label2.TabIndex = 41;
-            label2.Text = "Total:";
+            labelDistanceTravelled.AutoSize = true;
+            labelDistanceTravelled.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelDistanceTravelled.Location = new Point(182, 407);
+            labelDistanceTravelled.Name = "labelDistanceTravelled";
+            labelDistanceTravelled.Size = new Size(41, 19);
+            labelDistanceTravelled.TabIndex = 41;
+            labelDistanceTravelled.Text = "Total:";
             // 
             // labelAvgSpeed
             // 
             labelAvgSpeed.AutoSize = true;
             labelAvgSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelAvgSpeed.Location = new Point(155, 90);
+            labelAvgSpeed.Location = new Point(182, 116);
             labelAvgSpeed.Name = "labelAvgSpeed";
             labelAvgSpeed.Size = new Size(36, 19);
             labelAvgSpeed.TabIndex = 40;
@@ -325,7 +325,7 @@ namespace billiard_laser
             // 
             labelMaxSpeed.AutoSize = true;
             labelMaxSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaxSpeed.Location = new Point(155, 66);
+            labelMaxSpeed.Location = new Point(182, 92);
             labelMaxSpeed.Name = "labelMaxSpeed";
             labelMaxSpeed.Size = new Size(38, 19);
             labelMaxSpeed.TabIndex = 39;
@@ -335,7 +335,7 @@ namespace billiard_laser
             // 
             Acceleration.AutoSize = true;
             Acceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            Acceleration.Location = new Point(19, 467);
+            Acceleration.Location = new Point(17, 214);
             Acceleration.Name = "Acceleration";
             Acceleration.Size = new Size(83, 19);
             Acceleration.TabIndex = 38;
@@ -345,7 +345,7 @@ namespace billiard_laser
             // 
             labelDistance.AutoSize = true;
             labelDistance.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDistance.Location = new Point(19, 305);
+            labelDistance.Location = new Point(17, 370);
             labelDistance.Name = "labelDistance";
             labelDistance.Size = new Size(118, 19);
             labelDistance.TabIndex = 37;
@@ -355,7 +355,7 @@ namespace billiard_laser
             // 
             labelSpeed.AutoSize = true;
             labelSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelSpeed.Location = new Point(19, 166);
+            labelSpeed.Location = new Point(17, 55);
             labelSpeed.Name = "labelSpeed";
             labelSpeed.Size = new Size(46, 19);
             labelSpeed.TabIndex = 36;
@@ -575,9 +575,9 @@ namespace billiard_laser
         private Label labelDistance;
         private Label labelMaxSpeed;
         private Label labelAvgSpeed;
-        private Label label3;
-        private Label label4;
-        private Label label2;
+        private Label labelAverageAcceleration;
+        private Label labelMaxAcceleration;
+        private Label labelDistanceTravelled;
         private GroupBox groupBoxVideoControls;
         private Button buttonPause;
         private Label label1;

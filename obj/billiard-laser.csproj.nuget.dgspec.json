@@ -1,24 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj": {}
+    "C:\\Users\\PC\\Desktop\\Billiard-Laser\\billiard-laser.csproj": {}
   },
   "projects": {
-    "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj": {
+    "C:\\Users\\PC\\Desktop\\Billiard-Laser\\billiard-laser.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
+        "projectUniqueName": "C:\\Users\\PC\\Desktop\\Billiard-Laser\\billiard-laser.csproj",
         "projectName": "billiard-laser",
-        "projectPath": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
-        "packagesPath": "C:\\Users\\nooth\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\obj\\",
+        "projectPath": "C:\\Users\\PC\\Desktop\\Billiard-Laser\\billiard-laser.csproj",
+        "packagesPath": "C:\\Users\\PC\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\PC\\Desktop\\Billiard-Laser\\obj\\",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\nooth\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
+          "C:\\Users\\PC\\AppData\\Roaming\\NuGet\\NuGet.Config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
@@ -61,6 +57,10 @@
               "target": "Package",
               "version": "[2.2.5, )"
             },
+            "Accord.Video.FFMPEG": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
             "Accord.Video.VFW": {
               "target": "Package",
               "version": "[3.8.0, )"
@@ -76,6 +76,26 @@
             "Emgu.CV.runtime.windows": {
               "target": "Package",
               "version": "[4.8.1.5350, )"
+            },
+            "FFmpeg.NET": {
+              "target": "Package",
+              "version": "[1.1.0, )"
+            },
+            "OpenCvSharp4.Extensions": {
+              "target": "Package",
+              "version": "[4.9.0.20240103, )"
+            },
+            "OpenCvSharp4.Windows": {
+              "target": "Package",
+              "version": "[4.9.0.20240103, )"
+            },
+            "ScottPlot": {
+              "target": "Package",
+              "version": "[5.0.26, )"
+            },
+            "System.Drawing.Primitives": {
+              "target": "Package",
+              "version": "[4.3.0, )"
             },
             "System.IO.Ports": {
               "target": "Package",
@@ -93,6 +113,24 @@
           ],
           "assetTargetFallback": true,
           "warn": true,
+          "downloadDependencies": [
+            {
+              "name": "Microsoft.AspNetCore.App.Ref",
+              "version": "[6.0.28, 6.0.28]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Host.win-x64",
+              "version": "[6.0.28, 6.0.28]"
+            },
+            {
+              "name": "Microsoft.NETCore.App.Ref",
+              "version": "[6.0.28, 6.0.28]"
+            },
+            {
+              "name": "Microsoft.WindowsDesktop.App.Ref",
+              "version": "[6.0.28, 6.0.28]"
+            }
+          ],
           "frameworkReferences": {
             "Microsoft.NETCore.App": {
               "privateAssets": "all"
@@ -101,7 +139,7 @@
               "privateAssets": "none"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.203\\RuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.202\\RuntimeIdentifierGraph.json"
         }
       }
     }

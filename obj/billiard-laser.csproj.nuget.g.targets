@@ -3,5 +3,6 @@
   <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
     <Import Project="$(NuGetPackageRoot)system.text.json\7.0.3\buildTransitive\net6.0\System.Text.Json.targets" Condition="Exists('$(NuGetPackageRoot)system.text.json\7.0.3\buildTransitive\net6.0\System.Text.Json.targets')" />
     <Import Project="$(NuGetPackageRoot)accord\3.8.0\build\Accord.targets" Condition="Exists('$(NuGetPackageRoot)accord\3.8.0\build\Accord.targets')" />
+    <Import Project="$(NuGetPackageRoot)accord.video.ffmpeg\3.8.0\build\Accord.Video.FFMPEG.targets" Condition="Exists('$(NuGetPackageRoot)accord.video.ffmpeg\3.8.0\build\Accord.Video.FFMPEG.targets')" />
   </ImportGroup>
 </Project>

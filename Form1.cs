@@ -116,12 +116,13 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            //Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
+            Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
 
+            //footage from my house
             //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece
             //Ball cueBall = new Ball(new Point(200, 60), 1f); //180p: 3 pots, overhead, light. cropped
             //Ball cueBall = new Ball(new Point(70, 114), 2f); //180p: 2 pots overhead, cropped
-            Ball cueBall = new Ball(new Point(181, 105), 1f); //180p: 1 pot side
+            //Ball cueBall = new Ball(new Point(181, 105), 1f); //180p: 1 pot side
 
             var processedFrames = new List<VideoFrame>();
             Stopwatch stopwatch = new Stopwatch();
@@ -250,16 +251,37 @@ namespace billiard_laser
 
         private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
         {
-
             if (listBoxShots.SelectedIndex >= 0)
             {
-                string selectedShotInfo = listBoxShots.SelectedItem.ToString();
-                string[] frameIndices = selectedShotInfo.Split('-');
+                Shot selectedShot = (Shot)listBoxShots.SelectedItem;
+                ReplayShotWithBallPath(selectedShot.ShotFrames.First().index , selectedShot.ShotFrames.Last().index, 60);
 
-                if (frameIndices.Length == 2 && int.TryParse(frameIndices[0], out int startFrame) && int.TryParse(frameIndices[1], out int endFrame))
-                {
-                    ReplayShotWithBallPath(startFrame, endFrame, 60);
-                }
+
+                // show graphs
+                
+                //speed over time
+                Bitmap speedImage = new Bitmap(pictureBoxSpeedOverTime.Width, pictureBoxSpeedOverTime.Height);
+                pictureBoxSpeedOverTime.Image = DrawingHelper.DrawSpeedOverTimeGraph(speedImage, selectedShot);
+                pictureBoxSpeedOverTime.Refresh();
+
+                labelMaxSpeed.Text = $"Max: {Math.Round(selectedShot.MaxSpeed, 2)}";
+                labelAvgSpeed.Text = $"Avg: {Math.Round(selectedShot.AverageSpeed, 2)}";
+
+                //cumulative distance over time
+                Bitmap distanceImage = new Bitmap(pictureBoxDistanceOverTime.Width, pictureBoxDistanceOverTime.Height);
+                pictureBoxDistanceOverTime.Image = DrawingHelper.DrawDistanceTravelledGraph(distanceImage, selectedShot);
+                pictureBoxDistanceOverTime.Refresh();
+
+                labelDistanceTravelled.Text = $"Total: {Math.Round(selectedShot.DistanceTravelled, 2)}";
+
+                // acceleration over time
+                Bitmap image = new Bitmap(pictureBoxAccelerationOverTime.Width, pictureBoxAccelerationOverTime.Height);
+                pictureBoxAccelerationOverTime.Image = DrawingHelper.DrawAccelerationGraph(image, selectedShot);
+                pictureBoxAccelerationOverTime.Refresh();
+
+                labelMaxAcceleration.Text = $"Max: {Math.Round(selectedShot.MaxAcceleration, 2) }";
+                labelAverageAcceleration.Text = $"Avg: {Math.Round(selectedShot.AverageAcceleration, 2)}";
+
             }
         }
 

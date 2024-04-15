@@ -30,14 +30,16 @@ public class Shot
     public double AverageSpeed => ShotFrameCount > 0 ? DistanceTravelled / ShotFrameCount : 0;
     public double DistanceTravelled =>  FrameDistances.Sum();
 
-    public double PeakSpeed => FrameDistances.Max();
+    public double MaxSpeed => FrameDistances.Max();
 
     public List<double> AccelerationOverTime => FrameDistances
         .Zip(FrameDistances.Skip(1), (prev, curr) => curr - prev)
         .Prepend(0.0) // Add an initial acceleration of 0.0
         .ToList();
 
-    public double PeakAcceleration => AccelerationOverTime.Max();
+    public double MaxAcceleration => AccelerationOverTime.Max();
+
+    public double AverageAcceleration => AccelerationOverTime.Average();
 
     public Shot(List<PointF> path) { Path = path; }
     
