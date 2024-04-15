@@ -96,20 +96,11 @@ namespace billiard_laser
             using (Graphics g = Graphics.FromImage(drawnImage))
             {
                 g.DrawImage(pictureBoxImage.Image, Point.Empty);
+
                 // Draw the ball on the new bitmap
-                drawnImage = drawBallOnImage(cueBall, drawnImage);
+                drawnImage = DrawBallOnImage(cueBall, drawnImage);
                 pictureBoxImage.Image = drawnImage;
             }
-        }
-
-        private Bitmap drawBallOnImage(Ball ball, Bitmap image)
-        {
-            using (Graphics g = Graphics.FromImage(image))
-            using (Pen pen = new Pen(Color.DeepPink, 2f))
-            {
-                g.DrawEllipse(pen, ball.Centre.X - ball.Radius, ball.Centre.Y - ball.Radius, 2 * ball.Radius, 2 * ball.Radius);
-            }
-            return image;
         }
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
@@ -167,7 +158,7 @@ namespace billiard_laser
                 stopwatch.Restart();
 
                 object[] objects = await Task.Run(() => cueBallDetector.FindCueBallDebug(cueBall, frame.frame, 125));
-                
+
                 totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
 
                 cueBall = (Ball)objects[0];
@@ -192,10 +183,10 @@ namespace billiard_laser
 
                 // Create a new processed frame
                 var processedFrame = new VideoFrame(drawnImage, frame.index);
-                
+
                 processedFrames.Add(processedFrame);
                 listBoxProcessedFrames.Items.Add(processedFrame);
-                
+
                 stopwatch.Stop();
                 UpdateFpsLabel(totalProcessingTime, frame.index);
 

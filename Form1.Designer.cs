@@ -391,6 +391,7 @@ namespace billiard_laser
             buttonPause.TabIndex = 41;
             buttonPause.Text = "Pause";
             buttonPause.UseVisualStyleBackColor = true;
+            buttonPause.Click += buttonPause_Click;
             // 
             // label1
             // 
@@ -410,6 +411,7 @@ namespace billiard_laser
             listBoxShots.Name = "listBoxShots";
             listBoxShots.Size = new Size(99, 264);
             listBoxShots.TabIndex = 39;
+            listBoxShots.SelectedIndexChanged += listBoxShots_SelectedIndexChanged;
             // 
             // buttonResume
             // 
@@ -421,6 +423,7 @@ namespace billiard_laser
             buttonResume.TabIndex = 38;
             buttonResume.Text = "Resume";
             buttonResume.UseVisualStyleBackColor = true;
+            buttonResume.Click += buttonResume_Click;
             // 
             // buttonNextFrame
             // 
@@ -432,6 +435,7 @@ namespace billiard_laser
             buttonNextFrame.TabIndex = 37;
             buttonNextFrame.Text = "Next Frame";
             buttonNextFrame.UseVisualStyleBackColor = true;
+            buttonNextFrame.Click += buttonNextFrame_Click;
             // 
             // buttonLastFrame
             // 
@@ -443,6 +447,7 @@ namespace billiard_laser
             buttonLastFrame.TabIndex = 36;
             buttonLastFrame.Text = "Last Frame";
             buttonLastFrame.UseVisualStyleBackColor = true;
+            buttonLastFrame.Click += buttonLastFrame_Click;
             // 
             // labelVideoControls
             // 
@@ -463,6 +468,7 @@ namespace billiard_laser
             btnLoadVideo.TabIndex = 34;
             btnLoadVideo.Text = "Load Video";
             btnLoadVideo.UseVisualStyleBackColor = true;
+            btnLoadVideo.Click += btnLoadVideo_Click;
             // 
             // labelFrames
             // 
@@ -482,6 +488,7 @@ namespace billiard_laser
             listBoxProcessedFrames.Name = "listBoxProcessedFrames";
             listBoxProcessedFrames.Size = new Size(99, 264);
             listBoxProcessedFrames.TabIndex = 32;
+            listBoxProcessedFrames.SelectedIndexChanged += listBoxFrames_SelectedIndexChanged;
             // 
             // labelFrameRate
             // 
@@ -503,6 +510,7 @@ namespace billiard_laser
             btnProcessVideo.TabIndex = 30;
             btnProcessVideo.Text = "Start ";
             btnProcessVideo.UseVisualStyleBackColor = true;
+            btnProcessVideo.Click += btnProcessVideo_ClickAsync;
             // 
             // Form1
             // 
