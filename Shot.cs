@@ -1,6 +1,4 @@
-﻿using System;
-using System.Drawing.Drawing2D;
-using static VideoProcessor;
+﻿using static VideoProcessor;
 
 public class Shot
 {
@@ -11,42 +9,61 @@ public class Shot
         set { path = value; }
     }
 
-    private List<VideoProcessor.VideoFrame> frames = new List<VideoProcessor.VideoFrame>();
-    public List<VideoProcessor.VideoFrame> ShotFrames { 
-        get { return frames; } 
-    }
+    private List<VideoFrame> frames = new List<VideoFrame>();
+    public List<VideoFrame> ShotFrames => frames;
+    public int ShotFrameCount => ShotFrames.Count;
 
-    public double AverageSpeed { get; set; }
-    public double PeakSpeed { get; set; }
-    public double PeakAcceleration { get; set; }
-    public double DistanceTravelled { get; }
+    /// <summary>
+    /// distance travelled per frame
+    /// </summary>
+    public List<double> FrameDistances => Path.Zip(Path.Skip(1), CalculateDistance).ToList();
+    
+    /// <summary>
+    /// sum total of distance travelled over the frames of its path
+    /// </summary>
+    public List<double> DistanceTravelledOverTime => FrameDistances.Aggregate(new List<double>(), (cumulativeDistances, distance) =>
+    {
+        cumulativeDistances.Add(cumulativeDistances.LastOrDefault() + distance);
+        return cumulativeDistances;
+    });
 
-    public Shot(List<PointF> path, double averageSpeed, double peakSpeed, double peakAcceleration, double distanceTravelled)
+    public double AverageDistance => ShotFrameCount > 0 ? DistanceTravelled / ShotFrameCount : 0;
+    public double DistanceTravelled =>  FrameDistances.Sum();
+
+    public double PeakSpeed => FrameDistances.Max();
+
+    public List<double> AccelerationOverTime => FrameDistances
+        .Zip(FrameDistances.Skip(1), (prev, curr) => curr - prev)
+        .Prepend(0.0) // Add an initial acceleration of 0.0
+        .ToList();
+
+    public double PeakAcceleration => AccelerationOverTime.Max();
+
+    public Shot(List<PointF> path)
     {
         Path = path;
-        AverageSpeed = averageSpeed;
-        PeakSpeed = peakSpeed;
-        PeakAcceleration = peakAcceleration;
-        DistanceTravelled = distanceTravelled;
     }
+    
     public Shot() { }
+
 
     public void AddPointToPath(PointF point)
     {
-        if (path == null)
-        {
-            path = new List<PointF>();
-        }
+        path ??= new List<PointF>();
         path.Add(point);
     }
 
     public void AddFrameToShot(VideoProcessor.VideoFrame frame)
     {
-        if (frame != null) {
-            frames.Add(frame);
-        }
+        frames.Add(frame);
     }
 
+    private double CalculateDistance(PointF point1, PointF point2)
+    {
+        double dx = point2.X - point1.X;
+        double dy = point2.Y - point1.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
+    }
 
     /// <summary>
     /// The String of a Shot is represented by the start and end frame numbers

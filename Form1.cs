@@ -150,11 +150,12 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
             //Ball cueBall = new Ball(new Point(109, 40), 0.5f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
-            
+            //Ball cueBall = new Ball(new Point(20, 110), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
+
             //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece
             //Ball cueBall = new Ball(new Point(200, 60), 1f); //180p: 3 pots, overhead, light. cropped
             //Ball cueBall = new Ball(new Point(70, 114), 2f); //180p: 2 pots overhead, cropped
+            Ball cueBall = new Ball(new Point(181, 105), 1f); //180p: 1 pot side
 
             var processedFrames = new List<VideoFrame>();
             Stopwatch stopwatch = new Stopwatch();

@@ -53,11 +53,6 @@
                 if (stationaryFrameCount >= StationaryThreshold)
                 {
                     isCueBallMoving = false;
-
-                    //should not be doing this here?
-                    //set a bunch of statistics for the shot
-                    currentShot.AverageSpeed = distancesTravelled.Count > 0 ? distancesTravelled.Sum() / distancesTravelled.Count : 0;
-                    
                     OnShotFinished(currentShot);
                 }
             }
