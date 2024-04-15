@@ -27,7 +27,7 @@ public class Shot
         return cumulativeDistances;
     });
 
-    public double AverageDistance => ShotFrameCount > 0 ? DistanceTravelled / ShotFrameCount : 0;
+    public double AverageSpeed => ShotFrameCount > 0 ? DistanceTravelled / ShotFrameCount : 0;
     public double DistanceTravelled =>  FrameDistances.Sum();
 
     public double PeakSpeed => FrameDistances.Max();
@@ -39,13 +39,9 @@ public class Shot
 
     public double PeakAcceleration => AccelerationOverTime.Max();
 
-    public Shot(List<PointF> path)
-    {
-        Path = path;
-    }
+    public Shot(List<PointF> path) { Path = path; }
     
     public Shot() { }
-
 
     public void AddPointToPath(PointF point)
     {
@@ -53,10 +49,7 @@ public class Shot
         path.Add(point);
     }
 
-    public void AddFrameToShot(VideoProcessor.VideoFrame frame)
-    {
-        frames.Add(frame);
-    }
+    public void AddFrameToShot(VideoProcessor.VideoFrame frame) { frames.Add(frame); }
 
     private double CalculateDistance(PointF point1, PointF point2)
     {
