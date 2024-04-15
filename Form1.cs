@@ -33,35 +33,14 @@ namespace billiard_laser
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
         }
 
-        private void btnLaserOn_Click(object sender, EventArgs e)
-        {
-            arduinoController.LaserOn();
-        }
+        private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
+        private void btnLaserOff_Click(object sender, EventArgs e) => arduinoController.LaserOff();
+        private void btnUp_Click(object sender, EventArgs e) => arduinoController.MoveUp();
+        private void btnLeft_Click(object sender, EventArgs e) => arduinoController.MoveLeft();
+        private void btnRight_Click(object sender, EventArgs e) => arduinoController.MoveRight();
+        private void btnDown_Click(object sender, EventArgs e) => arduinoController.MoveDown();
 
-        private void btnLaserOff_Click(object sender, EventArgs e)
-        {
-            arduinoController.LaserOff();
-        }
-
-        private void btnUp_Click(object sender, EventArgs e)
-        {
-            arduinoController.MoveUp();
-        }
-
-        private void btnLeft_Click(object sender, EventArgs e)
-        {
-            arduinoController.MoveLeft();
-        }
-
-        private void btnRight_Click(object sender, EventArgs e)
-        {
-            arduinoController.MoveRight();
-        }
-
-        private void btnDown_Click(object sender, EventArgs e)
-        {
-            arduinoController.MoveDown();
-        }
+        private void btnGetCameraInput_Click(object sender, EventArgs e) => cameraController.StartCameraCapture();
 
         private void btnLoadImage_Click(object sender, EventArgs e)
         {
@@ -98,15 +77,11 @@ namespace billiard_laser
                 g.DrawImage(pictureBoxImage.Image, Point.Empty);
 
                 // Draw the ball on the new bitmap
-                drawnImage = DrawBallOnImage(cueBall, drawnImage);
+                drawnImage = DrawingHelper.DrawBallOnImage(cueBall, drawnImage);
                 pictureBoxImage.Image = drawnImage;
             }
         }
 
-        private void btnGetCameraInput_Click(object sender, EventArgs e)
-        {
-            cameraController.StartCameraCapture();
-        }
 
         private void btnLoadVideo_Click(object sender, EventArgs e)
         {
@@ -173,13 +148,13 @@ namespace billiard_laser
                 shotDetector.ProcessFrame(cueBall, frame);
 
                 // Draw the cue ball on the frame
-                var drawnImage = DrawBallOnImage(cueBall, frame.frame);
+                var drawnImage = DrawingHelper.DrawBallOnImage(cueBall, frame.frame);
 
                 // Draw the search area (for debugging)
-                drawnImage = DrawPolygon(searchArea, drawnImage);
+                drawnImage = DrawingHelper.DrawPolygon(searchArea, drawnImage);
 
                 // Draw the bright spot (for debugging)
-                drawnImage = DrawPoint(brightSpot, drawnImage);
+                drawnImage = DrawingHelper.DrawPoint(brightSpot, drawnImage);
 
                 // Create a new processed frame
                 var processedFrame = new VideoFrame(drawnImage, frame.index);
@@ -211,42 +186,6 @@ namespace billiard_laser
             labelFrameRate.Text = $"FPS: {fps:F2}";
         }
 
-        private Bitmap DrawBallOnImage(Ball ball, Bitmap image)
-        {
-            using (var graphics = Graphics.FromImage(image))
-            using (var pen = new Pen(Color.DeepPink, 2f))
-            {
-                var rect = new Rectangle(
-                    (int)(ball.Centre.X - ball.Radius),
-                    (int)(ball.Centre.Y - ball.Radius),
-                    (int)(2 * ball.Radius),
-                    (int)(2 * ball.Radius));
-                graphics.DrawEllipse(pen, rect);
-            }
-            return image;
-        }
-
-        private Bitmap DrawPoint(PointF point, Bitmap image)
-        {
-            using (var graphics = Graphics.FromImage(image))
-            using (var brush = new SolidBrush(Color.Black))
-            {
-                var rect = new RectangleF(point.X - 1, point.Y - 1, 2, 2);
-                graphics.FillRectangle(brush, rect);
-            }
-            return image;
-        }
-
-        private Bitmap DrawPolygon(Point[] points, Bitmap image)
-        {
-            using (var graphics = Graphics.FromImage(image))
-            using (var pen = new Pen(Color.LimeGreen, 1f))
-            {
-                graphics.DrawPolygon(pen, points);
-            }
-            return image;
-        }
-
         private async void btnProcessVideo_ClickAsync(object sender, EventArgs e)
         {
             listBoxProcessedFrames.Items.Clear();
@@ -262,10 +201,7 @@ namespace billiard_laser
             shotDetector.ShotFinished -= ShotDetector_ShotFinished;
         }
 
-        private void ShotDetector_ShotFinished(object sender, Shot shot)
-        {
-            listBoxShots.Items.Add(shot);
-        }
+        private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
 
         //display a selected individual frame of the video
         private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
@@ -299,22 +235,9 @@ namespace billiard_laser
                     VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
 
                     // Draw the path of the selected shot on the current frame
-                    using (Graphics g = Graphics.FromImage(frame.frame))
-                    {
-                        using (Pen pen = new Pen(Color.Red, 2))
-                        {
-                            if (selectedShot.Path.Count > 1)
-                            {
-                                g.DrawLines(pen, ScalePoints(selectedShot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size).ToArray());
-                            }
-                            else if (selectedShot.Path.Count == 1)
-                            {
-                                g.DrawRectangle(pen, selectedShot.Path[0].X - 1, selectedShot.Path[0].Y - 1, 2, 2);
-                            }
-                        }
-                    }
+                    Bitmap drawnImage = DrawingHelper.DrawBallPath(selectedShot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
 
-                    pictureBoxImage.Image = frame.frame;
+                    pictureBoxImage.Image = drawnImage;
                     pictureBoxImage.Refresh();
 
                     // Delay to control the replay speed (adjust the delay as needed)
@@ -338,25 +261,6 @@ namespace billiard_laser
                     ReplayShotWithBallPath(startFrame, endFrame, 60);
                 }
             }
-        }
-
-        private List<PointF> ScalePoints(List<PointF> points, Size original, Size target)
-        {
-
-            // Calculate scaling factors
-            float scaleX = (float)target.Width / original.Width;
-            float scaleY = (float)target.Height / original.Height;
-
-            List<PointF> scaledPoints = new List<PointF>();
-
-            foreach (PointF point in points)
-            {
-                float scaledX = point.X * scaleX;
-                float scaledY = point.Y * scaleY;
-                scaledPoints.Add(new PointF(scaledX, scaledY));
-            }
-
-            return scaledPoints;
         }
 
         //go back a frame
