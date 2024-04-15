@@ -1,0 +1,21 @@
+code todo
+
+ball statistics tracking and display. speed, duration, distance, etc
+
+better media controls
+
+put more video processing code into VideoProcessor
+
+way to make it faster at higher res
+
+understand DI and interfaces
+
+check acceleration graph is accurate
+
+update fps label when replaying shots too 
+
+bugs
+- sometimes detects shot when cueball hasnt moved
+- cueball doing impossible movements. jump to bright spot and stay
+
+video replayback modifying original frame
