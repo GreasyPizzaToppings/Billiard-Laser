@@ -3,25 +3,29 @@ using OpenCvSharp.Extensions;
 
 public class VideoProcessor
 {
+    public class VideoFrame {
 
-    private CueBallDetector cueBallDetector;
+        public Bitmap frame { get; set; }
+        public int index { get; set; }
 
-    public VideoProcessor()
-    {
-        cueBallDetector = new CueBallDetector();
+
+        public VideoFrame(Bitmap frame, int index) { 
+            this.frame = frame;
+            this.index = index;
+        }
+
+
+        public override string ToString()
+        {
+            return index.ToString();
+        }
     }
 
-    public List<Bitmap> GetVideoFrames(string videoPath, OpenCvSharp.Size? resolution = null)
+    public static List<VideoFrame> GetVideoFrames(string videoPath, OpenCvSharp.Size outputResolution)
     {
-        var frames = new List<Bitmap>();
+        var frames = new List<VideoFrame>();
         var capture = new VideoCapture(videoPath);
-
-        if (resolution.HasValue)
-        {
-            // Set the desired frame resolution
-            capture.Set(VideoCaptureProperties.FrameWidth, resolution.Value.Width);
-            capture.Set(VideoCaptureProperties.FrameHeight, resolution.Value.Height);
-        }
+        int index = 0;
 
         while (capture.IsOpened())
         {
@@ -35,48 +39,15 @@ public class VideoProcessor
                 break;
             }
 
-            // Resize the frame to the specified resolution
-            if (resolution.HasValue)
-            {
-                Cv2.Resize(image, image, resolution.Value);
-            }
+            Cv2.Resize(image, image, outputResolution);
 
-            frames.Add(BitmapConverter.ToBitmap(image));
+            Bitmap bitmap = BitmapConverter.ToBitmap(image);
+            VideoFrame frame = new VideoFrame(bitmap, index);
+
+            frames.Add(frame);
+            index++;
         }
 
         return frames;
-    }
-
-
-    public void ProcessVideoAndDetectCueBall(string videoPath, OpenCvSharp.Size? resolution, PictureBox pictureBox, Label fpsLabel)
-    {
-        // Get video frames
-        List<Bitmap> frames = GetVideoFrames(videoPath, resolution);
-
-        // Detect cue ball in each frame
-        System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-        double totalDetectionTime = 0;
-
-        foreach (var frame in frames)
-        {
-            pictureBox.Image = frame;
-
-            // Start the stopwatch
-            stopwatch.Restart();
-
-            // Detect the cue ball in the current frame
-            cueBallDetector.FindAndDrawCueBall(pictureBox, 150);
-
-            // Stop the stopwatch and add the elapsed time to the total
-            stopwatch.Stop();
-            totalDetectionTime += stopwatch.Elapsed.TotalSeconds;
-
-            // Update the FPS label with the current average FPS
-            double averageFps = frames.IndexOf(frame) / totalDetectionTime;
-            fpsLabel.Text = $"FPS: {averageFps:F2}";
-
-            // Refresh the UI to show the updated image and FPS
-            Application.DoEvents();
-        }
     }
 }
