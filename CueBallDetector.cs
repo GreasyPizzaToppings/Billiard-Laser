@@ -18,9 +18,37 @@ using Emgu.CV.XPhoto;
 using Emgu.CV.Reg;
 using Accord;
 using Point = System.Drawing.Point;
+using OpenCvSharp;
+using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
+using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
+using CvInvoke = Emgu.CV.CvInvoke;
+using System.Transactions;
+using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
+using BorderType = Emgu.CV.CvEnum.BorderType;
+public class SquareVectors
+{
+    public List<Point[]> vectorPointList { get; set; }
+    public Image<Bgr, byte> output { get; set; }
+
+    public SquareVectors(List<Point[]> v, Image<Bgr, byte> o)
+    { 
+        this.vectorPointList = v;
+        this.output = o;
+    }
+}
 public class CueBallDetector
 {
-   
+    //List all the colors in snooker
+    private Color[] webcolors = {
+        Color.Red,
+        Color.Green,
+        Color.Blue,
+        Color.Black,
+        Color.White,
+        Color.Yellow,
+        Color.Brown,
+        Color.Pink
+    };
     public void FindAndDrawCueBall(PictureBox pictureBoxImage, int threshold = 50)
     {
 
@@ -119,139 +147,171 @@ public class CueBallDetector
         }
         return grayscale;
     }
-    public void loadOriginalImage(PictureBox pictureBoxImage)
+    static void BitmapToMat(Bitmap bitmap, Emgu.CV.Mat mat)
     {
+        BitmapData bmpData = bitmap.LockBits(
+            new Rectangle(0, 0, bitmap.Width, bitmap.Height),
+            ImageLockMode.ReadOnly,
+            PixelFormat.Format24bppRgb);
 
-        //Saves the file in the picturebox into a folder somewhere like tmp
-        //once the picture is saved
-        //string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
-        //Console.WriteLine($"Base directory: {baseDirectory}");
-        //string tmpfile = "../../../tmp/temp.jpg";
-        //pictureBoxImage.Image.Save(tmpfile);
+        CvInvoke.CvtColor(
+            new Emgu.CV.Mat(bmpData.Height, bmpData.Width, DepthType.Cv8U, 3, bmpData.Scan0, bmpData.Stride),
+            mat,
+            ColorConversion.Bgr2Bgra);
 
-        //src = Cv.LoadImage(tmpfile, LoadMode.Color);
-        //Cv.SaveImage("Orig.jpg", src);
-        //IplImage src, gray, hough;
-        ////Bitmap bitmap = new Bitmap(pictureBoxImage.Image); // your bitmap image
-        ////Image<Bgr, Byte> img = bitmap.ToImage<Bgr, byte>();
-
-        //Bitmap bmp = new Bitmap(pictureBoxImage.Image);
-        //src = new IplImage(bmp.Width, bmp.Height, BitDepth.U8, 3);  //creates the OpenCvSharp IplImage;
-        //src.CopyFrom(bmp);
-        ////then we do whatever the fuck is gonna happen. 
-        ////so do the loadcv thingies that the person in the youtube vid did. 
-        //gray = Cv.CreateImage(src.Size, BitDepth.U8, 1);
-        //Cv.CvtColor(src, gray, ColorConversion.RgbToGray);DllNotFoundException: Unable to load DLL 'opencv_core240' or one of its dependencies: The specified module could not be found. (0x8007007E)
-        //Cv.Smooth(gray, gray, SmoothType.Gaussian, 9);
-        //Cv.Canny(gray, gray, 10, 30, ApertureSize.Size3);
-        ////Cv.SaveImage("greycircles.jpg", gray);
-        //hough = src.Clone();
-        //var storage = new CvMemStorage();
-        //CvSeq<CvCircleSegment> seq = gray.HoughCircles(storage, HoughCirclesMethod.Gradient, 1, 50, 10, 25, 0, 40);
-        //foreach (CvCircleSegment segment in seq)
-        //{
-        //    hough.Circle(segment.Center, (int)segment.Radius, CvColor.Red, 3);
-        //    Console.WriteLine("Center = " + segment.Center + " Radius = " + (int)segment.Radius);
-        //}
-        //Cv.SaveImage("detected_circles.jpg", hough);
-        //pictureBoxImage.ImageLocation = "detected_circles.jpg";
-
+        bitmap.UnlockBits(bmpData);
     }
-    //public void greyscale(PictureBox pictureBoxImage)
-    //{
 
-    //    //Cv.SaveImage("Gray.jpg", gray);
-
-    //}
-    public void Filter(PictureBox pictureBox1)
+    public void ball_Detection(PictureBox pictureBox1)
     {
-        UMat cannyEdges = new UMat();
-        UMat gray = new UMat();
-        double brightness = 1.0; // Increase brightness by 100% (1.0 means no change)
-        double contrast = 3.0; // Increase contrast by 200%
-        // theory of image: 
-        // turn into gray image so filtering is easier 
-        // remove the noise of the gray image. 
-        // can be by brightening the things hard. 
+        //Get image from the picture box
         Bitmap bmp = new Bitmap(pictureBox1.Image);
-        Image<Bgr, byte> image = bmp.ToImage<Bgr, byte>();
-        Image<Gray, float> grayImage = image.Convert<Gray, float>();
+
+        Emgu.CV.Mat transformed = new Emgu.CV.Mat();
+        BitmapToMat(bmp, transformed);
+        Emgu.CV.Mat transformedBlur = new Emgu.CV.Mat();
+        CvInvoke.GaussianBlur(transformed, transformedBlur, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
+        Emgu.CV.Mat  blurRgb = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.CvtColor(transformedBlur, blurRgb, ColorConversion.Bgr2Rgb);
+
+        // Mask
+        Emgu.CV.Mat hsv = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.CvtColor(blurRgb, hsv, ColorConversion.Rgb2Hsv);
+        Emgu.CV.Mat mask = new Emgu.CV.Mat();
+        ScalarArray lower = new ScalarArray(new MCvScalar(35, 40,40)); // Set your lower HSV bounds
+        ScalarArray upper = new ScalarArray(new MCvScalar(70, 255, 255)); // Set your upper HSV bounds
+        Emgu.CV.CvInvoke.InRange(hsv, lower, upper, mask);
         
+        // Filter mask
+        Emgu.CV.Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1));
+        Emgu.CV.Mat maskClosing = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.MorphologyEx(mask, maskClosing, MorphOp.Close, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar());
 
-        // Adjust brightness and contrast
-        CvInvoke.cvConvertScale(grayImage, grayImage, contrast, brightness);
-        Emgu.CV.CvInvoke.GaussianBlur(grayImage, grayImage, new System.Drawing.Size(3, 3), 1);
-        Image<Gray, float> sobelImage = grayImage.Sobel(1, 0, 11).Add(grayImage.Sobel(0, 1,11)).AbsDiff(new Gray(0.0));
-        Bitmap bmp1 = sobelImage.ToBitmap();
-        pictureBox1.Image = bmp1;
-        Mat grey = sobelImage.Convert<Gray, byte>().Mat;
-        //cleaning the noise
-
+        // Apply threshold
+        Emgu.CV.Mat maskInv = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
 
 
-        double cannyThreshold = 120;
-        double circleAccumulatorThreshold = 120;
-        double cannyThresholdLinking = 130.0;
-        // Canny function 
-        Emgu.CV.CvInvoke.Canny(grey, cannyEdges, cannyThreshold, cannyThresholdLinking);
 
-        LineSegment2D[] lines = Emgu.CV.CvInvoke.HoughLinesP(
-                    cannyEdges,
-                    1, //Distance resolution in pixel-related units
-                    Math.PI / 45.0, //Angle resolution measured in radians.
-                    20, //threshold
-                    30, //min Line width
-                    10); //gap between lines
-                         //        Image<Gray, byte> imageCV = grayImage;
+        ////// Create image with masked objects on table
+        Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.BitwiseAnd(transformed, transformed, maskedObjects, maskInv);
 
-        // circle detection region
-        CircleF[] circles = Emgu.CV.CvInvoke.HoughCircles(cannyEdges, HoughModes.Gradient, 2.0, 20.0, cannyThreshold, circleAccumulatorThreshold, 5);
 
-        //region canny and edge detection
-        //circls
-        Emgu.CV.Mat circleImage = new Mat(grey.Size, DepthType.Cv8U, 3);
-        circleImage.SetTo(new MCvScalar(0));
-        foreach (CircleF circle in circles)
-            CvInvoke.Circle(circleImage, Point.Round(circle.Center), (int)circle.Radius,
-                new Bgr(Color.Gray).MCvScalar, 2);
-
-        //Drawing a light gray frame around the image
-        CvInvoke.Rectangle(circleImage,
-            new Rectangle(Point.Empty, new Size(circleImage.Width - 1, circleImage.Height - 1)),
-            new MCvScalar(120, 120, 120));
-        //Draw the labels
-        CvInvoke.PutText(circleImage, "Circles", new Point(20, 20), FontFace.HersheyDuplex, 0.5,
-            new MCvScalar(120, 120, 120));
-
-        //end region
-        Mat lineImage = new Mat(grey.Size, DepthType.Cv8U, 3);
-        //lines
-        lineImage.SetTo(new MCvScalar(0));
-        foreach (LineSegment2D line in lines)
-            CvInvoke.Line(lineImage, line.P1, line.P2, new Bgr(Color.Green).MCvScalar, 2);
-        //Drawing a light gray frame around the image
-        CvInvoke.Rectangle(lineImage,
-            new Rectangle(Point.Empty, new Size(lineImage.Width - 1, lineImage.Height - 1)),
-            new MCvScalar(120, 120, 120));
-        //Draw the labels
-        CvInvoke.PutText(lineImage, "Lines", new Point(20, 20), FontFace.HersheyDuplex, 0.5,
-            new MCvScalar(120, 120, 120));
-        Mat result = new Mat();
-        CvInvoke.VConcat(new Mat[] { image.Mat, circleImage, lineImage }, result);
-
-        Image<Bgr, byte> resultImage = result.ToImage<Bgr, byte>();
-
-        pictureBox1.Image = resultImage.ToBitmap<Bgr,byte>();
-        //foreach (CircleF[] circle in seq)
-        //{
-        //    foreach (CircleF singleCircle in circle)
-        //    {
-        //        image.Draw(singleCircle, new Bgr(Color.Red), 2);
-        //    }
-        //}
-        //pictureBox1.Image = image.ToBitmap();
+        //Find contours and filter them
+        VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
+        Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.FindContours(maskInv, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+        VectorOfVectorOfPoint filteredContours = filter_Contours(contours, 90, 2000, 3.445);
+        Image<Bgr, byte> test = bmp.ToImage<Bgr, byte>();
+        SquareVectors squareVectors = DrawRectangles(filteredContours, test);
+        FindCtrsColor(squareVectors,pictureBox1);
+        //pictureBox1.Image = squareVectors.output.ToBitmap();
 
     }
+    public Color colorApproximate(double blue, double green, double red)
+    {
+        Color nearestColor = Color.Empty;
+        double distance = double.MaxValue;
 
+        foreach (Color c in webcolors)
+        {
+            double redDiff = Math.Pow(c.R - red, 2.0);
+            double greenDiff = Math.Pow(c.G - green, 2.0);
+            double blueDiff = Math.Pow(c.B - blue, 2.0);
+            double temp = Math.Sqrt(redDiff + greenDiff + blueDiff);
+            if (temp == 0)
+            {
+                nearestColor = c;
+                break;
+            }
+            //This will do an approximation of colors
+            else if (temp < distance)
+            {
+                distance = temp;
+                nearestColor = c;
+            }
+            
+        }
+        return nearestColor;
+    }
+    public void FindCtrsColor(SquareVectors sV, PictureBox p1)
+    {
+        Image<Bgr, byte> img = sV.output;
+        Image<Gray, byte> mask = new Image<Gray, byte>(img.Width, img.Height);
+        foreach (var v in sV.vectorPointList)
+        {
+            mask.Draw(v, new Gray(255), -1);
+            p1.Image = mask.ToBitmap(); ;
+            break;
+            MCvScalar avgColor = CvInvoke.Mean(img, mask);
 
+            // Print the average color
+            Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
+            Console.WriteLine(colorApproximate(avgColor.V0, avgColor.V1, avgColor.V2));
+
+        }
+        
+        // Compute the average color
+       
+    }
+    public VectorOfVectorOfPoint filter_Contours(VectorOfVectorOfPoint contours, double min_s = 90, double max_s = 358, double alpha = 3.445)
+    { 
+        VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
+        for (int i = 0; i < contours.Size; i++)
+        {
+            using (Emgu.CV.Util.VectorOfPoint contour = contours[i])
+            {
+                Emgu.CV.Structure.RotatedRect rotRect = Emgu.CV.CvInvoke.MinAreaRect(contour);
+                float w = rotRect.Size.Width;
+                float h = rotRect.Size.Height;
+                double area = Emgu.CV.CvInvoke.ContourArea(contour);
+                //this assumes the the balls are of the same width and height. 
+                //maybe now I'll try to warp the images. but for now, nah. 
+                //if ((h * alpha < w) || (w * alpha < h))
+                //    continue;
+
+                if ((area < min_s) || (area > max_s))
+                    continue;
+
+                filteredContours.Push(contour);
+            }
+        }
+        return filteredContours;
+    }
+    public SquareVectors DrawRectangles(VectorOfVectorOfPoint ctrs, Image<Bgr, byte> img)
+    {
+        Image<Bgr, byte> output = img.Copy();
+        List<Point[]> squareCtrs = new List<Point[]>();
+        
+        for (int i = 0; i < ctrs.Size; i++)
+        {
+            using (VectorOfPoint contour = ctrs[i])
+            {
+                // Calculate moments
+                Emgu.CV.Moments moments = CvInvoke.Moments(contour, false);
+
+                // Calculate minimum area rectangle
+                Emgu.CV.Structure.RotatedRect rotatedRect = CvInvoke.MinAreaRect(contour);
+                float w = rotatedRect.Size.Width; // width
+                float h = rotatedRect.Size.Height; // height
+
+                // Calculate box points and draw contours
+                PointF[] boxPoints = CvInvoke.BoxPoints(rotatedRect);
+                Point[] boxPointsInt = Array.ConvertAll(boxPoints, Point.Round);
+
+                using (VectorOfPoint boxContour = new VectorOfPoint(boxPointsInt))
+                {
+                    using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
+                    {
+                        contours.Push(boxContour);
+                        squareCtrs.Add(boxPointsInt);
+                        CvInvoke.DrawContours(output, contours, -1, new MCvScalar(255, 100, 1), 2);
+                    }
+                }
+            }
+        }
+
+        return new SquareVectors(squareCtrs, output);
+    }
 }
