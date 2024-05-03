@@ -29,6 +29,7 @@ namespace billiard_laser
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             pictureBoxImage = new PictureBox();
             btnFindCueball = new Button();
             btnLaserOn = new Button();
@@ -49,12 +50,13 @@ namespace billiard_laser
             // 
             // pictureBoxImage
             // 
-            pictureBoxImage.Image = Properties.Resources.birdEyeShot;
+            pictureBoxImage.Image = (Image)resources.GetObject("pictureBoxImage.Image");
             pictureBoxImage.Location = new Point(121, 35);
             pictureBoxImage.Name = "pictureBoxImage";
             pictureBoxImage.Size = new Size(1371, 960);
             pictureBoxImage.TabIndex = 0;
             pictureBoxImage.TabStop = false;
+            pictureBoxImage.Click += pictureBoxImage_Click;
             // 
             // btnFindCueball
             // 

@@ -202,13 +202,18 @@ namespace billiard_laser
         private void buttonSaveImage_Click(object sender, EventArgs e)
         {
             CueBallDetector cueBallDetector = new CueBallDetector();
-            cueBallDetector.Filter(pictureBoxImage);
+            cueBallDetector.ball_Detection(pictureBoxImage);
         }
 
         private void buttonDetectBalls_Click(object sender, EventArgs e)
         {
             //CueBallDetector ballsDetector = new CueBallDetector();
             //ballsDetector.houghCircles(pictureBoxImage);
+        }
+
+        private void pictureBoxImage_Click(object sender, EventArgs e)
+        {
+
         }
     }
 }
