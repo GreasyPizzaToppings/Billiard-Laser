@@ -39,7 +39,7 @@ public class SquareVectors
 public class CueBallDetector
 {
     //List all the colors in snooker
-    private Color[] webcolors = {
+    private Color[] ballColors = {
         Color.Red,
         Color.Green,
         Color.Blue,
@@ -162,7 +162,7 @@ public class CueBallDetector
         bitmap.UnlockBits(bmpData);
     }
 
-    public void ball_Detection(PictureBox pictureBox1)
+    public void ballDetection(PictureBox pictureBox1)
     {
         //Get image from the picture box
         Bitmap bmp = new Bitmap(pictureBox1.Image);
@@ -196,7 +196,7 @@ public class CueBallDetector
         ////// Create image with masked objects on table
         Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.BitwiseAnd(transformed, transformed, maskedObjects, maskInv);
-
+        pictureBox1.Image = maskedObjects.ToBitmap();
 
         //Find contours and filter them
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
@@ -205,8 +205,10 @@ public class CueBallDetector
         VectorOfVectorOfPoint filteredContours = filter_Contours(contours, 90, 2000, 3.445);
         Image<Bgr, byte> test = bmp.ToImage<Bgr, byte>();
         SquareVectors squareVectors = DrawRectangles(filteredContours, test);
-        FindCtrsColor(squareVectors,pictureBox1);
-        //pictureBox1.Image = squareVectors.output.ToBitmap();
+        Image<Bgr, byte> toOutput = squareVectors.output;
+        squareVectors.output = maskedObjects.ToBitmap().ToImage<Bgr,byte>();
+        FindCtrsColor(squareVectors, pictureBox1);
+        pictureBox1.Image = toOutput.ToBitmap();
 
     }
     public Color colorApproximate(double blue, double green, double red)
@@ -214,7 +216,7 @@ public class CueBallDetector
         Color nearestColor = Color.Empty;
         double distance = double.MaxValue;
 
-        foreach (Color c in webcolors)
+        foreach (Color c in ballColors)
         {
             double redDiff = Math.Pow(c.R - red, 2.0);
             double greenDiff = Math.Pow(c.G - green, 2.0);
@@ -230,30 +232,77 @@ public class CueBallDetector
             {
                 distance = temp;
                 nearestColor = c;
-            }
-            
+            }            
         }
+        
         return nearestColor;
     }
     public void FindCtrsColor(SquareVectors sV, PictureBox p1)
     {
         Image<Bgr, byte> img = sV.output;
+        p1.Image = img.ToBitmap();
         Image<Gray, byte> mask = new Image<Gray, byte>(img.Width, img.Height);
+        //Instead of checking each ball, check each ball color, and find which is the closest ball
         foreach (var v in sV.vectorPointList)
         {
             mask.Draw(v, new Gray(255), -1);
-            p1.Image = mask.ToBitmap(); ;
-            break;
-            MCvScalar avgColor = CvInvoke.Mean(img, mask);
+            //get non-zero indices in matrix
+            Matrix<byte> idx = new Matrix<byte>(mask.Size);
+            mask.CopyTo(idx);
 
+            List<Bgr> colors = new List<Bgr>();
+
+            for (int i = 0; i < img.Rows; i++)
+            {
+                for (int j = 0; j < img.Cols; j++)
+                {
+                    // If the mask is non-zero at this pixel
+                    if (idx.Data[i, j] != 0)
+                    {
+                        
+                        // Get the color of the pixel
+                        Bgr color = img[i, j];
+
+                        //Console.WriteLine(color);
+                        //Console.WriteLine(color);
+                        // Add the color to the list
+                        
+                        if (color.Blue == 0 && color.Red == 0 && color.Green == 0) { continue; }
+                        if (color.Blue == 255 && color.Red == 255 && color.Green == 255) { continue; }
+                        if (color.Blue < color.Green && color.Red < color.Green) { continue; }
+                        colors.Add(color);
+                    }
+                }
+            }
+            
+            // Now 'colors' contains the BGR values of all pixels inside the mask
+            double sumBlue = 0, sumGreen = 0, sumRed = 0;
+
+            foreach (Bgr color in colors)
+            {
+                sumBlue += color.Blue;
+                sumGreen += color.Green; 
+                sumRed += color.Red;
+            }
+
+            int numColors = colors.Count;
+
+            double avgBlue = sumBlue / numColors;
+            double avgGreen = sumGreen / numColors;
+            double avgRed = sumRed / numColors;
+
+            Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgBlue, avgGreen, avgRed);
+
+            //MCvScalar avgColor = CvInvoke.Mean(img, mask);
+            //Console.WriteLine(avgColor);
             // Print the average color
-            Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
-            Console.WriteLine(colorApproximate(avgColor.V0, avgColor.V1, avgColor.V2));
+            //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
+            Console.WriteLine(colorApproximate(avgBlue, avgGreen, avgRed));
 
         }
-        
+
         // Compute the average color
-       
+
     }
     public VectorOfVectorOfPoint filter_Contours(VectorOfVectorOfPoint contours, double min_s = 90, double max_s = 358, double alpha = 3.445)
     { 
