@@ -1,16 +1,4 @@
-using System;
-using System.Data;
-using System.Linq;
-using System.Drawing;
-using System.Collections.Generic;
-using System.Text;
-using System.ComponentModel;
-using System.IO;
-using System.Windows.Forms;
 using System.IO.Ports;
-using System.CodeDom;
-using System.Net;
-using Emgu.CV;
 using AForge.Video.DirectShow;
 using AForge.Video;
 
@@ -18,7 +6,7 @@ using AForge.Video;
 namespace billiard_laser
 {
     public partial class Form1 : Form
-    {
+    { 
         SerialPort serialPort;
         const string LASER_OFF = "0";
         const string LASER_ON = "1";
