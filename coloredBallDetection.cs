@@ -196,7 +196,7 @@ public class coloredBallDetection
             
 
         }
-        Console.WriteLine(colorApproximate(avgBlue, avgGreen, avgRed));
+        //Console.WriteLine(colorApproximate(avgBlue, avgGreen, avgRed));
         // Compute the average color
 
     }
