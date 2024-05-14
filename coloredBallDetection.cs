@@ -28,6 +28,17 @@ using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 using BorderType = Emgu.CV.CvEnum.BorderType;
 public class coloredBallDetection
 {
+    public class SquareVectors
+    {
+        public List<Point[]> points;
+        public Image<Rgb, byte> output;
+        public SquareVectors(List<Point[]> points, Image<Rgb, byte> output) 
+        {
+            this.points = points;
+            this.output = output;
+        }
+
+    }
     private Color[] ballColors = {
         Color.Red,
         Color.Green,
@@ -97,10 +108,10 @@ public class coloredBallDetection
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.FindContours(maskInv, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
         VectorOfVectorOfPoint filteredContours = filter_Contours(contours, 90, 2000, 3.445);
-        Image<Bgr, byte> test = bmp.ToImage<Bgr, byte>();
+        Image<Rgb, byte> test = bmp.ToImage<Rgb, byte>();
         SquareVectors squareVectors = DrawRectangles(filteredContours, test);
-        Image<Bgr, byte> toOutput = squareVectors.output;
-        squareVectors.output = maskedObjects.ToBitmap().ToImage<Bgr, byte>();
+        Image<Rgb, byte> toOutput = squareVectors.output;
+        squareVectors.output = maskedObjects.ToBitmap().ToImage<Rgb, byte>();
         FindCtrsColor(squareVectors, pictureBox1);
         pictureBox1.Image = toOutput.ToBitmap();
 
@@ -135,18 +146,18 @@ public class coloredBallDetection
     }
     public void FindCtrsColor(SquareVectors sV, PictureBox p1)
     {
-        Image<Bgr, byte> img = sV.output;
+        Image<Rgb, byte> img = sV.output;
         p1.Image = img.ToBitmap();
         Image<Gray, byte> mask = new Image<Gray, byte>(img.Width, img.Height);
         //Instead of checking each ball, check each ball color, and find which is the closest ball
-        foreach (var v in sV.vectorPointList)
+        foreach (var v in sV.points)
         {
             mask.Draw(v, new Gray(255), -1);
             //get non-zero indices in matrix
             Matrix<byte> idx = new Matrix<byte>(mask.Size);
             mask.CopyTo(idx);
 
-            List<Bgr> colors = new List<Bgr>();
+            List<Rgb> colors = new List<Rgb>();
 
             for (int i = 0; i < img.Rows; i++)
             {
@@ -157,7 +168,7 @@ public class coloredBallDetection
                     {
 
                         // Get the color of the pixel
-                        Bgr color = img[i, j];
+                        Rgb color = img[i, j];
 
                         //Console.WriteLine(color);
                         //Console.WriteLine(color);
@@ -174,7 +185,7 @@ public class coloredBallDetection
             // Now 'colors' contains the BGR values of all pixels inside the mask
             double sumBlue = 0, sumGreen = 0, sumRed = 0;
 
-            foreach (Bgr color in colors)
+            foreach (Rgb color in colors)
             {
                 sumBlue += color.Blue;
                 sumGreen += color.Green;
@@ -224,9 +235,9 @@ public class coloredBallDetection
         }
         return filteredContours;
     }
-    public SquareVectors DrawRectangles(VectorOfVectorOfPoint ctrs, Image<Bgr, byte> img)
+    public SquareVectors DrawRectangles(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
     {
-        Image<Bgr, byte> output = img.Copy();
+        Image<Rgb, byte> output = img.Copy();
         List<Point[]> squareCtrs = new List<Point[]>();
 
         for (int i = 0; i < ctrs.Size; i++)

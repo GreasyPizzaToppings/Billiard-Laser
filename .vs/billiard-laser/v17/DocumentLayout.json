@@ -3,20 +3,44 @@
   "WorkspaceRootPath": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\",
   "Documents": [
     {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|c:\\users\\nooth\\documents\\summer\\baxter_pool_tabl\\videoprocessor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:videoprocessor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\mreeveslaserturret\\mylaserturret\\mylaserturret\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:mreeveslaserturret\\mylaserturret\\mylaserturret\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\cueballdetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:cueballdetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\coloredballdetection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:coloredballdetection.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:billiard-laser.csproj||{FA3CD31E-987B-443A-9B81-186104E8DAC1}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:form1.designer.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
+      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
     },
     {
       "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|",
       "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:billiard-laser.csproj||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|c:\\users\\nooth\\documents\\summer\\baxter_pool_tabl\\cueballdetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:cueballdetector.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form",
-      "RelativeMoniker": "D:0:0:{C08DB0BA-D2DE-4E18-8E8F-A27EB4EE5A29}|billiard-laser.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}|Form"
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\obj\\debug\\net6.0-windows7.0\\billiard-laser.assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|solutionrelative:obj\\debug\\net6.0-windows7.0\\billiard-laser.assemblyinfo.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -26,58 +50,127 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 0,
+          "SelectedChildIndex": 1,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 1,
               "Title": "Form1.cs",
               "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.cs",
               "RelativeDocumentMoniker": "Form1.cs",
               "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.cs",
               "RelativeToolTip": "Form1.cs",
-              "ViewState": "AQIAALMAAAAAAAAAAAAAAMIAAAAAAAAA",
+              "ViewState": "AQIAABQAAAAAAAAAAAAkwCAAAAAPAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-03-19T03:22:40.954Z",
-              "IsPinned": true,
+              "IsPinned": true
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "VideoProcessor.cs",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\VideoProcessor.cs",
+              "RelativeDocumentMoniker": "VideoProcessor.cs",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\VideoProcessor.cs",
+              "RelativeToolTip": "VideoProcessor.cs",
+              "ViewState": "AQIAABoAAAAAAAAAAAAqwDAAAAAIAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-10T06:12:11.348Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\mReevesLaserturret\\MyLaserTurret\\MyLaserTurret\\Program.cs",
+              "RelativeDocumentMoniker": "mReevesLaserturret\\MyLaserTurret\\MyLaserTurret\\Program.cs",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\mReevesLaserturret\\MyLaserTurret\\MyLaserTurret\\Program.cs",
+              "RelativeToolTip": "mReevesLaserturret\\MyLaserTurret\\MyLaserTurret\\Program.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAuwA4AAAAOAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-10T06:12:09.527Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 9,
+              "Title": "billiard-laser.AssemblyInfo.cs",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\obj\\Debug\\net6.0-windows7.0\\billiard-laser.AssemblyInfo.cs",
+              "RelativeDocumentMoniker": "obj\\Debug\\net6.0-windows7.0\\billiard-laser.AssemblyInfo.cs",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\obj\\Debug\\net6.0-windows7.0\\billiard-laser.AssemblyInfo.cs",
+              "RelativeToolTip": "obj\\Debug\\net6.0-windows7.0\\billiard-laser.AssemblyInfo.cs",
+              "ViewState": "AQIAAAUAAAAAAAAAAAAuwBAAAAA6AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-10T06:09:04.053Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "coloredBallDetection.cs",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\coloredBallDetection.cs",
+              "RelativeDocumentMoniker": "coloredBallDetection.cs",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\coloredBallDetection.cs",
+              "RelativeToolTip": "coloredBallDetection.cs",
+              "ViewState": "AQIAAGYAAAAAAAAAAAAAAG4AAAA5AAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-10T06:03:26.319Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "billiard-laser.csproj",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
+              "RelativeDocumentMoniker": "billiard-laser.csproj",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
+              "RelativeToolTip": "billiard-laser.csproj",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA0AAAAjAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
+              "WhenOpened": "2024-05-10T06:02:40.082Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "Form1.Designer.cs",
+              "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.Designer.cs",
+              "RelativeDocumentMoniker": "Form1.Designer.cs",
+              "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.Designer.cs",
+              "RelativeToolTip": "Form1.Designer.cs",
+              "ViewState": "AQIAAAIAAAAAAAAAAAAAAAIAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-05-10T06:01:25.943Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
               "Title": "billiard-laser",
               "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
               "RelativeDocumentMoniker": "billiard-laser.csproj",
               "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\billiard-laser.csproj",
               "RelativeToolTip": "billiard-laser.csproj",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000758|",
-              "WhenOpened": "2024-04-26T07:01:56.287Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-04-26T07:01:56.287Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 3,
               "Title": "CueBallDetector.cs",
               "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\CueBallDetector.cs",
               "RelativeDocumentMoniker": "CueBallDetector.cs",
               "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\CueBallDetector.cs",
               "RelativeToolTip": "CueBallDetector.cs",
-              "ViewState": "AQIAABsAAAAAAAAAAAAAAB8AAAAAAAAA",
+              "ViewState": "AQIAAA4AAAAAAAAAAAAuwBwAAAAGAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-28T01:18:01.005Z",
-              "EditorCaption": ""
+              "WhenOpened": "2024-03-28T01:18:01.005Z"
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 7,
               "Title": "Form1.cs [Design]",
               "DocumentMoniker": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.cs",
               "RelativeDocumentMoniker": "Form1.cs",
               "ToolTip": "C:\\Users\\nooth\\Documents\\Summer\\Baxter_Pool_Tabl\\Form1.cs [Design]",
               "RelativeToolTip": "Form1.cs [Design]",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-03-28T01:18:03.404Z",
-              "EditorCaption": " [Design]"
+              "WhenOpened": "2024-03-28T01:18:03.404Z"
             }
           ]
         }

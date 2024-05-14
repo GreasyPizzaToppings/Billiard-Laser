@@ -23,7 +23,7 @@
       <Link>haarcascade_frontalface_default.xml</Link>
     </Content>
   </ItemGroup>
-  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <PkgOpenCVSharp Condition=" '$(PkgOpenCVSharp)' == '' ">C:\Users\nooth\.nuget\packages\opencvsharp\2.4.0</PkgOpenCVSharp>
-  </PropertyGroup>
+  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Import Project="$(NuGetPackageRoot)opencvsharp4.runtime.win\4.9.0.20240103\build\net5.0\OpenCvSharp4.runtime.win.props" Condition="Exists('$(NuGetPackageRoot)opencvsharp4.runtime.win\4.9.0.20240103\build\net5.0\OpenCvSharp4.runtime.win.props')" />
+  </ImportGroup>
 </Project>
