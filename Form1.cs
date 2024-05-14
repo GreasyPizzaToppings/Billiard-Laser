@@ -386,11 +386,6 @@ namespace billiard_laser
             labelMouseCoordinates.Text = string.Format("Mouse: ({0},{1})", e.X, e.Y);
         }
 
-        private void buttonSaveImage_Click(object sender, EventArgs e)
-        {
-            coloredBallDetection colored = new coloredBallDetection();
-            colored.ballDetection(pictureBoxImage);
-        }
 
         private void buttonDetectBalls_Click(object sender, EventArgs e)
         {
@@ -405,8 +400,8 @@ namespace billiard_laser
 
         private void button1_Click(object sender, EventArgs e)
         {
-            coloredBallDetection colored = new coloredBallDetection();
-            colored.ballDetection(pictureBoxImage);
+            ColoredBallDetection colored = new ColoredBallDetection();
+            colored.BallDetection(pictureBoxImage);
         }
     }
 }

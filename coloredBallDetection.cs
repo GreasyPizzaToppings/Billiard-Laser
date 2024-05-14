@@ -1,32 +1,15 @@
 ﻿using System;
 using Emgu.CV.Structure;
 using Emgu.CV;
-//using OpenCvSharp;
-using System;
-using System.Collections.Generic;
 using System.Drawing.Imaging;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Util;
-using OpenCvSharp.WpfExtensions;
-using System.Drawing;
-using Emgu.CV.XPhoto;
-//using OpenCvSharp;
-using Emgu.CV.Reg;
-using Accord;
 using Point = System.Drawing.Point;
-using OpenCvSharp;
 using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
-using System.Transactions;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
-using BorderType = Emgu.CV.CvEnum.BorderType;
-public class coloredBallDetection
+public class ColoredBallDetection
 {
     public class SquareVectors
     {
@@ -49,7 +32,7 @@ public class coloredBallDetection
         Color.Brown,
         Color.Pink
     };
-    public coloredBallDetection()
+    public ColoredBallDetection()
 	{
 
 	}
@@ -69,7 +52,7 @@ public class coloredBallDetection
         bitmap.UnlockBits(bmpData);
     }
     //Detects balls based on contours.
-    public void ballDetection(PictureBox pictureBox1)
+    public void BallDetection(PictureBox pictureBox1)
     {
         //Get image from the picture box
         Bitmap bmp = new Bitmap(pictureBox1.Image);
@@ -107,16 +90,19 @@ public class coloredBallDetection
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.FindContours(maskInv, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
-        VectorOfVectorOfPoint filteredContours = filter_Contours(contours, 90, 2000, 3.445);
+        VectorOfVectorOfPoint filteredContours = FilterContours(contours);
         Image<Rgb, byte> test = bmp.ToImage<Rgb, byte>();
+        
         SquareVectors squareVectors = DrawRectangles(filteredContours, test);
         Image<Rgb, byte> toOutput = squareVectors.output;
+        
         squareVectors.output = maskedObjects.ToBitmap().ToImage<Rgb, byte>();
+        //pictureBox1.Image = toOutput.ToBitmap();
         FindCtrsColor(squareVectors, pictureBox1);
         pictureBox1.Image = toOutput.ToBitmap();
 
     }
-    public Color colorApproximate(double blue, double green, double red)
+    public Color ColorApproximate(double blue, double green, double red)
     {
         Color nearestColor = Color.Empty;
         double distance = double.MaxValue;
@@ -205,13 +191,13 @@ public class coloredBallDetection
             // Print the average color
             //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
 
-            Console.WriteLine(colorApproximate(avgBlue, avgGreen, avgRed));
+            Console.WriteLine(ColorApproximate(avgBlue, avgGreen, avgRed));
         }
         
         // Compute the average color
 
     }
-    public VectorOfVectorOfPoint filter_Contours(VectorOfVectorOfPoint contours, double min_s = 90, double max_s = 358, double alpha = 3.445)
+    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 5, double max_s = 9000, double alpha = 3.445)
     {
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
@@ -224,9 +210,9 @@ public class coloredBallDetection
                 double area = Emgu.CV.CvInvoke.ContourArea(contour);
                 //this assumes the the balls are of the same width and height. 
                 //maybe now I'll try to warp the images. but for now, nah. 
-                //if ((h * alpha < w) || (w * alpha < h))
-                //    continue;
-
+                
+                if ((h > w * 1.5) || (w > h*1.5))
+                    continue;
                 if ((area < min_s) || (area > max_s))
                     continue;
 
