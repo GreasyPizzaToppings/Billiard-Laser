@@ -189,8 +189,8 @@ namespace billiard_laser
 
         private void buttonSaveImage_Click(object sender, EventArgs e)
         {
-            CueBallDetector cueBallDetector = new CueBallDetector();
-            cueBallDetector.ballDetection(pictureBoxImage);
+            coloredBallDetection colored = new coloredBallDetection();
+            colored.ballDetection(pictureBoxImage);
         }
 
         private void buttonDetectBalls_Click(object sender, EventArgs e)
