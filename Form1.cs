@@ -16,7 +16,7 @@ namespace billiard_laser
 
 
         //selection of output resolutions
-        private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(200, 200/1.77);
+        private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(200, 200 / 1.77);
         private static OpenCvSharp.Size p250 = new OpenCvSharp.Size(250, 250 / 1.77);
         private static OpenCvSharp.Size p360 = new OpenCvSharp.Size(360, 203);
         private static OpenCvSharp.Size p480 = new OpenCvSharp.Size(480, 271);
@@ -128,7 +128,7 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(43, 41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
             //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
-            
+
             //Ball cueBall = new Ball(new System.Drawing.Point((int)(0.43f * outputVideoResolution.Width), (int)(0.24f * outputVideoResolution.Height)), 1f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
             Ball cueBall = new Ball(new System.Drawing.Point((int)(0.06f * outputVideoResolution.Width), (int)(0.61f * outputVideoResolution.Height)), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
 
@@ -241,7 +241,8 @@ namespace billiard_laser
 
             int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
 
-            foreach (VideoFrame frame in shot.ShotFrames) {
+            foreach (VideoFrame frame in shot.ShotFrames)
+            {
                 listBoxProcessedFrames.SelectedIndex = frame.index;
 
                 // Draw the path of the selected shot on the current frame
@@ -266,7 +267,7 @@ namespace billiard_laser
 
 
                 // show graphs
-                
+
                 //speed over time
                 Bitmap speedImage = new Bitmap(pictureBoxSpeedOverTime.Width, pictureBoxSpeedOverTime.Height);
                 pictureBoxSpeedOverTime.Image = DrawingHelper.DrawSpeedOverTimeGraph(speedImage, selectedShot);
@@ -287,7 +288,7 @@ namespace billiard_laser
                 pictureBoxAccelerationOverTime.Image = DrawingHelper.DrawAccelerationGraph(image, selectedShot);
                 pictureBoxAccelerationOverTime.Refresh();
 
-                labelMaxAcceleration.Text = $"Max: {Math.Round(selectedShot.MaxAcceleration, 2) }";
+                labelMaxAcceleration.Text = $"Max: {Math.Round(selectedShot.MaxAcceleration, 2)}";
                 labelAverageAcceleration.Text = $"Avg: {Math.Round(selectedShot.AverageAcceleration, 2)}";
 
             }
@@ -387,8 +388,8 @@ namespace billiard_laser
 
         private void buttonSaveImage_Click(object sender, EventArgs e)
         {
-            CueBallDetector cueBallDetector = new CueBallDetector();
-            //cueBallDetector.ballDetection(pictureBoxImage);
+            coloredBallDetection colored = new coloredBallDetection();
+            colored.ballDetection(pictureBoxImage);
         }
 
         private void buttonDetectBalls_Click(object sender, EventArgs e)
@@ -400,6 +401,12 @@ namespace billiard_laser
         private void pictureBoxImage_Click(object sender, EventArgs e)
         {
 
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            coloredBallDetection colored = new coloredBallDetection();
+            colored.ballDetection(pictureBoxImage);
         }
     }
 }

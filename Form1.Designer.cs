@@ -69,6 +69,7 @@ namespace billiard_laser
             listBoxProcessedFrames = new ListBox();
             labelFrameRate = new Label();
             btnProcessVideo = new Button();
+            findColoredBalls = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSpeedOverTime).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxAccelerationOverTime).BeginInit();
@@ -223,7 +224,7 @@ namespace billiard_laser
             labelMouseCoordinates.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
             labelMouseCoordinates.Location = new Point(7, 494);
             labelMouseCoordinates.Name = "labelMouseCoordinates";
-            labelMouseCoordinates.Size = new Size(72, 15);
+            labelMouseCoordinates.Size = new Size(89, 20);
             labelMouseCoordinates.TabIndex = 27;
             labelMouseCoordinates.Text = "Mouse: (0,0)";
             // 
@@ -233,7 +234,7 @@ namespace billiard_laser
             labelShotInfo.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
             labelShotInfo.Location = new Point(78, 13);
             labelShotInfo.Name = "labelShotInfo";
-            labelShotInfo.Size = new Size(92, 28);
+            labelShotInfo.Size = new Size(116, 35);
             labelShotInfo.TabIndex = 31;
             labelShotInfo.Text = "Shot Info";
             // 
@@ -287,7 +288,7 @@ namespace billiard_laser
             labelAverageAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelAverageAcceleration.Location = new Point(173, 277);
             labelAverageAcceleration.Name = "labelAverageAcceleration";
-            labelAverageAcceleration.Size = new Size(36, 19);
+            labelAverageAcceleration.Size = new Size(43, 23);
             labelAverageAcceleration.TabIndex = 43;
             labelAverageAcceleration.Text = "Avg:";
             // 
@@ -297,7 +298,7 @@ namespace billiard_laser
             labelMaxAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelMaxAcceleration.Location = new Point(173, 249);
             labelMaxAcceleration.Name = "labelMaxAcceleration";
-            labelMaxAcceleration.Size = new Size(38, 19);
+            labelMaxAcceleration.Size = new Size(46, 23);
             labelMaxAcceleration.TabIndex = 42;
             labelMaxAcceleration.Text = "Max:";
             // 
@@ -307,7 +308,7 @@ namespace billiard_laser
             labelDistanceTravelled.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelDistanceTravelled.Location = new Point(173, 411);
             labelDistanceTravelled.Name = "labelDistanceTravelled";
-            labelDistanceTravelled.Size = new Size(41, 19);
+            labelDistanceTravelled.Size = new Size(50, 23);
             labelDistanceTravelled.TabIndex = 41;
             labelDistanceTravelled.Text = "Total:";
             // 
@@ -317,7 +318,7 @@ namespace billiard_laser
             labelAvgSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelAvgSpeed.Location = new Point(173, 120);
             labelAvgSpeed.Name = "labelAvgSpeed";
-            labelAvgSpeed.Size = new Size(36, 19);
+            labelAvgSpeed.Size = new Size(43, 23);
             labelAvgSpeed.TabIndex = 40;
             labelAvgSpeed.Text = "Avg:";
             // 
@@ -327,7 +328,7 @@ namespace billiard_laser
             labelMaxSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelMaxSpeed.Location = new Point(173, 96);
             labelMaxSpeed.Name = "labelMaxSpeed";
-            labelMaxSpeed.Size = new Size(38, 19);
+            labelMaxSpeed.Size = new Size(46, 23);
             labelMaxSpeed.TabIndex = 39;
             labelMaxSpeed.Text = "Max:";
             // 
@@ -337,7 +338,7 @@ namespace billiard_laser
             Acceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             Acceleration.Location = new Point(13, 218);
             Acceleration.Name = "Acceleration";
-            Acceleration.Size = new Size(83, 19);
+            Acceleration.Size = new Size(104, 23);
             Acceleration.TabIndex = 38;
             Acceleration.Text = "Acceleration";
             // 
@@ -347,7 +348,7 @@ namespace billiard_laser
             labelDistance.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelDistance.Location = new Point(13, 374);
             labelDistance.Name = "labelDistance";
-            labelDistance.Size = new Size(118, 19);
+            labelDistance.Size = new Size(147, 23);
             labelDistance.TabIndex = 37;
             labelDistance.Text = "Distance Travelled";
             // 
@@ -357,7 +358,7 @@ namespace billiard_laser
             labelSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelSpeed.Location = new Point(13, 59);
             labelSpeed.Name = "labelSpeed";
-            labelSpeed.Size = new Size(46, 19);
+            labelSpeed.Size = new Size(57, 23);
             labelSpeed.TabIndex = 36;
             labelSpeed.Text = "Speed";
             // 
@@ -399,7 +400,7 @@ namespace billiard_laser
             label1.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             label1.Location = new Point(113, 227);
             label1.Name = "label1";
-            label1.Size = new Size(102, 19);
+            label1.Size = new Size(126, 23);
             label1.TabIndex = 40;
             label1.Text = "Detected Shots";
             // 
@@ -407,9 +408,10 @@ namespace billiard_laser
             // 
             listBoxShots.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point);
             listBoxShots.FormattingEnabled = true;
+            listBoxShots.ItemHeight = 17;
             listBoxShots.Location = new Point(116, 253);
             listBoxShots.Name = "listBoxShots";
-            listBoxShots.Size = new Size(99, 264);
+            listBoxShots.Size = new Size(99, 259);
             listBoxShots.TabIndex = 39;
             listBoxShots.SelectedIndexChanged += listBoxShots_SelectedIndexChanged;
             // 
@@ -455,7 +457,7 @@ namespace billiard_laser
             labelVideoControls.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
             labelVideoControls.Location = new Point(39, 13);
             labelVideoControls.Name = "labelVideoControls";
-            labelVideoControls.Size = new Size(142, 28);
+            labelVideoControls.Size = new Size(180, 35);
             labelVideoControls.TabIndex = 35;
             labelVideoControls.Text = "Video Controls";
             // 
@@ -476,7 +478,7 @@ namespace billiard_laser
             labelFrames.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
             labelFrames.Location = new Point(12, 227);
             labelFrames.Name = "labelFrames";
-            labelFrames.Size = new Size(53, 19);
+            labelFrames.Size = new Size(64, 23);
             labelFrames.TabIndex = 33;
             labelFrames.Text = "Frames";
             // 
@@ -484,9 +486,10 @@ namespace billiard_laser
             // 
             listBoxProcessedFrames.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point);
             listBoxProcessedFrames.FormattingEnabled = true;
+            listBoxProcessedFrames.ItemHeight = 17;
             listBoxProcessedFrames.Location = new Point(11, 253);
             listBoxProcessedFrames.Name = "listBoxProcessedFrames";
-            listBoxProcessedFrames.Size = new Size(99, 264);
+            listBoxProcessedFrames.Size = new Size(99, 259);
             listBoxProcessedFrames.TabIndex = 32;
             listBoxProcessedFrames.SelectedIndexChanged += listBoxFrames_SelectedIndexChanged;
             // 
@@ -495,7 +498,7 @@ namespace billiard_laser
             labelFrameRate.AutoSize = true;
             labelFrameRate.Location = new Point(113, 88);
             labelFrameRate.Name = "labelFrameRate";
-            labelFrameRate.Size = new Size(32, 15);
+            labelFrameRate.Size = new Size(39, 20);
             labelFrameRate.TabIndex = 31;
             labelFrameRate.Text = "FPS: ";
             // 
@@ -512,11 +515,22 @@ namespace billiard_laser
             btnProcessVideo.UseVisualStyleBackColor = true;
             btnProcessVideo.Click += btnProcessVideo_ClickAsync;
             // 
+            // findColoredBalls
+            // 
+            findColoredBalls.Location = new Point(7, 199);
+            findColoredBalls.Name = "findColoredBalls";
+            findColoredBalls.Size = new Size(84, 29);
+            findColoredBalls.TabIndex = 45;
+            findColoredBalls.Text = "Colored";
+            findColoredBalls.UseVisualStyleBackColor = true;
+            findColoredBalls.Click += button1_Click;
+            // 
             // Form1
             // 
             AutoScaleDimensions = new SizeF(8F, 20F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1486, 532);
+            Controls.Add(findColoredBalls);
             Controls.Add(groupBoxVideoControls);
             Controls.Add(groupBoxShotInfo);
             Controls.Add(labelMouseCoordinates);
@@ -591,5 +605,6 @@ namespace billiard_laser
         private ListBox listBoxProcessedFrames;
         private Label labelFrameRate;
         private Button btnProcessVideo;
+        private Button findColoredBalls;
     }
 }
