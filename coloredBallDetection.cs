@@ -9,6 +9,7 @@ using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
+using ScottPlot.Colormaps;
 public class ColoredBallDetection
 {
     public class SquareVectors
@@ -23,15 +24,16 @@ public class ColoredBallDetection
 
     }
     private Color[] ballColors = {
-        Color.Red,
+        Color.Brown,
         Color.Green,
         Color.Blue,
         Color.Black,
         Color.White,
         Color.Yellow,
-        Color.Brown,
-        Color.Pink
+        Color.Red
     };
+    
+
     public ColoredBallDetection()
 	{
 
@@ -81,61 +83,88 @@ public class ColoredBallDetection
         Emgu.CV.Mat maskInv = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
 
-        ////// Create image with masked objects on table
+        // masks the pool table out to only find contour inside of masked objects
         Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.BitwiseAnd(transformed, transformed, maskedObjects, maskInv);
-        pictureBox1.Image = maskedObjects.ToBitmap();
+        //pictureBox1.Image = maskedObjects.ToBitmap();
 
-        //Find contours and filter them
+        //Find contours and filters only the ones that are balls
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.FindContours(maskInv, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
         VectorOfVectorOfPoint filteredContours = FilterContours(contours);
         Image<Rgb, byte> test = bmp.ToImage<Rgb, byte>();
         
+        //Draws rectangles on the contours
         SquareVectors squareVectors = DrawRectangles(filteredContours, test);
         Image<Rgb, byte> toOutput = squareVectors.output;
         
         squareVectors.output = maskedObjects.ToBitmap().ToImage<Rgb, byte>();
         //pictureBox1.Image = toOutput.ToBitmap();
-        FindCtrsColor(squareVectors, pictureBox1);
+        List<MCvScalar> BallColorAverages =  FindCtrsColor(squareVectors, pictureBox1);
+        ColorApproximate(BallColorAverages, squareVectors.points);
         pictureBox1.Image = toOutput.ToBitmap();
 
     }
-    public Color ColorApproximate(double blue, double green, double red)
+    public void ColorApproximate(List<MCvScalar> balls, List<Point[]> v)
     {
-        Color nearestColor = Color.Empty;
+
+        //Color nearestColor = Color.Empty;
+        MCvScalar nearestColor = new MCvScalar(0);
         double distance = double.MaxValue;
         //For detected vectors, find the closest color it's associated to. 
         //so something like... 
-        //
-        foreach (Color c in ballColors)
+        int initialCount = balls.Count;
+        int positionToRemove = 0;
+        while (balls.Count > 0)
         {
-            double redDiff = Math.Pow(c.R - red, 2.0);
-            double greenDiff = Math.Pow(c.G - green, 2.0);
-            double blueDiff = Math.Pow(c.B - blue, 2.0);
-            double temp = Math.Sqrt(redDiff + greenDiff + blueDiff);
-            if (temp == 0)
+            if (balls.Count < initialCount)
             {
-                nearestColor = c;
-                break;
+                ballColors = new Color[1];
+                ballColors[0] = Color.Red;
             }
-            //This will do an approximation of colors
-            else if (temp < distance)
+            foreach (Color c in ballColors)
             {
-                distance = temp;
-                nearestColor = c;
+                
+
+                for (int i = 0; i < balls.Count; i++)
+                {
+                    double redDiff = Math.Pow(c.R - balls[i].V0, 2.0);
+                    double greenDiff = Math.Pow(c.G - balls[i].V1, 2.0);
+                    double blueDiff = Math.Pow(c.B - balls[i].V2, 2.0);
+                    double temp = Math.Sqrt(redDiff + greenDiff + blueDiff);
+                    if (temp == 0)
+                    {
+                        nearestColor = balls[i];
+                        positionToRemove = i;
+                        break;
+                    }
+                    //This will do an approximation of colors
+                    else if (temp < distance)
+                    {
+                        distance = temp;
+                        positionToRemove = i;
+                        nearestColor = balls[i];
+                    }
+                }
+                //if (c != Color.Red) 
+                balls.RemoveAt(positionToRemove);
+                distance = double.MaxValue;
+                //List<MCvScalar> ballsCopy = balls;
+                //balls = ballsCopy;
+                Console.WriteLine($"{v[positionToRemove][0]},{v[positionToRemove][1]},{v[positionToRemove][2]},{v[positionToRemove][3]}");
+                v.RemoveAt(positionToRemove);
+                Console.WriteLine($"{c}: {nearestColor.V0}, {nearestColor.V1}, {nearestColor.V2}");
             }
         }
-
-        return nearestColor;
     }
-    public void FindCtrsColor(SquareVectors sV, PictureBox p1)
+    public List<MCvScalar> FindCtrsColor(SquareVectors sV, PictureBox p1)
     {
         Image<Rgb, byte> img = sV.output;
         p1.Image = img.ToBitmap();
         Image<Gray, byte> mask = new Image<Gray, byte>(img.Width, img.Height);
         //Instead of checking each ball, check each ball color, and find which is the closest ball
+        List<MCvScalar> BallColorAverages = new List<MCvScalar>();
         foreach (var v in sV.points)
         {
             mask.Draw(v, new Gray(255), -1);
@@ -143,58 +172,59 @@ public class ColoredBallDetection
             Matrix<byte> idx = new Matrix<byte>(mask.Size);
             mask.CopyTo(idx);
 
-            List<Rgb> colors = new List<Rgb>();
+            //List<Rgb> colors = new List<Rgb>();
 
-            for (int i = 0; i < img.Rows; i++)
-            {
-                for (int j = 0; j < img.Cols; j++)
-                {
-                    // If the mask is non-zero at this pixel
-                    if (idx.Data[i, j] != 0)
-                    {
+            //for (int i = 0; i < img.Rows; i++)
+            //{
+            //    for (int j = 0; j < img.Cols; j++)
+            //    {
+            //        // If the mask is non-zero at this pixel
+            //        if (idx.Data[i, j] != 0)
+            //        {
 
-                        // Get the color of the pixel
-                        Rgb color = img[i, j];
+            //            // Get the color of the pixel
+            //            Rgb color = img[i, j];
 
-                        //Console.WriteLine(color);
-                        //Console.WriteLine(color);
-                        // Add the color to the list
+            //            //Console.WriteLine(color);
+            //            //Console.WriteLine(color);
+            //            // Add the color to the list
 
-                        if (color.Blue == 0 && color.Red == 0 && color.Green == 0) { continue; }
-                        if (color.Blue == 255 && color.Red == 255 && color.Green == 255) { continue; }
-                        if (color.Blue < color.Green && color.Red < color.Green) { continue; }
-                        colors.Add(color);
-                    }
-                }
-            }
+            //            if (color.Blue == 0 && color.Red == 0 && color.Green == 0) { continue; }
+            //            if (color.Blue == 255 && color.Red == 255 && color.Green == 255) { continue; }
+            //            if (color.Blue < color.Green && color.Red < color.Green) { continue; }
+            //            colors.Add(color);
+            //        }
+            //    }
+            //}
 
-            // Now 'colors' contains the BGR values of all pixels inside the mask
-            double sumBlue = 0, sumGreen = 0, sumRed = 0;
+            //// Now 'colors' contains the BGR values of all pixels inside the mask
+            //double sumBlue = 0, sumGreen = 0, sumRed = 0;
 
-            foreach (Rgb color in colors)
-            {
-                sumBlue += color.Blue;
-                sumGreen += color.Green;
-                sumRed += color.Red;
-            }
+            //foreach (Rgb color in colors)
+            //{
+            //    sumBlue += color.Blue;
+            //    sumGreen += color.Green;
+            //    sumRed += color.Red;
+            //}
 
-            int numColors = colors.Count;
+            //int numColors = colors.Count;
 
-            double avgBlue = sumBlue / numColors;
-            double avgGreen = sumGreen / numColors;
-            double avgRed = sumRed / numColors;
+            //double avgBlue = sumBlue / numColors;
+            //double avgGreen = sumGreen / numColors;
+            //double avgRed = sumRed / numColors;
 
-            Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgBlue, avgGreen, avgRed);
+            //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgBlue, avgGreen, avgRed);
 
-            //MCvScalar avgColor = CvInvoke.Mean(img, mask);
+            MCvScalar avgColor = CvInvoke.Mean(img, mask);
             //Console.WriteLine(avgColor);
-            // Print the average color
+            ////Print the average color
             //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
-
-            Console.WriteLine(ColorApproximate(avgBlue, avgGreen, avgRed));
+            BallColorAverages.Add(avgColor);
+            //Console.WriteLine(ColorApproximate(avgBlue, avgGreen, avgRed));
         }
-        
+
         // Compute the average color
+        return BallColorAverages;
 
     }
     public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 5, double max_s = 9000, double alpha = 3.445)
@@ -208,11 +238,11 @@ public class ColoredBallDetection
                 float w = rotRect.Size.Width;
                 float h = rotRect.Size.Height;
                 double area = Emgu.CV.CvInvoke.ContourArea(contour);
-                //this assumes the the balls are of the same width and height. 
-                //maybe now I'll try to warp the images. but for now, nah. 
                 
+                //if the width and height of the detected ball is too large compared to the other property, not the ball we want
                 if ((h > w * 1.5) || (w > h*1.5))
                     continue;
+                //if the detected balls are too large or too small, it's not a ball
                 if ((area < min_s) || (area > max_s))
                     continue;
 
