@@ -61,6 +61,18 @@
               "target": "Package",
               "version": "[2.2.5, )"
             },
+            "Accord": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
+            "Accord.MachineLearning": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
+            "Accord.Math": {
+              "target": "Package",
+              "version": "[3.8.0, )"
+            },
             "Accord.Video.FFMPEG": {
               "target": "Package",
               "version": "[3.8.0, )"

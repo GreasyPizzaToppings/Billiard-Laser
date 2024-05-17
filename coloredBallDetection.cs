@@ -10,6 +10,9 @@ using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 using ScottPlot.Colormaps;
+using Accord.MachineLearning;
+using Accord.Math;
+
 public class ColoredBallDetection
 {
     public class SquareVectors
@@ -30,6 +33,12 @@ public class ColoredBallDetection
         Color.Black,
         Color.White,
         Color.Yellow,
+        Color.Purple,
+        Color.DarkRed,
+        Color.DarkViolet,
+        Color.AliceBlue,
+        Color.DarkCyan,
+        Color.LightBlue,
         Color.Red
     };
     
@@ -49,7 +58,7 @@ public class ColoredBallDetection
         CvInvoke.CvtColor(
             new Emgu.CV.Mat(bmpData.Height, bmpData.Width, DepthType.Cv8U, 3, bmpData.Scan0, bmpData.Stride),
             mat,
-            ColorConversion.Bgr2Bgra);
+            ColorConversion.Rgb2Rgba);
 
         bitmap.UnlockBits(bmpData);
     }
@@ -98,14 +107,146 @@ public class ColoredBallDetection
         //Draws rectangles on the contours
         SquareVectors squareVectors = DrawRectangles(filteredContours, test);
         Image<Rgb, byte> toOutput = squareVectors.output;
-        
+        ////pictureBox1.Image = maskedObjects.ToBitmap();
         squareVectors.output = maskedObjects.ToBitmap().ToImage<Rgb, byte>();
-        //pictureBox1.Image = toOutput.ToBitmap();
-        List<MCvScalar> BallColorAverages =  FindCtrsColor(squareVectors, pictureBox1);
-        ColorApproximate(BallColorAverages, squareVectors.points);
-        pictureBox1.Image = toOutput.ToBitmap();
+
+        //List<MCvScalar> BallColorAverages =  FindCtrsColor(squareVectors, pictureBox1);
+        //FindCtrsColor(squareVectors, pictureBox1);
+        GetDominantColor(squareVectors, pictureBox1);
+        //ColorApproximate(BallColorAverages, squareVectors.points);
+        //pictureBox1.Image = squareVectors.output.ToBitmap();
+        
+    }
+    public static void GetDominantColor(SquareVectors sV, PictureBox p1)
+    {
+        Bitmap image = sV.output.ToBitmap();
+
+        // Get the dimensions of the image
+       
+
+        // Reshape the image into a 2D array, where each row represents a pixel
+        foreach (Point[] p in sV.points)
+        {
+            int startX = p[0].X;
+            int startY = p[0].Y;
+            int endX = p[2].X;
+            int endY = p[2].Y;
+            int w = Math.Abs(endX - startX);
+            int h = Math.Abs(endY - startY);
+            double[][] pixels = new double[w * h][];
+            int indexX = 0;
+            
+            for (int i = startX; i < endX; i++)
+            {
+                int indexY = 0;
+                for (int j = startY; j < endY; j++)
+                {
+                    Color pixelColor = image.GetPixel(i, j);
+                    pixels[indexX * h + indexY] = new double[] { pixelColor.R, pixelColor.G, pixelColor.B };
+                    indexY++;
+                }
+                indexX++;
+            }
+
+            // Set the desired number of colors for the image
+            int n_colors = 6;
+
+            // Create a KMeans model with the specified number of clusters and fit it to the pixels
+            KMeans kmeans = new KMeans(n_colors);
+            var clusters = kmeans.Learn(pixels);
+
+            // Get the cluster centers (representing colors) from the model
+            double[][] colorPalette = clusters.Centroids;
+
+            // Convert the color palette to integers and reshape it for display
+            byte[][] colorPaletteInt = colorPalette.Apply(x => x.Apply(y => (byte)y));
+            Bitmap paletteImage = new Bitmap(n_colors, 1);
+            for (int i = 0; i < n_colors; i++)
+            {
+                paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+                Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+            }
+        }
+        //p1.Image = paletteImage;
+        // Display the color palette as an image
+        
+
+        //Bitmap bitmap = sV.output.ToBitmap();
+        //var maxWidth = bitmap.Width;
+        //var maxHeight = bitmap.Height;
+
+        ////TODO: validate the region being requested
+
+        ////Used for tally
+        //int r = 0;
+        //int g = 0;
+        //int b = 0;
+        //int totalPixels = 0;
+        ////foreach (Point[] p in sV.points)
+        ////{
+        //    //int startX = p[0].X;
+        //    //int startY = p[0].Y;
+        //    for (int x = 0; x < maxWidth; x++)
+        //    {
+        //        for (int y = 0; y <maxHeight; y++)
+        //        {
+        //            Color pixel = bitmap.GetPixel(x, y);
+        //            if (pixel.R == 0 && pixel.B == 0 && pixel.G == 0) 
+        //                continue;
+        //            r += pixel.R;
+        //            g += pixel.G;
+        //            b += pixel.B;
+        //            totalPixels++;
+        //        }
+        //    }
+
+        //    //Calculate average
+        //    r /= totalPixels;
+        //    g /= totalPixels;
+        //    b /= totalPixels;
+        //    Console.WriteLine(Color.FromArgb(r, g, b));
+        ////}
+
 
     }
+
+    public Color ColorApproximate(double avgBlue, double avgRed, double avgGreen)
+    {
+        //Color nearestColor = Color.Empty;
+        Color nearestColor = Color.Empty;
+        double distance = double.MaxValue;
+        //For detected vectors, find the closest color it's associated to. 
+        //so something like... 
+
+
+        foreach (Color c in ballColors)
+        {
+
+
+            double redDiff = Math.Pow(c.R - avgRed, 2.0);
+            double greenDiff = Math.Pow(c.G - avgGreen, 2.0);
+            double blueDiff = Math.Pow(c.B - avgBlue, 2.0);
+            double temp = Math.Sqrt(redDiff + greenDiff + blueDiff);
+            if (temp == 0)
+            {
+                nearestColor = c;
+                break;
+            }
+            //This will do an approximation of colors
+            else if (temp < distance)
+            {
+                distance = temp;
+                nearestColor = c;
+            }
+        }
+        return nearestColor;
+        //if (c != Color.Red) 
+        
+        //List<MCvScalar> ballsCopy = balls;
+        //balls = ballsCopy;
+    }
+
+        
     public void ColorApproximate(List<MCvScalar> balls, List<Point[]> v)
     {
 
@@ -158,7 +299,7 @@ public class ColoredBallDetection
             }
         }
     }
-    public List<MCvScalar> FindCtrsColor(SquareVectors sV, PictureBox p1)
+    public void FindCtrsColor(SquareVectors sV, PictureBox p1)
     {
         Image<Rgb, byte> img = sV.output;
         p1.Image = img.ToBitmap();
@@ -172,62 +313,60 @@ public class ColoredBallDetection
             Matrix<byte> idx = new Matrix<byte>(mask.Size);
             mask.CopyTo(idx);
 
-            //List<Rgb> colors = new List<Rgb>();
+            List<Rgb> colors = new List<Rgb>();
 
-            //for (int i = 0; i < img.Rows; i++)
-            //{
-            //    for (int j = 0; j < img.Cols; j++)
-            //    {
-            //        // If the mask is non-zero at this pixel
-            //        if (idx.Data[i, j] != 0)
-            //        {
+            for (int i = 0; i < img.Rows; i++)
+            {
+                for (int j = 0; j < img.Cols; j++)
+                {
+                    // If the mask is non-zero at this pixel
+                    if (idx.Data[i, j] != 0)
+                    {
 
-            //            // Get the color of the pixel
-            //            Rgb color = img[i, j];
+                        // Get the color of the pixel
+                        Rgb color = img[i, j];
 
-            //            //Console.WriteLine(color);
-            //            //Console.WriteLine(color);
-            //            // Add the color to the list
+                        //Console.WriteLine(color);
+                        //Console.WriteLine(color);
+                        // Add the color to the list
+                        if (color.Red == 0 && color.Blue == 0 && color.Green == 0) continue;
+                        //Console.WriteLine(color);
+                        colors.Add(color);
+                    }
+                }
+            }
 
-            //            if (color.Blue == 0 && color.Red == 0 && color.Green == 0) { continue; }
-            //            if (color.Blue == 255 && color.Red == 255 && color.Green == 255) { continue; }
-            //            if (color.Blue < color.Green && color.Red < color.Green) { continue; }
-            //            colors.Add(color);
-            //        }
-            //    }
-            //}
+            // Now 'colors' contains the BGR values of all pixels inside the mask
+            double sumBlue = 0, sumGreen = 0, sumRed = 0;
 
-            //// Now 'colors' contains the BGR values of all pixels inside the mask
-            //double sumBlue = 0, sumGreen = 0, sumRed = 0;
+            foreach (Rgb color in colors)
+            {
+                sumBlue += color.Blue;
+                sumGreen += color.Green;
+                sumRed += color.Red;
+            }
 
-            //foreach (Rgb color in colors)
-            //{
-            //    sumBlue += color.Blue;
-            //    sumGreen += color.Green;
-            //    sumRed += color.Red;
-            //}
+            int numColors = colors.Count;
 
-            //int numColors = colors.Count;
+            double avgBlue = sumBlue / numColors;
+            double avgGreen = sumGreen / numColors;
+            double avgRed = sumRed / numColors;
 
-            //double avgBlue = sumBlue / numColors;
-            //double avgGreen = sumGreen / numColors;
-            //double avgRed = sumRed / numColors;
+            Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgBlue, avgGreen, avgRed);
 
-            //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgBlue, avgGreen, avgRed);
-
-            MCvScalar avgColor = CvInvoke.Mean(img, mask);
-            //Console.WriteLine(avgColor);
-            ////Print the average color
-            //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
-            BallColorAverages.Add(avgColor);
-            //Console.WriteLine(ColorApproximate(avgBlue, avgGreen, avgRed));
+            //MCvScalar avgColor = CvInvoke.Mean(img, mask);
+            ////Console.WriteLine(avgColor);
+            //////Print the average color
+            ////Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
+            //BallColorAverages.Add(avgColor);
+            Console.WriteLine(ColorApproximate(avgBlue, avgGreen, avgRed));
         }
 
         // Compute the average color
-        return BallColorAverages;
+        //return BallColorAverages;
 
     }
-    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 5, double max_s = 9000, double alpha = 3.445)
+    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 20, double max_s = 9000, double alpha = 3.445)
     {
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
