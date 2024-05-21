@@ -23,7 +23,7 @@ namespace billiard_laser
         private static OpenCvSharp.Size p720 = new OpenCvSharp.Size(720, 407);
 
 
-        private OpenCvSharp.Size outputVideoResolution = p250; //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
+        private OpenCvSharp.Size outputVideoResolution = p360; //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         private List<VideoProcessor.VideoFrame> videoFrames;
 
@@ -130,7 +130,11 @@ namespace billiard_laser
             //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
 
             //Ball cueBall = new Ball(new System.Drawing.Point((int)(0.43f * outputVideoResolution.Width), (int)(0.24f * outputVideoResolution.Height)), 1f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            Ball cueBall = new Ball(new System.Drawing.Point((int)(0.06f * outputVideoResolution.Width), (int)(0.61f * outputVideoResolution.Height)), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
+            //Ball cueBall = new Ball(new System.Drawing.Point((int)(0.06f * outputVideoResolution.Width), (int)(0.61f * outputVideoResolution.Height)), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
+
+            //ronnie miss. object ball hits cue ball
+            Ball cueBall = new Ball(new System.Drawing.Point((int)(0.40f * outputVideoResolution.Width), (int)(0.05f * outputVideoResolution.Height)), 1f); // ronnie miss
+
 
             //footage from my house
             //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece

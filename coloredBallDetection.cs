@@ -51,14 +51,15 @@ public class ColoredBallDetection
 
         bitmap.UnlockBits(bmpData);
     }
+
     //Detects balls based on contours.
     public void BallDetection(PictureBox pictureBox1)
     {
         //Get image from the picture box
-        Bitmap bmp = new Bitmap(pictureBox1.Image);
+        Bitmap originalImage = new Bitmap(pictureBox1.Image);
 
         Emgu.CV.Mat transformed = new Emgu.CV.Mat();
-        BitmapToMat(bmp, transformed);
+        BitmapToMat(originalImage, transformed);
         Emgu.CV.Mat blurredImage = new Emgu.CV.Mat();
         CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
 
@@ -81,27 +82,28 @@ public class ColoredBallDetection
         Emgu.CV.Mat maskInv = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
 
-        ////// Create image with masked objects on table
+        // Create image with masked objects on table
         Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.BitwiseAnd(transformed, transformed, maskedObjects, maskInv);
         pictureBox1.Image = maskedObjects.ToBitmap();
-
-        //Find contours and filter them
+        
+        
+        // Find contours and filter them
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.FindContours(maskInv, contours, hierarchy, RetrType.External, ChainApproxMethod.ChainApproxSimple);
+        Emgu.CV.CvInvoke.FindContours(maskInv, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
         VectorOfVectorOfPoint filteredContours = FilterContours(contours);
-        Image<Rgb, byte> test = bmp.ToImage<Rgb, byte>();
+        Image<Rgb, byte> originalImageCopy = originalImage.ToImage<Rgb, byte>();
         
-        SquareVectors squareVectors = DrawRectangles(filteredContours, test);
-        Image<Rgb, byte> toOutput = squareVectors.output;
+        SquareVectors squareVectors = DrawRectangles(filteredContours, originalImageCopy); //change back to filters
+        Image<Rgb, byte> ballsHighlighted = squareVectors.output;
         
         squareVectors.output = maskedObjects.ToBitmap().ToImage<Rgb, byte>();
-        //pictureBox1.Image = toOutput.ToBitmap();
-        FindCtrsColor(squareVectors, pictureBox1);
-        pictureBox1.Image = toOutput.ToBitmap();
+        FindCtrsColor(squareVectors, pictureBox1); //print to console
+        pictureBox1.Image = ballsHighlighted.ToBitmap();
 
     }
+
     public Color ColorApproximate(double blue, double green, double red)
     {
         Color nearestColor = Color.Empty;
@@ -130,6 +132,12 @@ public class ColoredBallDetection
 
         return nearestColor;
     }
+
+    /// <summary>
+    /// sussy
+    /// </summary>
+    /// <param name="sV"></param>
+    /// <param name="p1"></param>
     public void FindCtrsColor(SquareVectors sV, PictureBox p1)
     {
         Image<Rgb, byte> img = sV.output;
@@ -197,7 +205,11 @@ public class ColoredBallDetection
         // Compute the average color
 
     }
-    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 5, double max_s = 9000, double alpha = 3.445)
+
+
+    //sussy
+    //remove non-ball contours that are too small or too big
+    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000, double alpha = 3.445)
     {
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
@@ -208,14 +220,19 @@ public class ColoredBallDetection
                 float w = rotRect.Size.Width;
                 float h = rotRect.Size.Height;
                 double area = Emgu.CV.CvInvoke.ContourArea(contour);
+                
+
                 //this assumes the the balls are of the same width and height. 
                 //maybe now I'll try to warp the images. but for now, nah. 
                 
-                if ((h > w * 1.5) || (w > h*1.5))
-                    continue;
-                if ((area < min_s) || (area > max_s))
+                //filter out non-squares or non-ball shaped things
+                if ((h > w * 1.5) || (w > h*1.5)) continue;
+
+                //filter out balls with very small area or too big areas
+                if ((area < (min_s*min_s)) || (area > (max_s*max_s)))
                     continue;
 
+                Console.WriteLine($"Filter contours: Area: {area}");
                 filteredContours.Push(contour);
             }
         }
