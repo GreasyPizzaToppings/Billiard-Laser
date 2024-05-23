@@ -112,18 +112,20 @@ public class ColoredBallDetection
 
         //List<MCvScalar> BallColorAverages =  FindCtrsColor(squareVectors, pictureBox1);
         //FindCtrsColor(squareVectors, pictureBox1);
-        GetDominantColor(squareVectors, pictureBox1);
+        pictureBox1.Image = GetDominantColor(squareVectors);
         //ColorApproximate(BallColorAverages, squareVectors.points);
         //pictureBox1.Image = squareVectors.output.ToBitmap();
         
     }
-    public static void GetDominantColor(SquareVectors sV, PictureBox p1)
+    public static Bitmap GetDominantColor(SquareVectors sV)
     {
         Bitmap image = sV.output.ToBitmap();
 
         // Get the dimensions of the image
-       
+        int n_colors = 2;
+        int paletteHeight = 0;
 
+        Bitmap paletteImage = new Bitmap(3*n_colors,3* sV.points.Count);
         // Reshape the image into a 2D array, where each row represents a pixel
         foreach (Point[] p in sV.points)
         {
@@ -149,7 +151,7 @@ public class ColoredBallDetection
             }
 
             // Set the desired number of colors for the image
-            int n_colors = 6;
+            
 
             // Create a KMeans model with the specified number of clusters and fit it to the pixels
             KMeans kmeans = new KMeans(n_colors);
@@ -160,13 +162,23 @@ public class ColoredBallDetection
 
             // Convert the color palette to integers and reshape it for display
             byte[][] colorPaletteInt = colorPalette.Apply(x => x.Apply(y => (byte)y));
-            Bitmap paletteImage = new Bitmap(n_colors, 1);
+            
+            //Console.WriteLine(Color.FromArgb(colorPaletteInt[0][0], colorPaletteInt[0][1], colorPaletteInt[0][2]));
+            
             for (int i = 0; i < n_colors; i++)
             {
-                paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+                int paletteWidth = (i+1) * 3;
+                int toPaletteHeight = (paletteHeight +1) * 3;
+                for (int j = i*3; j < paletteWidth; j++)
+                {
+                    for (int a  = paletteHeight*3; a < toPaletteHeight; a++)
+                    paletteImage.SetPixel(j, a, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+                }
                 Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
             }
+            paletteHeight++;
         }
+        return paletteImage;
         //p1.Image = paletteImage;
         // Display the color palette as an image
         
@@ -366,7 +378,7 @@ public class ColoredBallDetection
         //return BallColorAverages;
 
     }
-    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 20, double max_s = 9000, double alpha = 3.445)
+    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 50, double max_s = 9000, double alpha = 3.445)
     {
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
@@ -417,6 +429,7 @@ public class ColoredBallDetection
                     {
                         contours.Push(boxContour);
                         squareCtrs.Add(boxPointsInt);
+                        
                         CvInvoke.DrawContours(output, contours, -1, new MCvScalar(255, 100, 1), 2);
                     }
                 }
