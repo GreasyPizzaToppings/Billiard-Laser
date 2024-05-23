@@ -52,14 +52,15 @@ public class ColoredBallDetection
         bitmap.UnlockBits(bmpData);
     }
 
-    //Detects balls based on contours.
-    public void BallDetection(PictureBox pictureBox1)
+    /// <summary>
+    /// Detect and draw balls based on contours
+    /// </summary>
+    /// <param name="inputImage">Input image of table to process</param>
+    /// <returns>Image with balls highlighted</returns>
+    public Bitmap BallDetection(Bitmap inputImage)
     {
-        //Get image from the picture box
-        Bitmap originalImage = new Bitmap(pictureBox1.Image);
-
         Emgu.CV.Mat transformed = new Emgu.CV.Mat();
-        BitmapToMat(originalImage, transformed);
+        BitmapToMat(inputImage, transformed);
         Emgu.CV.Mat blurredImage = new Emgu.CV.Mat();
         CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
 
@@ -69,7 +70,7 @@ public class ColoredBallDetection
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
         
         // Green hue colors
-        ScalarArray lower = new ScalarArray(new MCvScalar(35, 40, 40)); 
+        ScalarArray lower = new ScalarArray(new MCvScalar(40, 80, 40)); 
         ScalarArray upper = new ScalarArray(new MCvScalar(70, 255, 255));
         Emgu.CV.CvInvoke.InRange(hsv, lower, upper, mask);
 
@@ -85,7 +86,7 @@ public class ColoredBallDetection
         // Create image with masked objects on table
         Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.BitwiseAnd(transformed, transformed, maskedObjects, maskInv);
-        pictureBox1.Image = maskedObjects.ToBitmap();
+        Bitmap maskedImage = maskedObjects.ToBitmap();
         
         
         // Find contours and filter them
@@ -93,15 +94,15 @@ public class ColoredBallDetection
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.FindContours(maskInv, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
         VectorOfVectorOfPoint filteredContours = FilterContours(contours);
-        Image<Rgb, byte> originalImageCopy = originalImage.ToImage<Rgb, byte>();
+        Image<Rgb, byte> inputImageCopy = inputImage.ToImage<Rgb, byte>();
         
-        SquareVectors squareVectors = DrawRectangles(filteredContours, originalImageCopy); //change back to filters
+        SquareVectors squareVectors = DrawRectangles(filteredContours, inputImageCopy); //change back to filters
         Image<Rgb, byte> ballsHighlighted = squareVectors.output;
         
         squareVectors.output = maskedObjects.ToBitmap().ToImage<Rgb, byte>();
-        FindCtrsColor(squareVectors, pictureBox1); //print to console
-        pictureBox1.Image = ballsHighlighted.ToBitmap();
+        FindCtrsColor(squareVectors, maskedImage); //prints stuff to console
 
+        return ballsHighlighted.ToBitmap();
     }
 
     public Color ColorApproximate(double blue, double green, double red)
@@ -138,10 +139,9 @@ public class ColoredBallDetection
     /// </summary>
     /// <param name="sV"></param>
     /// <param name="p1"></param>
-    public void FindCtrsColor(SquareVectors sV, PictureBox p1)
+    public void FindCtrsColor(SquareVectors sV, Bitmap p1)
     {
         Image<Rgb, byte> img = sV.output;
-        p1.Image = img.ToBitmap();
         Image<Gray, byte> mask = new Image<Gray, byte>(img.Width, img.Height);
         //Instead of checking each ball, check each ball color, and find which is the closest ball
         foreach (var v in sV.points)

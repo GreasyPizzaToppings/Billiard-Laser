@@ -4,6 +4,7 @@ using static VideoProcessor;
 using System.IO.Ports;
 using AForge.Video.DirectShow;
 using AForge.Video;
+using System.Windows.Media;
 
 namespace billiard_laser
 {
@@ -116,12 +117,75 @@ namespace billiard_laser
             btnProcessVideo.Enabled = true;
         }
 
-        //lots of debugging stuff in it
+        private void findColoredBalls_Click(object sender, EventArgs e)
+        {
+            ColoredBallDetection colored = new ColoredBallDetection();
+            pictureBoxImage.Image = colored.BallDetection((Bitmap)pictureBoxImage.Image);
+        }
+
         /// <summary>
-        /// Find cueball, draw cueball, find shots, record shots
+        /// For each frame in the video, perform ball and/or shot tracking
         /// </summary>
         /// <returns></returns>
         private async Task ProcessVideoAsync()
+        {
+            //Check which processing method to use
+
+            //Track just cueball (using bright spot) and detect shots
+            if (radioButtonCB.Checked)
+            {
+                await PerformCueBallShotDetection();
+            }
+
+            //Highlight All balls using image curve library
+            else if (radioButtonAllBalls.Checked)
+            {
+                ColoredBallDetection colored = new ColoredBallDetection();
+                Stopwatch stopwatch = new Stopwatch();
+                double totalProcessingTime = 0;
+                var processedFrames = new List<VideoFrame>();
+
+                foreach (VideoFrame frame in videoFrames)
+                {
+                    //time how long it takes to process frame
+                    stopwatch.Restart();
+
+                    Bitmap highlightedBalls = colored.BallDetection(frame.frame);
+
+                    // Create a new processed frame
+                    var processedFrame = new VideoFrame(highlightedBalls, frame.index);
+
+                    processedFrames.Add(processedFrame);
+                    listBoxProcessedFrames.Items.Add(processedFrame);
+
+                    stopwatch.Stop();
+
+                    totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+
+                    UpdateFpsLabel(totalProcessingTime, frame.index);
+
+                    if (playingVideo)
+                    {
+                        buttonNextFrame.Enabled = false;
+                        listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+                        pictureBoxImage.Image = highlightedBalls;
+                    }
+
+                    else
+                    {
+                        buttonNextFrame.Enabled = true;
+                    }
+
+                    Application.DoEvents();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Track just the cue ball using bright spot method and detect shots using old method
+        /// </summary>
+        /// <returns></returns>
+        private async Task PerformCueBallShotDetection()
         {
             //DEBUGGING: test cueballs with known starting position
 
@@ -384,21 +448,5 @@ namespace billiard_laser
             }
         }
 
-        private void buttonDetectBalls_Click(object sender, EventArgs e)
-        {
-            //CueBallDetector ballsDetector = new CueBallDetector();
-            //ballsDetector.houghCircles(pictureBoxImage);
-        }
-
-        private void pictureBoxImage_Click(object sender, EventArgs e)
-        {
-
-        }
-
-        private void button1_Click(object sender, EventArgs e)
-        {
-            ColoredBallDetection colored = new ColoredBallDetection();
-            colored.BallDetection(pictureBoxImage);
-        }
     }
 }
