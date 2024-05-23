@@ -2,3 +2,5 @@ create new methods with different names
 write steps in pseudocode and fill it out
 try and write without looking at ColoredBallDetection
 comment the old one out and test
+
+make programs work with lower resolutions
