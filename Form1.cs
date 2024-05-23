@@ -384,13 +384,6 @@ namespace billiard_laser
             }
         }
 
-        private void pictureBoxImage_MouseMove(object sender, MouseEventArgs e)
-        {
-            //update label with picturebox mouse x,y position
-            labelMouseCoordinates.Text = string.Format("Mouse: ({0},{1})", e.X, e.Y);
-        }
-
-
         private void buttonDetectBalls_Click(object sender, EventArgs e)
         {
             //CueBallDetector ballsDetector = new CueBallDetector();
