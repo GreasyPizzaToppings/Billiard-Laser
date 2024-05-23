@@ -22,9 +22,9 @@ namespace billiard_laser
         private static OpenCvSharp.Size p360 = new OpenCvSharp.Size(360, 203);
         private static OpenCvSharp.Size p480 = new OpenCvSharp.Size(480, 271);
         private static OpenCvSharp.Size p720 = new OpenCvSharp.Size(720, 407);
+        private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
-
-        private OpenCvSharp.Size outputVideoResolution = p360; //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
+        private OpenCvSharp.Size outputVideoResolution = p720; //for testing purposes!! results on baxter pc: native, 1.25fps. 480p: 2.25. 360p: 3.5fps, 180p: 13.8fps, 144p: 21fps, 100p: 44fps
 
         private List<VideoProcessor.VideoFrame> videoFrames;
 

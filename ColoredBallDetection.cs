@@ -192,14 +192,14 @@ public class ColoredBallDetection
             double avgGreen = sumGreen / numColors;
             double avgRed = sumRed / numColors;
 
-            Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgBlue, avgGreen, avgRed);
+            //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgBlue, avgGreen, avgRed);
 
             //MCvScalar avgColor = CvInvoke.Mean(img, mask);
             //Console.WriteLine(avgColor);
             // Print the average color
             //Console.WriteLine("Average color: B={0}, G={1}, R={2}", avgColor.V0, avgColor.V1, avgColor.V2);
 
-            Console.WriteLine(ColorApproximate(avgBlue, avgGreen, avgRed));
+            //Console.WriteLine(ColorApproximate(avgBlue, avgGreen, avgRed));
         }
         
         // Compute the average color
@@ -232,7 +232,7 @@ public class ColoredBallDetection
                 if ((area < (min_s*min_s)) || (area > (max_s*max_s)))
                     continue;
 
-                Console.WriteLine($"Filter contours: Area: {area}");
+                //Console.WriteLine($"Filter contours: Area: {area}");
                 filteredContours.Push(contour);
             }
         }
