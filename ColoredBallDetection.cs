@@ -9,6 +9,7 @@ using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
+using OpenCvSharp;
 public class ColoredBallDetection
 {
     public class SquareVectors
@@ -37,7 +38,7 @@ public class ColoredBallDetection
 
     }
     //Emgu CV bitmap to Mat doesn't convert some bitmaps properly so I had to implement this method. 
-    static void BitmapToMat(Bitmap bitmap, Emgu.CV.Mat mat)
+    static Emgu.CV.Mat BitmapToMat(Bitmap bitmap, Emgu.CV.Mat mat, DepthType depthType = DepthType.Cv8U)
     {
         BitmapData bmpData = bitmap.LockBits(
             new Rectangle(0, 0, bitmap.Width, bitmap.Height),
@@ -45,11 +46,12 @@ public class ColoredBallDetection
             PixelFormat.Format24bppRgb);
 
         CvInvoke.CvtColor(
-            new Emgu.CV.Mat(bmpData.Height, bmpData.Width, DepthType.Cv8U, 3, bmpData.Scan0, bmpData.Stride),
+            new Emgu.CV.Mat(bmpData.Height, bmpData.Width, depthType, 3, bmpData.Scan0, bmpData.Stride),
             mat,
             ColorConversion.Bgr2Bgra);
 
         bitmap.UnlockBits(bmpData);
+        return mat;
     }
     public Bitmap BlurImage(Bitmap inputImage)
     {
@@ -63,7 +65,7 @@ public class ColoredBallDetection
     //
     public Bitmap MaskImages(Bitmap inputImage)
     {
-        Mat blurredImageMat = inputImage.ToMat();
+        Emgu.CV.Mat blurredImageMat = inputImage.ToMat();
         Emgu.CV.Mat hsv = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.CvtColor(blurredImageMat, hsv, ColorConversion.Bgr2Hsv);
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
@@ -86,15 +88,20 @@ public class ColoredBallDetection
     }
     public Bitmap ApplyMask(Bitmap inputImage, Bitmap maskInv)
     {
+
         Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.BitwiseAnd(inputImage.ToMat(), inputImage.ToMat(), maskedObjects, maskInv.ToMat());
+        Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
+        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(maskInv, outputMat), maskedObjects);
         return maskedObjects.ToBitmap();
     }
     public VectorOfVectorOfPoint Contours(Bitmap maskInv)
     {
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.FindContours(maskInv.ToMat(), contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
+        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        CvInvoke.CvtColor(maskInv.ToMat(), outputMat, ColorConversion.Bgr2Gray);
+        Emgu.CV.CvInvoke.FindContours(outputMat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
         return contours;
     }
     /// <summary>
@@ -106,16 +113,18 @@ public class ColoredBallDetection
     {
         Bitmap blurredImage = BlurImage(inputImage);
         Bitmap maskInv = MaskImages(blurredImage);
+        
         //shows how it would look like if the mask is applied to original image
         Bitmap appliedMask = ApplyMask(blurredImage, maskInv);
+        //return appliedMask;
         VectorOfVectorOfPoint contours = Contours(maskInv);
         VectorOfVectorOfPoint filteredContours = FilterContours(contours);
         Image<Rgb, byte> inputImageCopy = inputImage.ToImage<Rgb, byte>();
-        
+
         SquareVectors squareVectors = DrawRectangles(filteredContours, inputImageCopy); //change back to filters
         Image<Rgb, byte> ballsHighlighted = squareVectors.output;
-        
-//        squareVectors.output = appliedMask.ToImage<Rgb, byte>();
+
+        //        squareVectors.output = appliedMask.ToImage<Rgb, byte>();
         //FindCtrsColor(squareVectors, maskedImage); //prints stuff to console
 
         return ballsHighlighted.ToBitmap();
