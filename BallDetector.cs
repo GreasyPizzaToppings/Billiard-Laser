@@ -9,6 +9,7 @@ using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
+using AForge.Imaging.Filters;
 
 public class BallDetector
 {
@@ -45,11 +46,12 @@ public class BallDetector
     /// <returns>Image with balls highlighted</returns>
     public Bitmap FindAllBalls(Bitmap inputImage)
     {
-        Bitmap blurredImage = BlurImage(inputImage);
+        Bitmap sharpenedImage = SharpenImage(inputImage);
+        Bitmap blurredImage = BlurImage(sharpenedImage);
         Bitmap maskInv = MaskImage(blurredImage);
 
         //shows how it would look like if the mask is applied to original image
-        Bitmap appliedMask = ApplyMask(blurredImage, maskInv);
+        //Bitmap appliedMask = ApplyMask(blurredImage, maskInv);
         //return appliedMask;
         VectorOfVectorOfPoint contours = GetContours(maskInv);
         VectorOfVectorOfPoint filteredContours = FilterContours(contours);
@@ -62,6 +64,24 @@ public class BallDetector
         //FindCtrsColor(squareVectors, maskedImage); //prints stuff to console
 
         return ballsHighlighted.ToBitmap();
+    }
+
+    public Bitmap SharpenImage(Bitmap image)
+    {
+        // Define the kernel
+        int[,] kernel = {
+            { -1, -1, -1 },
+            { -1, 9, -1 },
+            { -1, -1, -1 }
+         };
+
+        // Create the Convolution filter
+        Convolution filter = new Convolution(kernel);
+
+        // Apply the filter
+        Bitmap resultImage = filter.Apply(image);
+
+        return resultImage;
     }
 
     //Emgu CV bitmap to Mat doesn't convert some bitmaps properly so I had to implement this method. 

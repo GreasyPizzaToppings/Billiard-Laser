@@ -1,7 +1,7 @@
 ﻿
 namespace billiard_laser
 {
-    partial class Form1
+    partial class BilliardLaserForm
     {
         /// <summary>
         ///  Required designer variable.

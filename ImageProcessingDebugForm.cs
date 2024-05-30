@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace billiard_laser
 {
-    public partial class Form2 : Form
+    public partial class ImageProcessingDebugForm : Form
     {
-        public Form2()
+        public ImageProcessingDebugForm()
         {
             InitializeComponent();
         }

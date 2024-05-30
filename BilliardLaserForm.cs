@@ -8,7 +8,7 @@ using System.Windows.Media;
 
 namespace billiard_laser
 {
-    public partial class Form1 : Form
+    public partial class BilliardLaserForm : Form
     {
         private ArduinoController arduinoController;
         private CameraController cameraController;
@@ -32,7 +32,7 @@ namespace billiard_laser
         private Boolean playingVideo = false;
         private bool replayInProgress = false;
 
-        public Form1()
+        public BilliardLaserForm()
         {
             InitializeComponent();
         }
@@ -46,6 +46,9 @@ namespace billiard_laser
             cueBallDetector = new CueBallDetector();
 
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
+
+            ImageProcessingDebugForm debug = new ImageProcessingDebugForm();
+            debug.Show();
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
