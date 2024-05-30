@@ -1,4 +1,5 @@
-﻿namespace billiard_laser
+﻿
+namespace billiard_laser
 {
     partial class ImageProcessingDebugForm
     {
@@ -49,9 +50,12 @@
             labelMaskGreen = new Label();
             labelMaskRed = new Label();
             labelMaskBlue = new Label();
-            textBox1 = new TextBox();
-            textBox2 = new TextBox();
-            textBox3 = new TextBox();
+            trackBarMaskBlue = new TrackBar();
+            trackBarMaskGreen = new TrackBar();
+            trackBarMaskRed = new TrackBar();
+            labelMaskRedValue = new Label();
+            labelMaskGreenValue = new Label();
+            labelMaskBlueValue = new Label();
             ((System.ComponentModel.ISupportInitialize)loadedImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
@@ -60,6 +64,9 @@
             ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sharpenedImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)blurredSharpenedImagePicBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlue).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreen).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskRed).BeginInit();
             SuspendLayout();
             // 
             // loadedImagePicBox
@@ -266,38 +273,74 @@
             labelMaskBlue.TabIndex = 23;
             labelMaskBlue.Text = "Mask Blue";
             // 
-            // textBox1
+            // trackBarMaskBlue
             // 
-            textBox1.Location = new Point(819, 482);
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(100, 23);
-            textBox1.TabIndex = 24;
+            trackBarMaskBlue.Location = new Point(1099, 480);
+            trackBarMaskBlue.Maximum = 255;
+            trackBarMaskBlue.Name = "trackBarMaskBlue";
+            trackBarMaskBlue.Size = new Size(127, 45);
+            trackBarMaskBlue.TabIndex = 20;
+            trackBarMaskBlue.ValueChanged += trackBarMaskBlue_ValueChanged;
             // 
-            // textBox2
+            // trackBarMaskGreen
             // 
-            textBox2.Location = new Point(1103, 482);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(100, 23);
-            textBox2.TabIndex = 25;
+            trackBarMaskGreen.Location = new Point(956, 480);
+            trackBarMaskGreen.Maximum = 255;
+            trackBarMaskGreen.Name = "trackBarMaskGreen";
+            trackBarMaskGreen.Size = new Size(127, 45);
+            trackBarMaskGreen.TabIndex = 18;
+            trackBarMaskGreen.ValueChanged += trackBarMaskGreen_ValueChanged;
             // 
-            // textBox3
+            // trackBarMaskRed
             // 
-            textBox3.Location = new Point(960, 482);
-            textBox3.Name = "textBox3";
-            textBox3.Size = new Size(100, 23);
-            textBox3.TabIndex = 26;
+            trackBarMaskRed.Location = new Point(815, 480);
+            trackBarMaskRed.Maximum = 255;
+            trackBarMaskRed.Name = "trackBarMaskRed";
+            trackBarMaskRed.Size = new Size(127, 45);
+            trackBarMaskRed.TabIndex = 19;
+            trackBarMaskRed.ValueChanged += trackBarMaskRed_ValueChanged;
+            // 
+            // labelMaskRedValue
+            // 
+            labelMaskRedValue.AutoSize = true;
+            labelMaskRedValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskRedValue.Location = new Point(874, 514);
+            labelMaskRedValue.Name = "labelMaskRedValue";
+            labelMaskRedValue.Size = new Size(0, 20);
+            labelMaskRedValue.TabIndex = 24;
+            // 
+            // labelMaskGreenValue
+            // 
+            labelMaskGreenValue.AutoSize = true;
+            labelMaskGreenValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskGreenValue.Location = new Point(1012, 514);
+            labelMaskGreenValue.Name = "labelMaskGreenValue";
+            labelMaskGreenValue.Size = new Size(0, 20);
+            labelMaskGreenValue.TabIndex = 25;
+            // 
+            // labelMaskBlueValue
+            // 
+            labelMaskBlueValue.AutoSize = true;
+            labelMaskBlueValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskBlueValue.Location = new Point(1152, 514);
+            labelMaskBlueValue.Name = "labelMaskBlueValue";
+            labelMaskBlueValue.Size = new Size(0, 20);
+            labelMaskBlueValue.TabIndex = 26;
             // 
             // ImageProcessingDebugForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1264, 515);
-            Controls.Add(textBox3);
-            Controls.Add(textBox2);
-            Controls.Add(textBox1);
+            ClientSize = new Size(1264, 543);
+            Controls.Add(labelMaskBlueValue);
+            Controls.Add(labelMaskGreenValue);
+            Controls.Add(labelMaskRedValue);
             Controls.Add(labelMaskBlue);
             Controls.Add(labelMaskRed);
             Controls.Add(labelMaskGreen);
+            Controls.Add(trackBarMaskBlue);
+            Controls.Add(trackBarMaskRed);
+            Controls.Add(trackBarMaskGreen);
             Controls.Add(checkBoxEnableSharpen);
             Controls.Add(checkBoxEnableBlurr);
             Controls.Add(labelBlurredSharpened);
@@ -327,9 +370,13 @@
             ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)sharpenedImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)blurredSharpenedImagePicBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlue).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreen).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskRed).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
+
 
         #endregion
 
@@ -354,8 +401,11 @@
         private Label labelMaskGreen;
         private Label labelMaskRed;
         private Label labelMaskBlue;
-        private TextBox textBox1;
-        private TextBox textBox2;
-        private TextBox textBox3;
+        private TrackBar trackBarMaskBlue;
+        private TrackBar trackBarMaskGreen;
+        private TrackBar trackBarMaskRed;
+        private Label labelMaskRedValue;
+        private Label labelMaskGreenValue;
+        private Label labelMaskBlueValue;
     }
 }

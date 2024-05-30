@@ -17,15 +17,19 @@ namespace billiard_laser
             InitializeComponent();
         }
 
-        private void loadImageBtn_Click(object sender, EventArgs e)
+        private void trackBarMaskRed_ValueChanged(object sender, EventArgs e)
         {
-            FolderBrowserDialog fbd = new FolderBrowserDialog();
-            if (fbd.ShowDialog() == DialogResult.OK)
-            {
-                BallDetector detectBalls = new BallDetector();
-                loadedImagePicBox.Image = Image.FromFile(fbd.SelectedPath);
+            labelMaskRedValue.Text = trackBarMaskRed.Value.ToString();
+        }
 
-            }
+        private void trackBarMaskGreen_ValueChanged(object sender, EventArgs e)
+        {
+            labelMaskGreenValue.Text = trackBarMaskGreen.Value.ToString();
+        }
+
+        private void trackBarMaskBlue_ValueChanged(object sender, EventArgs e)
+        {
+            labelMaskBlueValue.Text = trackBarMaskBlue.Value.ToString();
         }
     }
 }
