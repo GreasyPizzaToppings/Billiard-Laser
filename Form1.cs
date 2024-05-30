@@ -120,8 +120,8 @@ namespace billiard_laser
 
         private void findColoredBalls_Click(object sender, EventArgs e)
         {
-            ColoredBallDetection colored = new ColoredBallDetection();
-            pictureBoxImage.Image = colored.BallDetection((Bitmap)pictureBoxImage.Image);
+            BallDetector colored = new BallDetector();
+            pictureBoxImage.Image = colored.FindAllBalls((Bitmap)pictureBoxImage.Image);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace billiard_laser
             //Highlight All balls using image curve library
             else if (radioButtonAllBalls.Checked)
             {
-                ColoredBallDetection colored = new ColoredBallDetection();
+                BallDetector colored = new BallDetector();
                 Stopwatch stopwatch = new Stopwatch();
                 double totalProcessingTime = 0;
                 var processedFrames = new List<VideoFrame>();
@@ -151,7 +151,7 @@ namespace billiard_laser
                     //time how long it takes to process frame
                     stopwatch.Restart();
 
-                    Bitmap highlightedBalls = colored.BallDetection(frame.frame);
+                    Bitmap highlightedBalls = colored.FindAllBalls(frame.frame);
 
                     // Create a new processed frame
                     var processedFrame = new VideoFrame(highlightedBalls, frame.index);

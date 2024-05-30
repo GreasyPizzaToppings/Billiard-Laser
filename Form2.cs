@@ -22,7 +22,7 @@ namespace billiard_laser
             FolderBrowserDialog fbd = new FolderBrowserDialog();
             if (fbd.ShowDialog() == DialogResult.OK)
             {
-                ColoredBallDetection detectBalls = new ColoredBallDetection();
+                BallDetector detectBalls = new BallDetector();
                 loadedImagePicBox.Image = Image.FromFile(fbd.SelectedPath);
 
             }
