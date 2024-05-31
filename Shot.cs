@@ -51,7 +51,7 @@ public class Shot
         path.Add(point);
     }
 
-    public void AddFrameToShot(VideoProcessor.VideoFrame frame) { frames.Add(frame); }
+    public void AddFrameToShot(VideoFrame frame) { frames.Add(frame); }
 
     public static double CalculateDistance(PointF point1, PointF point2)
     {

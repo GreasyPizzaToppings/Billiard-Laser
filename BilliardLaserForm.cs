@@ -24,12 +24,12 @@ namespace billiard_laser
         private static OpenCvSharp.Size p720 = new OpenCvSharp.Size(1280, 720);
         private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
-        //testing
+        //testing output
         private OpenCvSharp.Size outputVideoResolution = p720;
 
-        private List<VideoProcessor.VideoFrame> videoFrames;
+        private List<VideoFrame> videoFrames;
 
-        private Boolean playingVideo = false;
+        public Boolean processingVideo = false;
         private bool replayInProgress = false;
 
         public BilliardLaserForm()
@@ -42,11 +42,13 @@ namespace billiard_laser
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
 
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
-            cameraController = new CameraController(pictureBoxImage, cboCamera);
+            cameraController = new CameraController(cboCamera);
             cueBallDetector = new CueBallDetector();
 
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
+            cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
+            //show debug form
             ImageProcessingDebugForm debug = new ImageProcessingDebugForm();
             debug.Show();
         }
@@ -58,7 +60,13 @@ namespace billiard_laser
         private void btnRight_Click(object sender, EventArgs e) => arduinoController.MoveRight();
         private void btnDown_Click(object sender, EventArgs e) => arduinoController.MoveDown();
 
-        private void btnGetCameraInput_Click(object sender, EventArgs e) => cameraController.StartCameraCapture();
+        private void btnGetCameraInput_Click(object sender, EventArgs e) {
+            if (cameraController.StartCameraCapture())
+            {
+                btnProcessVideo.Enabled = true;
+            }
+            else btnProcessVideo.Enabled = false;
+        }
 
         private void btnLoadImage_Click(object sender, EventArgs e)
         {
@@ -127,6 +135,41 @@ namespace billiard_laser
             pictureBoxImage.Image = colored.FindAllBalls((Bitmap)pictureBoxImage.Image);
         }
 
+        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
+        {
+            //put in the picturebox
+            pictureBoxImage.Image = frame.frame;
+
+            //add to combo box?
+
+            //if we are currently detecting balls, call detection methods
+            if (processingVideo)
+            {
+                //process frame
+                //put processed frame in picturebox
+            }
+        }
+
+        /// <summary>
+        /// Given a frame of a 
+        /// </summary>
+        /// <param name="frame"></param>
+        private void FindBallsInFrame(VideoFrame frame)
+        {
+            //Check which processing method to use
+
+            //Track just cueball (using bright spot) and detect shots
+            if (radioButtonCB.Checked)
+            {
+                
+            }
+
+            //Highlight All balls using image curve library
+            else if (radioButtonAllBalls.Checked)
+            {
+            }
+        }
+
         /// <summary>
         /// For each frame in the video, perform ball and/or shot tracking
         /// </summary>
@@ -168,7 +211,7 @@ namespace billiard_laser
 
                     UpdateFpsLabel(totalProcessingTime, frame.index);
 
-                    if (playingVideo)
+                    if (processingVideo)
                     {
                         buttonNextFrame.Enabled = false;
                         listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
@@ -252,7 +295,7 @@ namespace billiard_laser
                 stopwatch.Stop();
                 UpdateFpsLabel(totalProcessingTime, frame.index);
 
-                if (playingVideo)
+                if (processingVideo)
                 {
                     buttonNextFrame.Enabled = false;
                     listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
@@ -277,13 +320,13 @@ namespace billiard_laser
         {
             listBoxProcessedFrames.Items.Clear();
 
-            playingVideo = true;
+            processingVideo = true;
             buttonResume.Enabled = false;
             buttonNextFrame.Enabled = false;
 
             await ProcessVideoAsync();
 
-            playingVideo = false;
+            processingVideo = false;
             buttonResume.Enabled = false;
             shotDetector.ShotFinished -= ShotDetector_ShotFinished;
         }
@@ -297,7 +340,7 @@ namespace billiard_laser
             if (listBoxProcessedFrames.SelectedItem != null)
             {
                 // Get the selected frame from the list
-                VideoProcessor.VideoFrame selectedFrame = (VideoProcessor.VideoFrame)listBoxProcessedFrames.SelectedItem;
+                VideoFrame selectedFrame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
 
                 // Display the selected frame in the PictureBox
                 pictureBoxImage.Image = selectedFrame.frame;
@@ -370,9 +413,9 @@ namespace billiard_laser
         private void buttonLastFrame_Click(object sender, EventArgs e)
         {
             //stop the video from playing
-            if (playingVideo)
+            if (processingVideo)
             {
-                playingVideo = false;
+                processingVideo = false;
                 buttonResume.Enabled = true;
             }
 
@@ -382,7 +425,7 @@ namespace billiard_laser
             if (listBoxProcessedFrames.SelectedIndex > 0)
             {
                 listBoxProcessedFrames.SelectedIndex -= 1;
-                var frame = (VideoProcessor.VideoFrame)listBoxProcessedFrames.SelectedItem;
+                var frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
                 pictureBoxImage.Image = frame.frame;
             }
         }
@@ -390,17 +433,17 @@ namespace billiard_laser
         //go forward a frame
         private void buttonNextFrame_Click(object sender, EventArgs e)
         {
-            if (playingVideo) return; //cant skip frame when at the latest frame
+            if (processingVideo) return; //cant skip frame when at the latest frame
 
             //stop the video from playing
-            playingVideo = false;
+            processingVideo = false;
 
             if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1))
             {
                 listBoxProcessedFrames.SelectedIndex += 1;
 
                 //show that image in the picturebox
-                var frame = (VideoProcessor.VideoFrame)listBoxProcessedFrames.SelectedItem;
+                var frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
                 pictureBoxImage.Image = frame.frame;
             }
 
@@ -410,7 +453,7 @@ namespace billiard_laser
         //skip to latest
         private void buttonResume_Click(object sender, EventArgs e)
         {
-            playingVideo = true;
+            processingVideo = true;
             buttonResume.Enabled = false;
             buttonNextFrame.Enabled = false;
 
@@ -423,7 +466,7 @@ namespace billiard_laser
         private void buttonPause_Click(object sender, EventArgs e)
         {
             // Stop processing more frames
-            playingVideo = false;
+            processingVideo = false;
 
             // Enable the resume button
             buttonResume.Enabled = true;

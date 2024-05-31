@@ -56,10 +56,11 @@ namespace billiard_laser
             labelDistance = new Label();
             labelSpeed = new Label();
             groupBoxVideoControls = new GroupBox();
+            labelDetectionMode = new Label();
             radioButtonAllBalls = new RadioButton();
             radioButtonCB = new RadioButton();
             buttonPause = new Button();
-            label1 = new Label();
+            labelFoundShots = new Label();
             listBoxShots = new ListBox();
             buttonResume = new Button();
             buttonNextFrame = new Button();
@@ -81,7 +82,7 @@ namespace billiard_laser
             // 
             // btnFindCueball
             // 
-            btnFindCueball.Location = new Point(8, 176);
+            btnFindCueball.Location = new Point(8, 87);
             btnFindCueball.Margin = new Padding(3, 2, 3, 2);
             btnFindCueball.Name = "btnFindCueball";
             btnFindCueball.Size = new Size(75, 25);
@@ -92,7 +93,7 @@ namespace billiard_laser
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(9, 266);
+            btnLaserOn.Location = new Point(9, 177);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(75, 25);
@@ -103,7 +104,7 @@ namespace billiard_laser
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(8, 295);
+            btnLaserOff.Location = new Point(8, 206);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(75, 25);
@@ -114,7 +115,7 @@ namespace billiard_laser
             // 
             // btnLoadImage
             // 
-            btnLoadImage.Location = new Point(8, 126);
+            btnLoadImage.Location = new Point(8, 37);
             btnLoadImage.Margin = new Padding(3, 2, 3, 2);
             btnLoadImage.Name = "btnLoadImage";
             btnLoadImage.Size = new Size(75, 25);
@@ -125,19 +126,19 @@ namespace billiard_laser
             // 
             // btnGetCameraInput
             // 
-            btnGetCameraInput.Location = new Point(8, 71);
+            btnGetCameraInput.Location = new Point(115, 68);
             btnGetCameraInput.Margin = new Padding(3, 2, 3, 2);
             btnGetCameraInput.Name = "btnGetCameraInput";
             btnGetCameraInput.Size = new Size(75, 25);
             btnGetCameraInput.TabIndex = 5;
-            btnGetCameraInput.Text = "Camera Input";
+            btnGetCameraInput.Text = "Load Cam";
             btnGetCameraInput.UseVisualStyleBackColor = true;
             btnGetCameraInput.Click += btnGetCameraInput_Click;
             // 
             // btnLeft
             // 
             btnLeft.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLeft.Location = new Point(9, 407);
+            btnLeft.Location = new Point(9, 410);
             btnLeft.Margin = new Padding(3, 2, 3, 2);
             btnLeft.Name = "btnLeft";
             btnLeft.Size = new Size(31, 32);
@@ -149,7 +150,7 @@ namespace billiard_laser
             // btnRight
             // 
             btnRight.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnRight.Location = new Point(48, 407);
+            btnRight.Location = new Point(48, 410);
             btnRight.Margin = new Padding(3, 2, 3, 2);
             btnRight.Name = "btnRight";
             btnRight.Size = new Size(31, 32);
@@ -161,7 +162,7 @@ namespace billiard_laser
             // btnUp
             // 
             btnUp.Font = new Font("Segoe UI", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnUp.Location = new Point(30, 371);
+            btnUp.Location = new Point(30, 374);
             btnUp.Margin = new Padding(3, 2, 3, 2);
             btnUp.Name = "btnUp";
             btnUp.Size = new Size(31, 32);
@@ -173,7 +174,7 @@ namespace billiard_laser
             // btnDown
             // 
             btnDown.Font = new Font("Microsoft Sans Serif", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDown.Location = new Point(30, 443);
+            btnDown.Location = new Point(30, 446);
             btnDown.Margin = new Padding(3, 2, 3, 2);
             btnDown.Name = "btnDown";
             btnDown.Size = new Size(31, 32);
@@ -185,7 +186,7 @@ namespace billiard_laser
             // lblServos
             // 
             lblServos.AutoSize = true;
-            lblServos.Location = new Point(8, 352);
+            lblServos.Location = new Point(8, 355);
             lblServos.Name = "lblServos";
             lblServos.Size = new Size(84, 15);
             lblServos.TabIndex = 10;
@@ -194,19 +195,20 @@ namespace billiard_laser
             // cboCamera
             // 
             cboCamera.FormattingEnabled = true;
-            cboCamera.Location = new Point(8, 37);
+            cboCamera.Location = new Point(6, 70);
             cboCamera.Name = "cboCamera";
-            cboCamera.Size = new Size(86, 23);
+            cboCamera.Size = new Size(103, 23);
             cboCamera.TabIndex = 11;
             // 
             // labelCameras
             // 
             labelCameras.AutoSize = true;
-            labelCameras.Location = new Point(9, 12);
+            labelCameras.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelCameras.Location = new Point(6, 51);
             labelCameras.Name = "labelCameras";
-            labelCameras.Size = new Size(82, 15);
+            labelCameras.Size = new Size(62, 19);
             labelCameras.TabIndex = 12;
-            labelCameras.Text = "Select Camera";
+            labelCameras.Text = "Cameras";
             // 
             // pictureBoxImage
             // 
@@ -360,17 +362,21 @@ namespace billiard_laser
             // 
             // groupBoxVideoControls
             // 
+            groupBoxVideoControls.Controls.Add(labelDetectionMode);
             groupBoxVideoControls.Controls.Add(radioButtonAllBalls);
             groupBoxVideoControls.Controls.Add(radioButtonCB);
             groupBoxVideoControls.Controls.Add(buttonPause);
-            groupBoxVideoControls.Controls.Add(label1);
+            groupBoxVideoControls.Controls.Add(labelFoundShots);
+            groupBoxVideoControls.Controls.Add(labelCameras);
             groupBoxVideoControls.Controls.Add(listBoxShots);
+            groupBoxVideoControls.Controls.Add(cboCamera);
             groupBoxVideoControls.Controls.Add(buttonResume);
             groupBoxVideoControls.Controls.Add(buttonNextFrame);
             groupBoxVideoControls.Controls.Add(buttonLastFrame);
             groupBoxVideoControls.Controls.Add(labelVideoControls);
             groupBoxVideoControls.Controls.Add(btnLoadVideo);
             groupBoxVideoControls.Controls.Add(labelFrames);
+            groupBoxVideoControls.Controls.Add(btnGetCameraInput);
             groupBoxVideoControls.Controls.Add(listBoxProcessedFrames);
             groupBoxVideoControls.Controls.Add(labelFrameRate);
             groupBoxVideoControls.Controls.Add(btnProcessVideo);
@@ -382,11 +388,21 @@ namespace billiard_laser
             groupBoxVideoControls.TabIndex = 44;
             groupBoxVideoControls.TabStop = false;
             // 
+            // labelDetectionMode
+            // 
+            labelDetectionMode.AutoSize = true;
+            labelDetectionMode.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelDetectionMode.Location = new Point(43, 136);
+            labelDetectionMode.Name = "labelDetectionMode";
+            labelDetectionMode.Size = new Size(108, 19);
+            labelDetectionMode.TabIndex = 44;
+            labelDetectionMode.Text = "Detection Mode";
+            // 
             // radioButtonAllBalls
             // 
             radioButtonAllBalls.AutoSize = true;
             radioButtonAllBalls.Checked = true;
-            radioButtonAllBalls.Location = new Point(90, 176);
+            radioButtonAllBalls.Location = new Point(95, 157);
             radioButtonAllBalls.Name = "radioButtonAllBalls";
             radioButtonAllBalls.Size = new Size(92, 19);
             radioButtonAllBalls.TabIndex = 43;
@@ -397,7 +413,7 @@ namespace billiard_laser
             // radioButtonCB
             // 
             radioButtonCB.AutoSize = true;
-            radioButtonCB.Location = new Point(18, 176);
+            radioButtonCB.Location = new Point(9, 157);
             radioButtonCB.Name = "radioButtonCB";
             radioButtonCB.Size = new Size(66, 19);
             radioButtonCB.TabIndex = 42;
@@ -407,7 +423,7 @@ namespace billiard_laser
             // buttonPause
             // 
             buttonPause.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonPause.Location = new Point(99, 129);
+            buttonPause.Location = new Point(105, 451);
             buttonPause.Margin = new Padding(3, 2, 3, 2);
             buttonPause.Name = "buttonPause";
             buttonPause.Size = new Size(75, 25);
@@ -416,31 +432,31 @@ namespace billiard_laser
             buttonPause.UseVisualStyleBackColor = true;
             buttonPause.Click += buttonPause_Click;
             // 
-            // label1
+            // labelFoundShots
             // 
-            label1.AutoSize = true;
-            label1.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(100, 207);
-            label1.Name = "label1";
-            label1.Size = new Size(102, 19);
-            label1.TabIndex = 40;
-            label1.Text = "Detected Shots";
+            labelFoundShots.AutoSize = true;
+            labelFoundShots.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelFoundShots.Location = new Point(97, 231);
+            labelFoundShots.Name = "labelFoundShots";
+            labelFoundShots.Size = new Size(86, 19);
+            labelFoundShots.TabIndex = 40;
+            labelFoundShots.Text = "Shots Found";
             // 
             // listBoxShots
             // 
             listBoxShots.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point);
             listBoxShots.FormattingEnabled = true;
-            listBoxShots.Location = new Point(103, 227);
+            listBoxShots.Location = new Point(100, 251);
             listBoxShots.Margin = new Padding(3, 2, 3, 2);
             listBoxShots.Name = "listBoxShots";
-            listBoxShots.Size = new Size(87, 238);
+            listBoxShots.Size = new Size(87, 160);
             listBoxShots.TabIndex = 39;
             listBoxShots.SelectedIndexChanged += listBoxShots_SelectedIndexChanged;
             // 
             // buttonResume
             // 
             buttonResume.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonResume.Location = new Point(20, 129);
+            buttonResume.Location = new Point(16, 451);
             buttonResume.Margin = new Padding(3, 2, 3, 2);
             buttonResume.Name = "buttonResume";
             buttonResume.Size = new Size(75, 25);
@@ -452,7 +468,7 @@ namespace billiard_laser
             // buttonNextFrame
             // 
             buttonNextFrame.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonNextFrame.Location = new Point(99, 104);
+            buttonNextFrame.Location = new Point(105, 426);
             buttonNextFrame.Margin = new Padding(3, 2, 3, 2);
             buttonNextFrame.Name = "buttonNextFrame";
             buttonNextFrame.Size = new Size(75, 25);
@@ -464,7 +480,7 @@ namespace billiard_laser
             // buttonLastFrame
             // 
             buttonLastFrame.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonLastFrame.Location = new Point(20, 104);
+            buttonLastFrame.Location = new Point(16, 426);
             buttonLastFrame.Margin = new Padding(3, 2, 3, 2);
             buttonLastFrame.Name = "buttonLastFrame";
             buttonLastFrame.Size = new Size(75, 25);
@@ -485,7 +501,7 @@ namespace billiard_laser
             // 
             // btnLoadVideo
             // 
-            btnLoadVideo.Location = new Point(20, 45);
+            btnLoadVideo.Location = new Point(115, 97);
             btnLoadVideo.Margin = new Padding(3, 2, 3, 2);
             btnLoadVideo.Name = "btnLoadVideo";
             btnLoadVideo.Size = new Size(75, 25);
@@ -498,7 +514,7 @@ namespace billiard_laser
             // 
             labelFrames.AutoSize = true;
             labelFrames.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelFrames.Location = new Point(11, 207);
+            labelFrames.Location = new Point(6, 231);
             labelFrames.Name = "labelFrames";
             labelFrames.Size = new Size(53, 19);
             labelFrames.TabIndex = 33;
@@ -508,19 +524,20 @@ namespace billiard_laser
             // 
             listBoxProcessedFrames.Font = new Font("Segoe UI", 8F, FontStyle.Regular, GraphicsUnit.Point);
             listBoxProcessedFrames.FormattingEnabled = true;
-            listBoxProcessedFrames.Location = new Point(11, 227);
+            listBoxProcessedFrames.Location = new Point(8, 251);
             listBoxProcessedFrames.Margin = new Padding(3, 2, 3, 2);
             listBoxProcessedFrames.Name = "listBoxProcessedFrames";
-            listBoxProcessedFrames.Size = new Size(87, 238);
+            listBoxProcessedFrames.Size = new Size(87, 160);
             listBoxProcessedFrames.TabIndex = 32;
             listBoxProcessedFrames.SelectedIndexChanged += listBoxFrames_SelectedIndexChanged;
             // 
             // labelFrameRate
             // 
             labelFrameRate.AutoSize = true;
-            labelFrameRate.Location = new Point(102, 72);
+            labelFrameRate.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelFrameRate.Location = new Point(5, 102);
             labelFrameRate.Name = "labelFrameRate";
-            labelFrameRate.Size = new Size(32, 15);
+            labelFrameRate.Size = new Size(38, 19);
             labelFrameRate.TabIndex = 31;
             labelFrameRate.Text = "FPS: ";
             // 
@@ -528,18 +545,18 @@ namespace billiard_laser
             // 
             btnProcessVideo.Enabled = false;
             btnProcessVideo.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnProcessVideo.Location = new Point(99, 45);
+            btnProcessVideo.Location = new Point(6, 189);
             btnProcessVideo.Margin = new Padding(3, 2, 3, 2);
             btnProcessVideo.Name = "btnProcessVideo";
-            btnProcessVideo.Size = new Size(75, 25);
+            btnProcessVideo.Size = new Size(184, 25);
             btnProcessVideo.TabIndex = 30;
-            btnProcessVideo.Text = "Start ";
+            btnProcessVideo.Text = "Start Detecting";
             btnProcessVideo.UseVisualStyleBackColor = true;
             btnProcessVideo.Click += btnProcessVideo_ClickAsync;
             // 
             // findColoredBalls
             // 
-            findColoredBalls.Location = new Point(8, 205);
+            findColoredBalls.Location = new Point(8, 116);
             findColoredBalls.Margin = new Padding(3, 2, 3, 2);
             findColoredBalls.Name = "findColoredBalls";
             findColoredBalls.Size = new Size(75, 25);
@@ -548,7 +565,7 @@ namespace billiard_laser
             findColoredBalls.UseVisualStyleBackColor = true;
             findColoredBalls.Click += findColoredBalls_Click;
             // 
-            // Form1
+            // BilliardLaserForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -557,20 +574,17 @@ namespace billiard_laser
             Controls.Add(groupBoxVideoControls);
             Controls.Add(groupBoxShotInfo);
             Controls.Add(pictureBoxImage);
-            Controls.Add(labelCameras);
-            Controls.Add(cboCamera);
             Controls.Add(lblServos);
             Controls.Add(btnDown);
             Controls.Add(btnUp);
             Controls.Add(btnRight);
             Controls.Add(btnLeft);
-            Controls.Add(btnGetCameraInput);
             Controls.Add(btnLoadImage);
             Controls.Add(btnLaserOff);
             Controls.Add(btnLaserOn);
             Controls.Add(btnFindCueball);
             Margin = new Padding(3, 2, 3, 2);
-            Name = "Form1";
+            Name = "BilliardLaserForm";
             Text = "Billiard Laser";
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
@@ -615,7 +629,7 @@ namespace billiard_laser
         private Label labelDistanceTravelled;
         private GroupBox groupBoxVideoControls;
         private Button buttonPause;
-        private Label label1;
+        private Label labelFoundShots;
         private ListBox listBoxShots;
         private Button buttonResume;
         private Button buttonNextFrame;
@@ -629,5 +643,6 @@ namespace billiard_laser
         private Button findColoredBalls;
         private RadioButton radioButtonAllBalls;
         private RadioButton radioButtonCB;
+        private Label labelDetectionMode;
     }
 }
