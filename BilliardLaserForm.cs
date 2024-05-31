@@ -13,8 +13,8 @@ namespace billiard_laser
         private ArduinoController arduinoController;
         private CameraController cameraController;
         private CueBallDetector cueBallDetector;
-        ShotDetector shotDetector = new ShotDetector();
-
+        private ShotDetector shotDetector;
+        private BallDetector ballDetector;
 
         //selection of output resolutions
         private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(355, 200);
@@ -29,7 +29,7 @@ namespace billiard_laser
 
         private List<VideoFrame> videoFrames;
 
-        public Boolean processingVideo = false;
+        public Boolean detectingBalls = false;
         private bool replayInProgress = false;
 
         public BilliardLaserForm()
@@ -41,10 +41,14 @@ namespace billiard_laser
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
 
+            //utility classes
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(cboCamera);
-            cueBallDetector = new CueBallDetector();
+            cueBallDetector = new CueBallDetector(); //todo remove later?
+            shotDetector = new ShotDetector();
+            ballDetector = new BallDetector();
 
+            //event handler methods
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
@@ -131,42 +135,29 @@ namespace billiard_laser
 
         private void findColoredBalls_Click(object sender, EventArgs e)
         {
-            BallDetector colored = new BallDetector();
-            pictureBoxImage.Image = colored.FindAllBalls((Bitmap)pictureBoxImage.Image);
+            pictureBoxImage.Image = ballDetector.FindAllBalls((Bitmap)pictureBoxImage.Image);
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
-        {
-            //put in the picturebox
-            pictureBoxImage.Image = frame.frame;
-
+        {   
             //add to combo box?
 
-            //if we are currently detecting balls, call detection methods
-            if (processingVideo)
+            //detect balls
+            if (detectingBalls)
             {
-                //process frame
-                //put processed frame in picturebox
-            }
-        }
+                Bitmap highlightedBalls = ballDetector.FindAllBalls(frame.frame);
+                pictureBoxImage.Image = highlightedBalls;
 
-        /// <summary>
-        /// Given a frame of a 
-        /// </summary>
-        /// <param name="frame"></param>
-        private void FindBallsInFrame(VideoFrame frame)
-        {
-            //Check which processing method to use
+                //update fps label
 
-            //Track just cueball (using bright spot) and detect shots
-            if (radioButtonCB.Checked)
-            {
-                
+                //add processed frame to list?
+
+                Application.DoEvents();
             }
 
-            //Highlight All balls using image curve library
-            else if (radioButtonAllBalls.Checked)
-            {
+            //raw input, no highlighting of balls
+            else {
+                pictureBoxImage.Image = frame.frame;
             }
         }
 
@@ -176,131 +167,36 @@ namespace billiard_laser
         /// <returns></returns>
         private async Task ProcessVideoAsync()
         {
-            //Check which processing method to use
-
-            //Track just cueball (using bright spot) and detect shots
-            if (radioButtonCB.Checked)
-            {
-                await PerformCueBallShotDetection();
-            }
-
-            //Highlight All balls using image curve library
-            else if (radioButtonAllBalls.Checked)
-            {
-                BallDetector colored = new BallDetector();
-                Stopwatch stopwatch = new Stopwatch();
-                double totalProcessingTime = 0;
-                var processedFrames = new List<VideoFrame>();
-
-                foreach (VideoFrame frame in videoFrames)
-                {
-                    //time how long it takes to process frame
-                    stopwatch.Restart();
-
-                    Bitmap highlightedBalls = colored.FindAllBalls(frame.frame);
-
-                    // Create a new processed frame
-                    var processedFrame = new VideoFrame(highlightedBalls, frame.index);
-
-                    processedFrames.Add(processedFrame);
-                    listBoxProcessedFrames.Items.Add(processedFrame);
-
-                    stopwatch.Stop();
-
-                    totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
-                    UpdateFpsLabel(totalProcessingTime, frame.index);
-
-                    if (processingVideo)
-                    {
-                        buttonNextFrame.Enabled = false;
-                        listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-                        pictureBoxImage.Image = highlightedBalls;
-                    }
-
-                    else
-                    {
-                        buttonNextFrame.Enabled = true;
-                    }
-
-                    Application.DoEvents();
-                }
-            }
-        }
-
-        /// <summary>
-        /// Track just the cue ball using bright spot method and detect shots using old method
-        /// </summary>
-        /// <returns></returns>
-        private async Task PerformCueBallShotDetection()
-        {
-            //DEBUGGING: test cueballs with known starting position
-
-            //Ball cueBall = new Ball(new Point(43, 41), 1); //144p: !!TESTING if we already know starting position. remove later.  testing for 'successfulPot'.
-            //Ball cueBall = new Ball(new Point(140, 57), 2); //missedBlack.mp4
-            //Ball cueBall = new Ball(new Point(47, 85), 0.5f); //73 break mp4
-
-            //Ball cueBall = new Ball(new System.Drawing.Point((int)(0.43f * outputVideoResolution.Width), (int)(0.24f * outputVideoResolution.Height)), 1f); //successful pot 1 cannon. best: 125. 155 bad. 160 bad. works 50, 25, 15. bad at 5
-            //Ball cueBall = new Ball(new System.Drawing.Point((int)(0.06f * outputVideoResolution.Width), (int)(0.61f * outputVideoResolution.Height)), 1f); // GAME. CROPPED. 3 shots and full video. works nice at 125. 7 Radius search
-
-            //ronnie miss. object ball hits cue ball
-            Ball cueBall = new Ball(new System.Drawing.Point((int)(0.40f * outputVideoResolution.Width), (int)(0.05f * outputVideoResolution.Height)), 1f); // ronnie miss
-
-
-            //footage from my house
-            //Ball cueBall = new Ball(new Point(110, 120), 1f); //180p: real pool footage: 1 shot 1 miss mantelpiece
-            //Ball cueBall = new Ball(new Point(200, 60), 1f); //180p: 3 pots, overhead, light. cropped
-            //Ball cueBall = new Ball(new Point(70, 114), 2f); //180p: 2 pots overhead, cropped
-            //Ball cueBall = new Ball(new Point(181, 105), 1f); //180p: 1 pot side
-
-            var processedFrames = new List<VideoFrame>();
             Stopwatch stopwatch = new Stopwatch();
             double totalProcessingTime = 0;
+            var processedFrames = new List<VideoFrame>();
 
             foreach (VideoFrame frame in videoFrames)
             {
                 //time how long it takes to process frame
                 stopwatch.Restart();
 
-                object[] objects = await Task.Run(() => cueBallDetector.FindCueBallDebug(cueBall, frame.frame, 125));
-
-                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
-                cueBall = (Ball)objects[0];
-
-                Console.WriteLine("Frame {0}\n CB: ({1},{2}) R:{3}", frame.index, cueBall.Centre.X, cueBall.Centre.Y, cueBall.Radius);
-                Console.WriteLine("Delta: X{0},Y{1}\n", cueBall.DeltaX, cueBall.DeltaY);
-
-                PointF brightSpot = (PointF)objects[1];
-                System.Drawing.Point[] searchArea = (System.Drawing.Point[])objects[2];
-
-                // detect shots
-                shotDetector.ProcessFrame(cueBall, frame);
-
-                // Draw the cue ball on the frame
-                var drawnImage = DrawingHelper.DrawBallOnImage(cueBall, frame.frame);
-
-                // Draw the search area (for debugging)
-                drawnImage = DrawingHelper.DrawPolygon(searchArea, drawnImage);
-
-                // Draw the bright spot (for debugging)
-                drawnImage = DrawingHelper.DrawPoint(brightSpot, drawnImage);
+                Bitmap highlightedBalls = ballDetector.FindAllBalls(frame.frame);
 
                 // Create a new processed frame
-                var processedFrame = new VideoFrame(drawnImage, frame.index);
+                var processedFrame = new VideoFrame(highlightedBalls, frame.index);
 
                 processedFrames.Add(processedFrame);
                 listBoxProcessedFrames.Items.Add(processedFrame);
 
                 stopwatch.Stop();
+
+                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+
                 UpdateFpsLabel(totalProcessingTime, frame.index);
 
-                if (processingVideo)
+                if (detectingBalls)
                 {
                     buttonNextFrame.Enabled = false;
                     listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-                    pictureBoxImage.Image = processedFrame.frame;
+                    pictureBoxImage.Image = highlightedBalls;
                 }
+
                 else
                 {
                     buttonNextFrame.Enabled = true;
@@ -308,6 +204,7 @@ namespace billiard_laser
 
                 Application.DoEvents();
             }
+            
         }
 
         private void UpdateFpsLabel(double totalTime, int index)
@@ -318,17 +215,24 @@ namespace billiard_laser
 
         private async void btnProcessVideo_ClickAsync(object sender, EventArgs e)
         {
-            listBoxProcessedFrames.Items.Clear();
+            //set flag that ball detection is enabled
+            detectingBalls = true;
 
-            processingVideo = true;
-            buttonResume.Enabled = false;
-            buttonNextFrame.Enabled = false;
+            //if we loaded a video, process that
+            if (videoFrames != null) {
+                listBoxProcessedFrames.Items.Clear();
+                buttonResume.Enabled = false;
+                buttonNextFrame.Enabled = false;
 
-            await ProcessVideoAsync();
+                await ProcessVideoAsync();
 
-            processingVideo = false;
-            buttonResume.Enabled = false;
-            shotDetector.ShotFinished -= ShotDetector_ShotFinished;
+                detectingBalls = false;
+                buttonResume.Enabled = false;
+                shotDetector.ShotFinished -= ShotDetector_ShotFinished;
+            }
+
+            //else if its camera input, let it do its thing
+
         }
 
         private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
@@ -413,9 +317,9 @@ namespace billiard_laser
         private void buttonLastFrame_Click(object sender, EventArgs e)
         {
             //stop the video from playing
-            if (processingVideo)
+            if (detectingBalls)
             {
-                processingVideo = false;
+                detectingBalls = false;
                 buttonResume.Enabled = true;
             }
 
@@ -433,10 +337,10 @@ namespace billiard_laser
         //go forward a frame
         private void buttonNextFrame_Click(object sender, EventArgs e)
         {
-            if (processingVideo) return; //cant skip frame when at the latest frame
+            if (detectingBalls) return; //cant skip frame when at the latest frame
 
             //stop the video from playing
-            processingVideo = false;
+            detectingBalls = false;
 
             if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1))
             {
@@ -453,7 +357,7 @@ namespace billiard_laser
         //skip to latest
         private void buttonResume_Click(object sender, EventArgs e)
         {
-            processingVideo = true;
+            detectingBalls = true;
             buttonResume.Enabled = false;
             buttonNextFrame.Enabled = false;
 
@@ -466,7 +370,7 @@ namespace billiard_laser
         private void buttonPause_Click(object sender, EventArgs e)
         {
             // Stop processing more frames
-            processingVideo = false;
+            detectingBalls = false;
 
             // Enable the resume button
             buttonResume.Enabled = true;
