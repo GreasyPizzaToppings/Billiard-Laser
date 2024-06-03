@@ -96,21 +96,6 @@ namespace billiard_laser
             labelMaskBlueMaxValue.Text = trackBarMaskBlueMax.Value.ToString();
         }
 
-        private void trackBarMaskRed_ValueChanged(object sender, EventArgs e)
-        {
-            labelMaskRedMinValue.Text = trackBarMaskRedMin.Value.ToString();
-        }
-
-        private void trackBarMaskGreen_ValueChanged(object sender, EventArgs e)
-        {
-            labelMaskGreenMinValue.Text = trackBarMaskGreenMin.Value.ToString();
-        }
-
-        private void trackBarMaskBlue_ValueChanged(object sender, EventArgs e)
-        {
-            labelMaskBlueMinValue.Text = trackBarMaskBlueMin.Value.ToString();
-        }
-
         private void ImageProcessingDebugForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             DebugFormClosed?.Invoke(this, EventArgs.Empty);
@@ -173,7 +158,6 @@ namespace billiard_laser
                 }
             }
         }
-
 
     }
 }
