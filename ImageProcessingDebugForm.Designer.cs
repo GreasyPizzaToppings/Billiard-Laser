@@ -29,7 +29,7 @@ namespace billiard_laser
         /// </summary>
         private void InitializeComponent()
         {
-            loadedImagePicBox = new PictureBox();
+            originalImagePicBox = new PictureBox();
             invMaskPicBox = new PictureBox();
             appliedMaskPicBox = new PictureBox();
             blurredImagePicBox = new PictureBox();
@@ -56,7 +56,7 @@ namespace billiard_laser
             labelMaskRedValue = new Label();
             labelMaskGreenValue = new Label();
             labelMaskBlueValue = new Label();
-            ((System.ComponentModel.ISupportInitialize)loadedImagePicBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)originalImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)blurredImagePicBox).BeginInit();
@@ -69,14 +69,15 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)trackBarMaskRed).BeginInit();
             SuspendLayout();
             // 
-            // loadedImagePicBox
+            // originalImagePicBox
             // 
-            loadedImagePicBox.Location = new Point(12, 39);
-            loadedImagePicBox.Margin = new Padding(3, 2, 3, 2);
-            loadedImagePicBox.Name = "loadedImagePicBox";
-            loadedImagePicBox.Size = new Size(300, 188);
-            loadedImagePicBox.TabIndex = 0;
-            loadedImagePicBox.TabStop = false;
+            originalImagePicBox.Location = new Point(12, 39);
+            originalImagePicBox.Margin = new Padding(3, 2, 3, 2);
+            originalImagePicBox.Name = "originalImagePicBox";
+            originalImagePicBox.Size = new Size(300, 188);
+            originalImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
+            originalImagePicBox.TabIndex = 0;
+            originalImagePicBox.TabStop = false;
             // 
             // invMaskPicBox
             // 
@@ -93,6 +94,7 @@ namespace billiard_laser
             appliedMaskPicBox.Margin = new Padding(3, 2, 3, 2);
             appliedMaskPicBox.Name = "appliedMaskPicBox";
             appliedMaskPicBox.Size = new Size(300, 188);
+            appliedMaskPicBox.SizeMode = PictureBoxSizeMode.Zoom;
             appliedMaskPicBox.TabIndex = 2;
             appliedMaskPicBox.TabStop = false;
             // 
@@ -102,6 +104,7 @@ namespace billiard_laser
             blurredImagePicBox.Margin = new Padding(3, 2, 3, 2);
             blurredImagePicBox.Name = "blurredImagePicBox";
             blurredImagePicBox.Size = new Size(300, 188);
+            blurredImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
             blurredImagePicBox.TabIndex = 3;
             blurredImagePicBox.TabStop = false;
             // 
@@ -111,6 +114,7 @@ namespace billiard_laser
             allContoursPicBox.Margin = new Padding(3, 2, 3, 2);
             allContoursPicBox.Name = "allContoursPicBox";
             allContoursPicBox.Size = new Size(300, 188);
+            allContoursPicBox.SizeMode = PictureBoxSizeMode.Zoom;
             allContoursPicBox.TabIndex = 4;
             allContoursPicBox.TabStop = false;
             // 
@@ -120,6 +124,7 @@ namespace billiard_laser
             filteredContoursPicBox.Margin = new Padding(3, 2, 3, 2);
             filteredContoursPicBox.Name = "filteredContoursPicBox";
             filteredContoursPicBox.Size = new Size(300, 188);
+            filteredContoursPicBox.SizeMode = PictureBoxSizeMode.Zoom;
             filteredContoursPicBox.TabIndex = 5;
             filteredContoursPicBox.TabStop = false;
             // 
@@ -189,6 +194,7 @@ namespace billiard_laser
             sharpenedImagePicBox.Margin = new Padding(3, 2, 3, 2);
             sharpenedImagePicBox.Name = "sharpenedImagePicBox";
             sharpenedImagePicBox.Size = new Size(300, 188);
+            sharpenedImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
             sharpenedImagePicBox.TabIndex = 12;
             sharpenedImagePicBox.TabStop = false;
             // 
@@ -198,6 +204,7 @@ namespace billiard_laser
             blurredSharpenedImagePicBox.Margin = new Padding(3, 2, 3, 2);
             blurredSharpenedImagePicBox.Name = "blurredSharpenedImagePicBox";
             blurredSharpenedImagePicBox.Size = new Size(300, 188);
+            blurredSharpenedImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
             blurredSharpenedImagePicBox.TabIndex = 13;
             blurredSharpenedImagePicBox.TabStop = false;
             // 
@@ -358,11 +365,12 @@ namespace billiard_laser
             Controls.Add(blurredImagePicBox);
             Controls.Add(appliedMaskPicBox);
             Controls.Add(invMaskPicBox);
-            Controls.Add(loadedImagePicBox);
+            Controls.Add(originalImagePicBox);
             Margin = new Padding(3, 2, 3, 2);
             Name = "ImageProcessingDebugForm";
             Text = "Image Processing Debugging";
-            ((System.ComponentModel.ISupportInitialize)loadedImagePicBox).EndInit();
+            FormClosed += ImageProcessingDebugForm_FormClosed;
+            ((System.ComponentModel.ISupportInitialize)originalImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)blurredImagePicBox).EndInit();
@@ -380,7 +388,7 @@ namespace billiard_laser
 
         #endregion
 
-        private PictureBox loadedImagePicBox;
+        private PictureBox originalImagePicBox;
         private PictureBox invMaskPicBox;
         private PictureBox appliedMaskPicBox;
         private PictureBox blurredImagePicBox;

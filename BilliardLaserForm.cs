@@ -10,6 +10,10 @@ namespace billiard_laser
 {
     public partial class BilliardLaserForm : Form
     {
+        //video debugging form
+        private ImageProcessingDebugForm debugForm;
+
+        //utility classes
         private ArduinoController arduinoController;
         private CameraController cameraController;
         private CueBallDetector cueBallDetector;
@@ -29,8 +33,11 @@ namespace billiard_laser
 
         private List<VideoFrame> videoFrames;
 
+        //flags
         public Boolean detectingBalls = false;
         private bool replayInProgress = false;
+
+        public static event EventHandler<ImageProcessingResults> ProcessedDebugFrame; 
 
         public BilliardLaserForm()
         {
@@ -51,10 +58,6 @@ namespace billiard_laser
             //event handler methods
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
-
-            //show debug form
-            ImageProcessingDebugForm debug = new ImageProcessingDebugForm();
-            debug.Show();
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
@@ -64,7 +67,8 @@ namespace billiard_laser
         private void btnRight_Click(object sender, EventArgs e) => arduinoController.MoveRight();
         private void btnDown_Click(object sender, EventArgs e) => arduinoController.MoveDown();
 
-        private void btnGetCameraInput_Click(object sender, EventArgs e) {
+        private void btnGetCameraInput_Click(object sender, EventArgs e)
+        {
             if (cameraController.StartCameraCapture())
             {
                 btnProcessVideo.Enabled = true;
@@ -112,7 +116,6 @@ namespace billiard_laser
             }
         }
 
-
         private void btnLoadVideo_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -133,19 +136,44 @@ namespace billiard_laser
             btnProcessVideo.Enabled = true;
         }
 
-        private void findColoredBalls_Click(object sender, EventArgs e)
-        {
-            pictureBoxImage.Image = ballDetector.FindAllBalls((Bitmap)pictureBoxImage.Image);
+        /// <summary>
+        /// method that handles getting the image of found balls. it handles the case if debugging is enabled or not
+        /// </summary>
+        /// <returns></returns>
+        private Bitmap getHighlightedBalls(Bitmap tableImage) {
+
+            //no image debugging, just get filtered highlighted balls
+            if (debugForm == null)
+            {
+                return ballDetector.FindAllBalls(tableImage);
+            }
+
+            //debugging enabled
+            else
+            {
+                ImageProcessingResults results = ballDetector.FindAllBallsDebug(tableImage); //debug method
+
+                //send debug form the results
+                ProcessedDebugFrame.Invoke(this, results);
+
+                return results.FilteredBallsFound;
+            }
         }
 
+        private void findColoredBalls_Click(object sender, EventArgs e)
+        {
+            pictureBoxImage.Image = getHighlightedBalls((Bitmap)pictureBoxImage.Image);
+        }
+
+
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
-        {   
+        {
             //add to combo box?
 
             //detect balls
             if (detectingBalls)
             {
-                Bitmap highlightedBalls = ballDetector.FindAllBalls(frame.frame);
+                Bitmap highlightedBalls = getHighlightedBalls(frame.frame);
                 pictureBoxImage.Image = highlightedBalls;
 
                 //update fps label
@@ -156,7 +184,8 @@ namespace billiard_laser
             }
 
             //raw input, no highlighting of balls
-            else {
+            else
+            {
                 pictureBoxImage.Image = frame.frame;
             }
         }
@@ -176,9 +205,9 @@ namespace billiard_laser
                 //time how long it takes to process frame
                 stopwatch.Restart();
 
-                Bitmap highlightedBalls = ballDetector.FindAllBalls(frame.frame);
+                Bitmap highlightedBalls = getHighlightedBalls(frame.frame);
 
-                // Create a new processed frame
+                // put the processed frame in our container
                 var processedFrame = new VideoFrame(highlightedBalls, frame.index);
 
                 processedFrames.Add(processedFrame);
@@ -204,7 +233,7 @@ namespace billiard_laser
 
                 Application.DoEvents();
             }
-            
+
         }
 
         private void UpdateFpsLabel(double totalTime, int index)
@@ -219,7 +248,8 @@ namespace billiard_laser
             detectingBalls = true;
 
             //if we loaded a video, process that
-            if (videoFrames != null) {
+            if (videoFrames != null)
+            {
                 listBoxProcessedFrames.Items.Clear();
                 buttonResume.Enabled = false;
                 buttonNextFrame.Enabled = false;
@@ -399,5 +429,25 @@ namespace billiard_laser
             }
         }
 
+        private void buttonShowDebugForm_Click(object sender, EventArgs e)
+        {
+            if (debugForm == null || debugForm.IsDisposed)
+            {
+                debugForm = new ImageProcessingDebugForm();
+                debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
+                debugForm.Show();
+            }
+
+            else
+            {
+                debugForm.Focus();
+            }
+        }
+
+        //set our debug form object to null when it closes
+        private void DebugForm_DebugFormClosed(object sender, EventArgs e)
+        {
+            debugForm = null;
+        }
     }
 }
