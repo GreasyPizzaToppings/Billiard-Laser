@@ -56,6 +56,7 @@ namespace billiard_laser
             labelMaskRedValue = new Label();
             labelMaskGreenValue = new Label();
             labelMaskBlueValue = new Label();
+            panelImageSettings = new Panel();
             ((System.ComponentModel.ISupportInitialize)originalImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
@@ -67,6 +68,7 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)trackBarMaskBlue).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarMaskGreen).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarMaskRed).BeginInit();
+            panelImageSettings.SuspendLayout();
             SuspendLayout();
             // 
             // originalImagePicBox
@@ -85,6 +87,7 @@ namespace billiard_laser
             invMaskPicBox.Margin = new Padding(3, 2, 3, 2);
             invMaskPicBox.Name = "invMaskPicBox";
             invMaskPicBox.Size = new Size(300, 188);
+            invMaskPicBox.SizeMode = PictureBoxSizeMode.Zoom;
             invMaskPicBox.TabIndex = 1;
             invMaskPicBox.TabStop = false;
             // 
@@ -232,7 +235,7 @@ namespace billiard_laser
             // 
             checkBoxEnableBlurr.AutoSize = true;
             checkBoxEnableBlurr.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            checkBoxEnableBlurr.Location = new Point(17, 480);
+            checkBoxEnableBlurr.Location = new Point(11, 32);
             checkBoxEnableBlurr.Name = "checkBoxEnableBlurr";
             checkBoxEnableBlurr.Size = new Size(108, 24);
             checkBoxEnableBlurr.TabIndex = 16;
@@ -243,7 +246,7 @@ namespace billiard_laser
             // 
             checkBoxEnableSharpen.AutoSize = true;
             checkBoxEnableSharpen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            checkBoxEnableSharpen.Location = new Point(138, 480);
+            checkBoxEnableSharpen.Location = new Point(132, 32);
             checkBoxEnableSharpen.Name = "checkBoxEnableSharpen";
             checkBoxEnableSharpen.Size = new Size(152, 24);
             checkBoxEnableSharpen.TabIndex = 17;
@@ -254,7 +257,7 @@ namespace billiard_laser
             // 
             labelMaskGreen.AutoSize = true;
             labelMaskGreen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskGreen.Location = new Point(960, 457);
+            labelMaskGreen.Location = new Point(948, 2);
             labelMaskGreen.Name = "labelMaskGreen";
             labelMaskGreen.Size = new Size(86, 20);
             labelMaskGreen.TabIndex = 21;
@@ -264,7 +267,7 @@ namespace billiard_laser
             // 
             labelMaskRed.AutoSize = true;
             labelMaskRed.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskRed.Location = new Point(819, 457);
+            labelMaskRed.Location = new Point(807, 2);
             labelMaskRed.Name = "labelMaskRed";
             labelMaskRed.Size = new Size(73, 20);
             labelMaskRed.TabIndex = 22;
@@ -274,7 +277,7 @@ namespace billiard_laser
             // 
             labelMaskBlue.AutoSize = true;
             labelMaskBlue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskBlue.Location = new Point(1103, 457);
+            labelMaskBlue.Location = new Point(1091, 2);
             labelMaskBlue.Name = "labelMaskBlue";
             labelMaskBlue.Size = new Size(76, 20);
             labelMaskBlue.TabIndex = 23;
@@ -282,7 +285,7 @@ namespace billiard_laser
             // 
             // trackBarMaskBlue
             // 
-            trackBarMaskBlue.Location = new Point(1099, 480);
+            trackBarMaskBlue.Location = new Point(1066, 25);
             trackBarMaskBlue.Maximum = 255;
             trackBarMaskBlue.Name = "trackBarMaskBlue";
             trackBarMaskBlue.Size = new Size(127, 45);
@@ -291,7 +294,7 @@ namespace billiard_laser
             // 
             // trackBarMaskGreen
             // 
-            trackBarMaskGreen.Location = new Point(956, 480);
+            trackBarMaskGreen.Location = new Point(933, 25);
             trackBarMaskGreen.Maximum = 255;
             trackBarMaskGreen.Name = "trackBarMaskGreen";
             trackBarMaskGreen.Size = new Size(127, 45);
@@ -300,7 +303,7 @@ namespace billiard_laser
             // 
             // trackBarMaskRed
             // 
-            trackBarMaskRed.Location = new Point(815, 480);
+            trackBarMaskRed.Location = new Point(768, 25);
             trackBarMaskRed.Maximum = 255;
             trackBarMaskRed.Name = "trackBarMaskRed";
             trackBarMaskRed.Size = new Size(127, 45);
@@ -311,45 +314,58 @@ namespace billiard_laser
             // 
             labelMaskRedValue.AutoSize = true;
             labelMaskRedValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskRedValue.Location = new Point(874, 514);
+            labelMaskRedValue.Location = new Point(901, 29);
             labelMaskRedValue.Name = "labelMaskRedValue";
-            labelMaskRedValue.Size = new Size(0, 20);
+            labelMaskRedValue.Size = new Size(17, 20);
             labelMaskRedValue.TabIndex = 24;
+            labelMaskRedValue.Text = "0";
             // 
             // labelMaskGreenValue
             // 
             labelMaskGreenValue.AutoSize = true;
             labelMaskGreenValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskGreenValue.Location = new Point(1012, 514);
+            labelMaskGreenValue.Location = new Point(1062, 26);
             labelMaskGreenValue.Name = "labelMaskGreenValue";
-            labelMaskGreenValue.Size = new Size(0, 20);
+            labelMaskGreenValue.Size = new Size(17, 20);
             labelMaskGreenValue.TabIndex = 25;
+            labelMaskGreenValue.Text = "0";
             // 
             // labelMaskBlueValue
             // 
             labelMaskBlueValue.AutoSize = true;
             labelMaskBlueValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskBlueValue.Location = new Point(1152, 514);
+            labelMaskBlueValue.Location = new Point(1199, 29);
             labelMaskBlueValue.Name = "labelMaskBlueValue";
-            labelMaskBlueValue.Size = new Size(0, 20);
+            labelMaskBlueValue.Size = new Size(17, 20);
             labelMaskBlueValue.TabIndex = 26;
+            labelMaskBlueValue.Text = "0";
+            // 
+            // panelImageSettings
+            // 
+            panelImageSettings.BackColor = SystemColors.ActiveBorder;
+            panelImageSettings.Controls.Add(checkBoxEnableSharpen);
+            panelImageSettings.Controls.Add(checkBoxEnableBlurr);
+            panelImageSettings.Controls.Add(labelMaskBlueValue);
+            panelImageSettings.Controls.Add(trackBarMaskGreen);
+            panelImageSettings.Controls.Add(labelMaskGreenValue);
+            panelImageSettings.Controls.Add(trackBarMaskRed);
+            panelImageSettings.Controls.Add(labelMaskRedValue);
+            panelImageSettings.Controls.Add(trackBarMaskBlue);
+            panelImageSettings.Controls.Add(labelMaskBlue);
+            panelImageSettings.Controls.Add(labelMaskGreen);
+            panelImageSettings.Controls.Add(labelMaskRed);
+            panelImageSettings.Dock = DockStyle.Bottom;
+            panelImageSettings.Location = new Point(0, 536);
+            panelImageSettings.Name = "panelImageSettings";
+            panelImageSettings.Size = new Size(1247, 70);
+            panelImageSettings.TabIndex = 28;
             // 
             // ImageProcessingDebugForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1264, 543);
-            Controls.Add(labelMaskBlueValue);
-            Controls.Add(labelMaskGreenValue);
-            Controls.Add(labelMaskRedValue);
-            Controls.Add(labelMaskBlue);
-            Controls.Add(labelMaskRed);
-            Controls.Add(labelMaskGreen);
-            Controls.Add(trackBarMaskBlue);
-            Controls.Add(trackBarMaskRed);
-            Controls.Add(trackBarMaskGreen);
-            Controls.Add(checkBoxEnableSharpen);
-            Controls.Add(checkBoxEnableBlurr);
+            ClientSize = new Size(1247, 606);
+            Controls.Add(panelImageSettings);
             Controls.Add(labelBlurredSharpened);
             Controls.Add(labelSharpenedImage);
             Controls.Add(blurredSharpenedImagePicBox);
@@ -370,6 +386,7 @@ namespace billiard_laser
             Name = "ImageProcessingDebugForm";
             Text = "Image Processing Debugging";
             FormClosed += ImageProcessingDebugForm_FormClosed;
+            Resize += ImageProcessingDebugForm_Resize;
             ((System.ComponentModel.ISupportInitialize)originalImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).EndInit();
@@ -381,6 +398,8 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)trackBarMaskBlue).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarMaskGreen).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarMaskRed).EndInit();
+            panelImageSettings.ResumeLayout(false);
+            panelImageSettings.PerformLayout();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -415,5 +434,6 @@ namespace billiard_laser
         private Label labelMaskRedValue;
         private Label labelMaskGreenValue;
         private Label labelMaskBlueValue;
+        private Panel panelImageSettings;
     }
 }
