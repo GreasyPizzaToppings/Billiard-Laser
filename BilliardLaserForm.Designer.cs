@@ -56,6 +56,7 @@ namespace billiard_laser
             labelDistance = new Label();
             labelSpeed = new Label();
             groupBoxVideoControls = new GroupBox();
+            buttonShowDebugForm = new Button();
             buttonPause = new Button();
             labelFoundShots = new Label();
             listBoxShots = new ListBox();
@@ -69,7 +70,6 @@ namespace billiard_laser
             labelFrameRate = new Label();
             btnProcessVideo = new Button();
             findColoredBalls = new Button();
-            buttonShowDebugForm = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSpeedOverTime).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxAccelerationOverTime).BeginInit();
@@ -215,7 +215,7 @@ namespace billiard_laser
             pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
             pictureBoxImage.Name = "pictureBoxImage";
             pictureBoxImage.Size = new Size(766, 477);
-            pictureBoxImage.SizeMode = PictureBoxSizeMode.StretchImage;
+            pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxImage.TabIndex = 15;
             pictureBoxImage.TabStop = false;
             // 
@@ -384,6 +384,17 @@ namespace billiard_laser
             groupBoxVideoControls.TabIndex = 44;
             groupBoxVideoControls.TabStop = false;
             // 
+            // buttonShowDebugForm
+            // 
+            buttonShowDebugForm.Location = new Point(9, 138);
+            buttonShowDebugForm.Margin = new Padding(3, 2, 3, 2);
+            buttonShowDebugForm.Name = "buttonShowDebugForm";
+            buttonShowDebugForm.Size = new Size(181, 25);
+            buttonShowDebugForm.TabIndex = 43;
+            buttonShowDebugForm.Text = "Show Debug Form";
+            buttonShowDebugForm.UseVisualStyleBackColor = true;
+            buttonShowDebugForm.Click += buttonShowDebugForm_Click;
+            // 
             // buttonPause
             // 
             buttonPause.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
@@ -528,17 +539,6 @@ namespace billiard_laser
             findColoredBalls.Text = "Find All";
             findColoredBalls.UseVisualStyleBackColor = true;
             findColoredBalls.Click += findColoredBalls_Click;
-            // 
-            // buttonShowDebugForm
-            // 
-            buttonShowDebugForm.Location = new Point(9, 138);
-            buttonShowDebugForm.Margin = new Padding(3, 2, 3, 2);
-            buttonShowDebugForm.Name = "buttonShowDebugForm";
-            buttonShowDebugForm.Size = new Size(181, 25);
-            buttonShowDebugForm.TabIndex = 43;
-            buttonShowDebugForm.Text = "Show Debug Form";
-            buttonShowDebugForm.UseVisualStyleBackColor = true;
-            buttonShowDebugForm.Click += buttonShowDebugForm_Click;
             // 
             // BilliardLaserForm
             // 

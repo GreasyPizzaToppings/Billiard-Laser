@@ -50,13 +50,22 @@ namespace billiard_laser
             labelMaskGreen = new Label();
             labelMaskRed = new Label();
             labelMaskBlue = new Label();
-            trackBarMaskBlue = new TrackBar();
-            trackBarMaskGreen = new TrackBar();
-            trackBarMaskRed = new TrackBar();
-            labelMaskRedValue = new Label();
-            labelMaskGreenValue = new Label();
-            labelMaskBlueValue = new Label();
+            trackBarMaskBlueMin = new TrackBar();
+            trackBarMaskGreenMin = new TrackBar();
+            trackBarMaskRedMin = new TrackBar();
+            labelMaskRedMinValue = new Label();
+            labelMaskGreenMinValue = new Label();
+            labelMaskBlueMinValue = new Label();
             panelImageSettings = new Panel();
+            panelMaskValues = new Panel();
+            trackBarMaskRedMax = new TrackBar();
+            labelMin = new Label();
+            labelMaskGreenMaxValue = new Label();
+            labelMaskBlueMaxValue = new Label();
+            labelMax = new Label();
+            trackBarMaskGreenMax = new TrackBar();
+            trackBarMaskBlueMax = new TrackBar();
+            labelMaskRedMaxValue = new Label();
             ((System.ComponentModel.ISupportInitialize)originalImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
@@ -65,10 +74,14 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)sharpenedImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)blurredSharpenedImagePicBox).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlue).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreen).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarMaskRed).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlueMin).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreenMin).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskRedMin).BeginInit();
             panelImageSettings.SuspendLayout();
+            panelMaskValues.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskRedMax).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreenMax).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlueMax).BeginInit();
             SuspendLayout();
             // 
             // originalImagePicBox
@@ -234,21 +247,23 @@ namespace billiard_laser
             // checkBoxEnableBlurr
             // 
             checkBoxEnableBlurr.AutoSize = true;
+            checkBoxEnableBlurr.Dock = DockStyle.Left;
             checkBoxEnableBlurr.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            checkBoxEnableBlurr.Location = new Point(11, 32);
+            checkBoxEnableBlurr.Location = new Point(0, 0);
             checkBoxEnableBlurr.Name = "checkBoxEnableBlurr";
-            checkBoxEnableBlurr.Size = new Size(108, 24);
+            checkBoxEnableBlurr.Size = new Size(103, 93);
             checkBoxEnableBlurr.TabIndex = 16;
-            checkBoxEnableBlurr.Text = "Enable Blurr";
+            checkBoxEnableBlurr.Text = "Enable Blur";
             checkBoxEnableBlurr.UseVisualStyleBackColor = true;
             // 
             // checkBoxEnableSharpen
             // 
             checkBoxEnableSharpen.AutoSize = true;
+            checkBoxEnableSharpen.Dock = DockStyle.Left;
             checkBoxEnableSharpen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            checkBoxEnableSharpen.Location = new Point(132, 32);
+            checkBoxEnableSharpen.Location = new Point(103, 0);
             checkBoxEnableSharpen.Name = "checkBoxEnableSharpen";
-            checkBoxEnableSharpen.Size = new Size(152, 24);
+            checkBoxEnableSharpen.Size = new Size(152, 93);
             checkBoxEnableSharpen.TabIndex = 17;
             checkBoxEnableSharpen.Text = "Enable Sharpening";
             checkBoxEnableSharpen.UseVisualStyleBackColor = true;
@@ -257,7 +272,7 @@ namespace billiard_laser
             // 
             labelMaskGreen.AutoSize = true;
             labelMaskGreen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskGreen.Location = new Point(948, 2);
+            labelMaskGreen.Location = new Point(227, 5);
             labelMaskGreen.Name = "labelMaskGreen";
             labelMaskGreen.Size = new Size(86, 20);
             labelMaskGreen.TabIndex = 21;
@@ -267,7 +282,7 @@ namespace billiard_laser
             // 
             labelMaskRed.AutoSize = true;
             labelMaskRed.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskRed.Location = new Point(807, 2);
+            labelMaskRed.Location = new Point(64, 4);
             labelMaskRed.Name = "labelMaskRed";
             labelMaskRed.Size = new Size(73, 20);
             labelMaskRed.TabIndex = 22;
@@ -277,88 +292,184 @@ namespace billiard_laser
             // 
             labelMaskBlue.AutoSize = true;
             labelMaskBlue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskBlue.Location = new Point(1091, 2);
+            labelMaskBlue.Location = new Point(390, 5);
             labelMaskBlue.Name = "labelMaskBlue";
             labelMaskBlue.Size = new Size(76, 20);
             labelMaskBlue.TabIndex = 23;
             labelMaskBlue.Text = "Mask Blue";
             // 
-            // trackBarMaskBlue
+            // trackBarMaskBlueMin
             // 
-            trackBarMaskBlue.Location = new Point(1066, 25);
-            trackBarMaskBlue.Maximum = 255;
-            trackBarMaskBlue.Name = "trackBarMaskBlue";
-            trackBarMaskBlue.Size = new Size(127, 45);
-            trackBarMaskBlue.TabIndex = 20;
-            trackBarMaskBlue.ValueChanged += trackBarMaskBlue_ValueChanged;
+            trackBarMaskBlueMin.Location = new Point(359, 61);
+            trackBarMaskBlueMin.Maximum = 255;
+            trackBarMaskBlueMin.Name = "trackBarMaskBlueMin";
+            trackBarMaskBlueMin.Size = new Size(127, 45);
+            trackBarMaskBlueMin.TabIndex = 20;
+            trackBarMaskBlueMin.ValueChanged += trackBarMaskBlueMin_ValueChanged;
             // 
-            // trackBarMaskGreen
+            // trackBarMaskGreenMin
             // 
-            trackBarMaskGreen.Location = new Point(933, 25);
-            trackBarMaskGreen.Maximum = 255;
-            trackBarMaskGreen.Name = "trackBarMaskGreen";
-            trackBarMaskGreen.Size = new Size(127, 45);
-            trackBarMaskGreen.TabIndex = 18;
-            trackBarMaskGreen.ValueChanged += trackBarMaskGreen_ValueChanged;
+            trackBarMaskGreenMin.Location = new Point(204, 23);
+            trackBarMaskGreenMin.Maximum = 255;
+            trackBarMaskGreenMin.Name = "trackBarMaskGreenMin";
+            trackBarMaskGreenMin.Size = new Size(127, 45);
+            trackBarMaskGreenMin.TabIndex = 18;
+            trackBarMaskGreenMin.ValueChanged += trackBarMaskGreenMin_ValueChanged;
             // 
-            // trackBarMaskRed
+            // trackBarMaskRedMin
             // 
-            trackBarMaskRed.Location = new Point(768, 25);
-            trackBarMaskRed.Maximum = 255;
-            trackBarMaskRed.Name = "trackBarMaskRed";
-            trackBarMaskRed.Size = new Size(127, 45);
-            trackBarMaskRed.TabIndex = 19;
-            trackBarMaskRed.ValueChanged += trackBarMaskRed_ValueChanged;
+            trackBarMaskRedMin.Location = new Point(39, 26);
+            trackBarMaskRedMin.Maximum = 255;
+            trackBarMaskRedMin.Name = "trackBarMaskRedMin";
+            trackBarMaskRedMin.Size = new Size(127, 45);
+            trackBarMaskRedMin.TabIndex = 19;
+            trackBarMaskRedMin.ValueChanged += trackBarMaskRedMin_ValueChanged;
             // 
-            // labelMaskRedValue
+            // labelMaskRedMinValue
             // 
-            labelMaskRedValue.AutoSize = true;
-            labelMaskRedValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskRedValue.Location = new Point(901, 29);
-            labelMaskRedValue.Name = "labelMaskRedValue";
-            labelMaskRedValue.Size = new Size(17, 20);
-            labelMaskRedValue.TabIndex = 24;
-            labelMaskRedValue.Text = "0";
+            labelMaskRedMinValue.AutoSize = true;
+            labelMaskRedMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskRedMinValue.Location = new Point(167, 29);
+            labelMaskRedMinValue.Name = "labelMaskRedMinValue";
+            labelMaskRedMinValue.Size = new Size(17, 20);
+            labelMaskRedMinValue.TabIndex = 24;
+            labelMaskRedMinValue.Text = "0";
             // 
-            // labelMaskGreenValue
+            // labelMaskGreenMinValue
             // 
-            labelMaskGreenValue.AutoSize = true;
-            labelMaskGreenValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskGreenValue.Location = new Point(1062, 26);
-            labelMaskGreenValue.Name = "labelMaskGreenValue";
-            labelMaskGreenValue.Size = new Size(17, 20);
-            labelMaskGreenValue.TabIndex = 25;
-            labelMaskGreenValue.Text = "0";
+            labelMaskGreenMinValue.AutoSize = true;
+            labelMaskGreenMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskGreenMinValue.Location = new Point(328, 29);
+            labelMaskGreenMinValue.Name = "labelMaskGreenMinValue";
+            labelMaskGreenMinValue.Size = new Size(17, 20);
+            labelMaskGreenMinValue.TabIndex = 25;
+            labelMaskGreenMinValue.Text = "0";
             // 
-            // labelMaskBlueValue
+            // labelMaskBlueMinValue
             // 
-            labelMaskBlueValue.AutoSize = true;
-            labelMaskBlueValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskBlueValue.Location = new Point(1199, 29);
-            labelMaskBlueValue.Name = "labelMaskBlueValue";
-            labelMaskBlueValue.Size = new Size(17, 20);
-            labelMaskBlueValue.TabIndex = 26;
-            labelMaskBlueValue.Text = "0";
+            labelMaskBlueMinValue.AutoSize = true;
+            labelMaskBlueMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskBlueMinValue.Location = new Point(485, 31);
+            labelMaskBlueMinValue.Name = "labelMaskBlueMinValue";
+            labelMaskBlueMinValue.Size = new Size(17, 20);
+            labelMaskBlueMinValue.TabIndex = 26;
+            labelMaskBlueMinValue.Text = "0";
             // 
             // panelImageSettings
             // 
             panelImageSettings.BackColor = SystemColors.ActiveBorder;
+            panelImageSettings.Controls.Add(panelMaskValues);
             panelImageSettings.Controls.Add(checkBoxEnableSharpen);
             panelImageSettings.Controls.Add(checkBoxEnableBlurr);
-            panelImageSettings.Controls.Add(labelMaskBlueValue);
-            panelImageSettings.Controls.Add(trackBarMaskGreen);
-            panelImageSettings.Controls.Add(labelMaskGreenValue);
-            panelImageSettings.Controls.Add(trackBarMaskRed);
-            panelImageSettings.Controls.Add(labelMaskRedValue);
-            panelImageSettings.Controls.Add(trackBarMaskBlue);
-            panelImageSettings.Controls.Add(labelMaskBlue);
-            panelImageSettings.Controls.Add(labelMaskGreen);
-            panelImageSettings.Controls.Add(labelMaskRed);
             panelImageSettings.Dock = DockStyle.Bottom;
-            panelImageSettings.Location = new Point(0, 536);
+            panelImageSettings.Location = new Point(0, 513);
             panelImageSettings.Name = "panelImageSettings";
-            panelImageSettings.Size = new Size(1247, 70);
+            panelImageSettings.Size = new Size(1247, 93);
             panelImageSettings.TabIndex = 28;
+            // 
+            // panelMaskValues
+            // 
+            panelMaskValues.BackColor = SystemColors.AppWorkspace;
+            panelMaskValues.Controls.Add(trackBarMaskRedMax);
+            panelMaskValues.Controls.Add(labelMaskGreen);
+            panelMaskValues.Controls.Add(labelMin);
+            panelMaskValues.Controls.Add(labelMaskGreenMaxValue);
+            panelMaskValues.Controls.Add(labelMaskBlue);
+            panelMaskValues.Controls.Add(trackBarMaskRedMin);
+            panelMaskValues.Controls.Add(labelMaskBlueMaxValue);
+            panelMaskValues.Controls.Add(trackBarMaskBlueMin);
+            panelMaskValues.Controls.Add(labelMax);
+            panelMaskValues.Controls.Add(trackBarMaskGreenMax);
+            panelMaskValues.Controls.Add(trackBarMaskBlueMax);
+            panelMaskValues.Controls.Add(labelMaskRedMinValue);
+            panelMaskValues.Controls.Add(labelMaskGreenMinValue);
+            panelMaskValues.Controls.Add(trackBarMaskGreenMin);
+            panelMaskValues.Controls.Add(labelMaskRedMaxValue);
+            panelMaskValues.Controls.Add(labelMaskBlueMinValue);
+            panelMaskValues.Controls.Add(labelMaskRed);
+            panelMaskValues.Dock = DockStyle.Right;
+            panelMaskValues.Location = new Point(724, 0);
+            panelMaskValues.Name = "panelMaskValues";
+            panelMaskValues.Size = new Size(523, 93);
+            panelMaskValues.TabIndex = 35;
+            // 
+            // trackBarMaskRedMax
+            // 
+            trackBarMaskRedMax.Location = new Point(39, 64);
+            trackBarMaskRedMax.Maximum = 255;
+            trackBarMaskRedMax.Name = "trackBarMaskRedMax";
+            trackBarMaskRedMax.Size = new Size(127, 45);
+            trackBarMaskRedMax.TabIndex = 27;
+            trackBarMaskRedMax.Scroll += trackBarMaskRedMax_Scroll;
+            trackBarMaskRedMax.ValueChanged += trackBarMaskRedMax_ValueChanged;
+            // 
+            // labelMin
+            // 
+            labelMin.AutoSize = true;
+            labelMin.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMin.Location = new Point(3, 30);
+            labelMin.Name = "labelMin";
+            labelMin.Size = new Size(34, 20);
+            labelMin.TabIndex = 34;
+            labelMin.Text = "Min";
+            // 
+            // labelMaskGreenMaxValue
+            // 
+            labelMaskGreenMaxValue.AutoSize = true;
+            labelMaskGreenMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskGreenMaxValue.Location = new Point(328, 61);
+            labelMaskGreenMaxValue.Name = "labelMaskGreenMaxValue";
+            labelMaskGreenMaxValue.Size = new Size(17, 20);
+            labelMaskGreenMaxValue.TabIndex = 32;
+            labelMaskGreenMaxValue.Text = "0";
+            // 
+            // labelMaskBlueMaxValue
+            // 
+            labelMaskBlueMaxValue.AutoSize = true;
+            labelMaskBlueMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskBlueMaxValue.Location = new Point(485, 60);
+            labelMaskBlueMaxValue.Name = "labelMaskBlueMaxValue";
+            labelMaskBlueMaxValue.Size = new Size(17, 20);
+            labelMaskBlueMaxValue.TabIndex = 31;
+            labelMaskBlueMaxValue.Text = "0";
+            // 
+            // labelMax
+            // 
+            labelMax.AutoSize = true;
+            labelMax.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMax.Location = new Point(3, 61);
+            labelMax.Name = "labelMax";
+            labelMax.Size = new Size(37, 20);
+            labelMax.TabIndex = 33;
+            labelMax.Text = "Max";
+            // 
+            // trackBarMaskGreenMax
+            // 
+            trackBarMaskGreenMax.Location = new Point(204, 61);
+            trackBarMaskGreenMax.Maximum = 255;
+            trackBarMaskGreenMax.Name = "trackBarMaskGreenMax";
+            trackBarMaskGreenMax.Size = new Size(127, 45);
+            trackBarMaskGreenMax.TabIndex = 29;
+            trackBarMaskGreenMax.ValueChanged += trackBarMaskGreenMax_ValueChanged;
+            // 
+            // trackBarMaskBlueMax
+            // 
+            trackBarMaskBlueMax.Location = new Point(359, 26);
+            trackBarMaskBlueMax.Maximum = 255;
+            trackBarMaskBlueMax.Name = "trackBarMaskBlueMax";
+            trackBarMaskBlueMax.Size = new Size(127, 45);
+            trackBarMaskBlueMax.TabIndex = 28;
+            trackBarMaskBlueMax.ValueChanged += trackBarMaskBlueMax_ValueChanged;
+            // 
+            // labelMaskRedMaxValue
+            // 
+            labelMaskRedMaxValue.AutoSize = true;
+            labelMaskRedMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelMaskRedMaxValue.Location = new Point(167, 60);
+            labelMaskRedMaxValue.Name = "labelMaskRedMaxValue";
+            labelMaskRedMaxValue.Size = new Size(17, 20);
+            labelMaskRedMaxValue.TabIndex = 30;
+            labelMaskRedMaxValue.Text = "0";
             // 
             // ImageProcessingDebugForm
             // 
@@ -386,6 +497,7 @@ namespace billiard_laser
             Name = "ImageProcessingDebugForm";
             Text = "Image Processing Debugging";
             FormClosed += ImageProcessingDebugForm_FormClosed;
+            Load += ImageProcessingDebugForm_Load;
             Resize += ImageProcessingDebugForm_Resize;
             ((System.ComponentModel.ISupportInitialize)originalImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).EndInit();
@@ -395,11 +507,16 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)sharpenedImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)blurredSharpenedImagePicBox).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlue).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreen).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarMaskRed).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlueMin).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreenMin).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskRedMin).EndInit();
             panelImageSettings.ResumeLayout(false);
             panelImageSettings.PerformLayout();
+            panelMaskValues.ResumeLayout(false);
+            panelMaskValues.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskRedMax).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskGreenMax).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarMaskBlueMax).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -428,12 +545,21 @@ namespace billiard_laser
         private Label labelMaskGreen;
         private Label labelMaskRed;
         private Label labelMaskBlue;
-        private TrackBar trackBarMaskBlue;
-        private TrackBar trackBarMaskGreen;
-        private TrackBar trackBarMaskRed;
-        private Label labelMaskRedValue;
-        private Label labelMaskGreenValue;
-        private Label labelMaskBlueValue;
+        private TrackBar trackBarMaskBlueMin;
+        private TrackBar trackBarMaskGreenMin;
+        private TrackBar trackBarMaskRedMin;
+        private Label labelMaskRedMinValue;
+        private Label labelMaskGreenMinValue;
+        private Label labelMaskBlueMinValue;
         private Panel panelImageSettings;
+        private TrackBar trackBarMaskGreenMax;
+        private TrackBar trackBarMaskBlueMax;
+        private TrackBar trackBarMaskRedMax;
+        private Label labelMaskGreenMaxValue;
+        private Label labelMaskBlueMaxValue;
+        private Label labelMaskRedMaxValue;
+        private Label labelMin;
+        private Label labelMax;
+        private Panel panelMaskValues;
     }
 }
