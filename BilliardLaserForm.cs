@@ -31,7 +31,8 @@ namespace billiard_laser
         //testing output
         private OpenCvSharp.Size outputVideoResolution = p480;
 
-        private List<VideoFrame> videoFrames;
+        private List<VideoFrame> videoFrames; 
+
 
         //flags
         public Boolean detectingBalls = false;
@@ -279,7 +280,7 @@ namespace billiard_laser
                   $"\nLower Mask RGB: {e.LowerMaskRgb}" +
                   $"\nUpper Mask RGB: {e.UpperMaskRgb}" +
                   $"\nEnable Blur: {e.EnableBlur}" +
-                  $"\nEnable Sharpening: {e.EnableSharpening}");
+                  $"\nEnable Sharpening: {e.EnableSharpening}\n");
         }
 
         private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);

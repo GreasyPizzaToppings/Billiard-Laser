@@ -173,9 +173,9 @@ public class BallDetector
     /// <returns></returns>
     private Bitmap GetTableMask(Bitmap tableImage)
     {
-        Emgu.CV.Mat blurredImageMat = tableImage.ToMat();
+        Emgu.CV.Mat imageMat = tableImage.ToMat();
         Emgu.CV.Mat hsv = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.CvtColor(blurredImageMat, hsv, ColorConversion.Bgr2Hsv);
+        Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
 
         //mask based on a range of hues (cloth colour)

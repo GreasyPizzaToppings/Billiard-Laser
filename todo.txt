@@ -1,21 +1,26 @@
-code todo
-
-ball statistics tracking and display. speed, duration, distance, etc
+UI redesign. main form, make cleaner. hide/show shot tracking stats
 
 better media controls
 
 put more video processing code into VideoProcessor
 
-way to make it faster at higher res
+way to make it faster at higher res / increase performance
 
-understand DI and interfaces
 
-check acceleration graph is accurate
+update fps label when replaying shots too. and for camera input
 
-update fps label when replaying shots too 
-
-bugs
-- sometimes detects shot when cueball hasnt moved
-- cueball doing impossible movements. jump to bright spot and stay
 
 video replayback modifying original frame
+
+**debug form:
+fullscreen/bigger picturebox viewing 
+
+implement toggle start/stop ball detection instead of just start
+
+make loading/resetting easy without closing form
+
+work on still image or paused video/camera. re-detect with changed image settings
+
+
+
+understand DI and interfaces
