@@ -5,26 +5,40 @@ public class CameraController
 {
     private FilterInfoCollection filterInfoCollection;
     private VideoCaptureDevice videoCaptureDevice;
-    private PictureBox pictureBox;
     private ComboBox comboBox;
+    private int frameIndex = 0;
 
-    public CameraController(PictureBox pictureBox, ComboBox comboBox)
+    public event EventHandler<VideoFrame> ReceivedFrame;
+
+    public CameraController(ComboBox comboBox)
     {
-        this.pictureBox = pictureBox;
         this.comboBox = comboBox;
 
         PopulateCameraComboBox();
     }
 
-    public void StartCameraCapture() {
-        videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[comboBox.SelectedIndex].MonikerString);
-        videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
-        videoCaptureDevice.Start();
+    public bool StartCameraCapture() {
+        try
+        {
+            videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[comboBox.SelectedIndex].MonikerString);
+            videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
+            videoCaptureDevice.Start();
+            return true;
+        }
+
+        catch (Exception e) {
+            MessageBox.Show("Error starting camera!\n" + e.Message);
+            return false;
+        }
     }
 
     private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
-        pictureBox.Image = (Bitmap)eventArgs.Frame.Clone();
+        VideoFrame frame = new VideoFrame((Bitmap)eventArgs.Frame.Clone(), frameIndex);
+        frameIndex++;
+
+        //alert followers we got a frame for them
+        ReceivedFrame?.Invoke(this, frame);
     }
 
     private void PopulateCameraComboBox()

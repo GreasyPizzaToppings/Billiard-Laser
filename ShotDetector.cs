@@ -13,7 +13,7 @@
         Shots = new List<Shot>();
     }
 
-    public void ProcessFrame(Ball cueBall, VideoProcessor.VideoFrame frame)
+    public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
 
         currentShot.AddFrameToShot(frame);

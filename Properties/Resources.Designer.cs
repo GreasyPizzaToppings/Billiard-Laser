@@ -63,6 +63,16 @@ namespace billiard_laser.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Drawing.Bitmap.
         /// </summary>
+        internal static System.Drawing.Bitmap ballGrid2 {
+            get {
+                object obj = ResourceManager.GetObject("ballGrid2", resourceCulture);
+                return ((System.Drawing.Bitmap)(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        /// </summary>
         internal static System.Drawing.Bitmap birdEyeShot {
             get {
                 object obj = ResourceManager.GetObject("birdEyeShot", resourceCulture);

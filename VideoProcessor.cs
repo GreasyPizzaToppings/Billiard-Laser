@@ -1,27 +1,8 @@
 ﻿using OpenCvSharp;
 using OpenCvSharp.Extensions;
-using ScottPlot.Colormaps;
 
 public class VideoProcessor
 {
-    public class VideoFrame {
-
-        public Bitmap frame { get; set; }
-        public int index { get; set; }
-
-
-        public VideoFrame(Bitmap frame, int index) { 
-            this.frame = frame;
-            this.index = index;
-        }
-
-
-        public override string ToString()
-        {
-            return index.ToString();
-        }
-    }
-
     public static List<VideoFrame> GetVideoFrames(string videoPath, OpenCvSharp.Size outputResolution)
     {
         var frames = new List<VideoFrame>();
