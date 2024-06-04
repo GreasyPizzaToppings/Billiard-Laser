@@ -22,8 +22,6 @@ namespace billiard_laser
         //image processing settings
         public Rgb LowerMaskRgb { get; }
         public Rgb UpperMaskRgb { get; }
-        public bool EnableBlur { get; }
-        public bool EnableSharpening { get; }
 
         //events
         public event EventHandler DebugFormClosed;
@@ -39,8 +37,8 @@ namespace billiard_laser
 
             LowerMaskRgb = lowerMaskRgb;
             UpperMaskRgb = upperMaskRgb;
-            EnableBlur = enableBlur;
-            EnableSharpening = enableSharpening;
+            checkBoxEnableBlurr.Checked = enableBlur;
+            checkBoxEnableSharpen.Checked = enableSharpening;
 
             SetMaskTrackbars();
         }
