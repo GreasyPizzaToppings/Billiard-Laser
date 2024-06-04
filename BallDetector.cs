@@ -25,6 +25,14 @@ public class BallDetector
 
     }
 
+    //default cloth mask values
+    public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
+    public Rgb UpperMaskRgb = new Rgb(70, 255, 255);
+
+    //default image manipulation values
+    public Boolean enableBlur = false;
+    public Boolean enableSharpening = true;
+
     private Color[] ballColors = {
         Color.Red,
         Color.Green,
@@ -36,12 +44,6 @@ public class BallDetector
         Color.Pink
     };
 
-    public BallDetector()
-    {
-
-    }
-
-    
     /// <summary>
     /// Detect and draw boxes around balls based on contours
     /// </summary>
@@ -49,9 +51,21 @@ public class BallDetector
     /// <returns>Image with balls highlighted</returns>
     public Bitmap FindAllBalls(Bitmap inputImage)
     {
-        Bitmap sharpenedImage = SharpenImage(inputImage);
-        Bitmap blurredImage = BlurImage(sharpenedImage);
-        Bitmap tableMask = GetTableMask(blurredImage);
+        Bitmap processedImage = inputImage;
+
+        // Apply sharpening if enabled
+        if (enableSharpening)
+        {
+            processedImage = SharpenImage(processedImage);
+        }
+
+        // Apply blurring if enabled
+        if (enableBlur)
+        {
+            processedImage = BlurImage(processedImage);
+        }
+
+        Bitmap tableMask = GetTableMask(processedImage);
 
         //shows how it would look like if the mask is applied to original image
         //Bitmap appliedMask = ApplyMask(blurredImage, tableMask);
@@ -164,10 +178,10 @@ public class BallDetector
         Emgu.CV.CvInvoke.CvtColor(blurredImageMat, hsv, ColorConversion.Bgr2Hsv);
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
 
-        // Green hue colors
-        ScalarArray lower = new ScalarArray(new MCvScalar(40, 80, 40));
-        ScalarArray upper = new ScalarArray(new MCvScalar(70, 255, 255));
-        Emgu.CV.CvInvoke.InRange(hsv, lower, upper, mask);
+        //mask based on a range of hues (cloth colour)
+        ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
+        ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
+        Emgu.CV.CvInvoke.InRange(hsv, LowerMaskValue, UpperMaskValue, mask);
 
         // Filter mask
         Emgu.CV.Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1));
@@ -182,7 +196,6 @@ public class BallDetector
 
     private Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
     {
-
         Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
         Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
         Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
@@ -309,5 +322,3 @@ public class BallDetector
         return new SquareVectors(squareCtrs, output);
     }
 }
-
- 

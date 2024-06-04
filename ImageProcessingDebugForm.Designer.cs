@@ -255,6 +255,7 @@ namespace billiard_laser
             checkBoxEnableBlurr.TabIndex = 16;
             checkBoxEnableBlurr.Text = "Enable Blur";
             checkBoxEnableBlurr.UseVisualStyleBackColor = true;
+            checkBoxEnableBlurr.CheckedChanged += checkBoxEnableBlurr_CheckedChanged;
             // 
             // checkBoxEnableSharpen
             // 
@@ -267,12 +268,13 @@ namespace billiard_laser
             checkBoxEnableSharpen.TabIndex = 17;
             checkBoxEnableSharpen.Text = "Enable Sharpening";
             checkBoxEnableSharpen.UseVisualStyleBackColor = true;
+            checkBoxEnableSharpen.CheckedChanged += checkBoxEnableSharpen_CheckedChanged;
             // 
             // labelMaskGreen
             // 
             labelMaskGreen.AutoSize = true;
             labelMaskGreen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskGreen.Location = new Point(227, 5);
+            labelMaskGreen.Location = new Point(225, 5);
             labelMaskGreen.Name = "labelMaskGreen";
             labelMaskGreen.Size = new Size(86, 20);
             labelMaskGreen.TabIndex = 21;
@@ -292,7 +294,7 @@ namespace billiard_laser
             // 
             labelMaskBlue.AutoSize = true;
             labelMaskBlue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskBlue.Location = new Point(390, 5);
+            labelMaskBlue.Location = new Point(402, 5);
             labelMaskBlue.Name = "labelMaskBlue";
             labelMaskBlue.Size = new Size(76, 20);
             labelMaskBlue.TabIndex = 23;
@@ -300,7 +302,7 @@ namespace billiard_laser
             // 
             // trackBarMaskBlueMin
             // 
-            trackBarMaskBlueMin.Location = new Point(359, 61);
+            trackBarMaskBlueMin.Location = new Point(363, 29);
             trackBarMaskBlueMin.Maximum = 255;
             trackBarMaskBlueMin.Name = "trackBarMaskBlueMin";
             trackBarMaskBlueMin.Size = new Size(127, 45);
@@ -309,7 +311,7 @@ namespace billiard_laser
             // 
             // trackBarMaskGreenMin
             // 
-            trackBarMaskGreenMin.Location = new Point(204, 23);
+            trackBarMaskGreenMin.Location = new Point(202, 23);
             trackBarMaskGreenMin.Maximum = 255;
             trackBarMaskGreenMin.Name = "trackBarMaskGreenMin";
             trackBarMaskGreenMin.Size = new Size(127, 45);
@@ -339,7 +341,7 @@ namespace billiard_laser
             // 
             labelMaskGreenMinValue.AutoSize = true;
             labelMaskGreenMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskGreenMinValue.Location = new Point(328, 29);
+            labelMaskGreenMinValue.Location = new Point(326, 29);
             labelMaskGreenMinValue.Name = "labelMaskGreenMinValue";
             labelMaskGreenMinValue.Size = new Size(17, 20);
             labelMaskGreenMinValue.TabIndex = 25;
@@ -349,7 +351,7 @@ namespace billiard_laser
             // 
             labelMaskBlueMinValue.AutoSize = true;
             labelMaskBlueMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskBlueMinValue.Location = new Point(485, 31);
+            labelMaskBlueMinValue.Location = new Point(490, 31);
             labelMaskBlueMinValue.Name = "labelMaskBlueMinValue";
             labelMaskBlueMinValue.Size = new Size(17, 20);
             labelMaskBlueMinValue.TabIndex = 26;
@@ -388,9 +390,9 @@ namespace billiard_laser
             panelMaskValues.Controls.Add(labelMaskBlueMinValue);
             panelMaskValues.Controls.Add(labelMaskRed);
             panelMaskValues.Dock = DockStyle.Right;
-            panelMaskValues.Location = new Point(724, 0);
+            panelMaskValues.Location = new Point(716, 0);
             panelMaskValues.Name = "panelMaskValues";
-            panelMaskValues.Size = new Size(523, 93);
+            panelMaskValues.Size = new Size(531, 93);
             panelMaskValues.TabIndex = 35;
             // 
             // trackBarMaskRedMax
@@ -400,7 +402,6 @@ namespace billiard_laser
             trackBarMaskRedMax.Name = "trackBarMaskRedMax";
             trackBarMaskRedMax.Size = new Size(127, 45);
             trackBarMaskRedMax.TabIndex = 27;
-            trackBarMaskRedMax.Scroll += trackBarMaskRedMax_Scroll;
             trackBarMaskRedMax.ValueChanged += trackBarMaskRedMax_ValueChanged;
             // 
             // labelMin
@@ -417,7 +418,7 @@ namespace billiard_laser
             // 
             labelMaskGreenMaxValue.AutoSize = true;
             labelMaskGreenMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskGreenMaxValue.Location = new Point(328, 61);
+            labelMaskGreenMaxValue.Location = new Point(326, 61);
             labelMaskGreenMaxValue.Name = "labelMaskGreenMaxValue";
             labelMaskGreenMaxValue.Size = new Size(17, 20);
             labelMaskGreenMaxValue.TabIndex = 32;
@@ -427,7 +428,7 @@ namespace billiard_laser
             // 
             labelMaskBlueMaxValue.AutoSize = true;
             labelMaskBlueMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskBlueMaxValue.Location = new Point(485, 60);
+            labelMaskBlueMaxValue.Location = new Point(490, 60);
             labelMaskBlueMaxValue.Name = "labelMaskBlueMaxValue";
             labelMaskBlueMaxValue.Size = new Size(17, 20);
             labelMaskBlueMaxValue.TabIndex = 31;
@@ -445,7 +446,7 @@ namespace billiard_laser
             // 
             // trackBarMaskGreenMax
             // 
-            trackBarMaskGreenMax.Location = new Point(204, 61);
+            trackBarMaskGreenMax.Location = new Point(202, 61);
             trackBarMaskGreenMax.Maximum = 255;
             trackBarMaskGreenMax.Name = "trackBarMaskGreenMax";
             trackBarMaskGreenMax.Size = new Size(127, 45);
@@ -454,7 +455,7 @@ namespace billiard_laser
             // 
             // trackBarMaskBlueMax
             // 
-            trackBarMaskBlueMax.Location = new Point(359, 26);
+            trackBarMaskBlueMax.Location = new Point(363, 64);
             trackBarMaskBlueMax.Maximum = 255;
             trackBarMaskBlueMax.Name = "trackBarMaskBlueMax";
             trackBarMaskBlueMax.Size = new Size(127, 45);

@@ -29,7 +29,7 @@ namespace billiard_laser
         private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
         //testing output
-        private OpenCvSharp.Size outputVideoResolution = p720;
+        private OpenCvSharp.Size outputVideoResolution = p480;
 
         private List<VideoFrame> videoFrames;
 
@@ -140,7 +140,7 @@ namespace billiard_laser
         /// method that handles getting the image of found balls. it handles the case if debugging is enabled or not
         /// </summary>
         /// <returns></returns>
-        private Bitmap getHighlightedBalls(Bitmap tableImage) {
+        private Bitmap GetHighlightedBalls(Bitmap tableImage) {
 
             //no image debugging, just get filtered highlighted balls
             if (debugForm == null)
@@ -162,7 +162,7 @@ namespace billiard_laser
 
         private void findColoredBalls_Click(object sender, EventArgs e)
         {
-            pictureBoxImage.Image = getHighlightedBalls((Bitmap)pictureBoxImage.Image);
+            pictureBoxImage.Image = GetHighlightedBalls((Bitmap)pictureBoxImage.Image);
         }
 
 
@@ -173,7 +173,7 @@ namespace billiard_laser
             //detect balls
             if (detectingBalls)
             {
-                Bitmap highlightedBalls = getHighlightedBalls(frame.frame);
+                Bitmap highlightedBalls = GetHighlightedBalls(frame.frame);
                 pictureBoxImage.Image = highlightedBalls;
 
                 //update fps label
@@ -205,7 +205,7 @@ namespace billiard_laser
                 //time how long it takes to process frame
                 stopwatch.Restart();
 
-                Bitmap highlightedBalls = getHighlightedBalls(frame.frame);
+                Bitmap highlightedBalls = GetHighlightedBalls(frame.frame);
 
                 // put the processed frame in our container
                 var processedFrame = new VideoFrame(highlightedBalls, frame.index);
@@ -263,6 +263,23 @@ namespace billiard_laser
 
             //else if its camera input, let it do its thing
 
+        }
+
+        private void HandleImageProcessingSettingsChanged(object sender, ImageProcessingSettingsChanged e)
+        {
+            //update ball detector mask values
+            ballDetector.LowerMaskRgb = e.LowerMaskRgb;
+            ballDetector.UpperMaskRgb = e.UpperMaskRgb;
+
+            //update blur and sharpen status
+            ballDetector.enableBlur = e.EnableBlur;
+            ballDetector.enableSharpening = e.EnableSharpening;
+
+            Console.WriteLine($"Image processing settings changed! Editing ballDetector values:" +
+                  $"\nLower Mask RGB: {e.LowerMaskRgb}" +
+                  $"\nUpper Mask RGB: {e.UpperMaskRgb}" +
+                  $"\nEnable Blur: {e.EnableBlur}" +
+                  $"\nEnable Sharpening: {e.EnableSharpening}");
         }
 
         private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
@@ -433,8 +450,10 @@ namespace billiard_laser
         {
             if (debugForm == null || debugForm.IsDisposed)
             {
-                debugForm = new ImageProcessingDebugForm();
+                debugForm = new ImageProcessingDebugForm(ballDetector.LowerMaskRgb, ballDetector.UpperMaskRgb, ballDetector.enableBlur, ballDetector.enableSharpening);
+
                 debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
+                debugForm.ImageProcessingSettingsChanged += HandleImageProcessingSettingsChanged; // subscribe to mask rgb value change updates
                 debugForm.Show();
             }
 
