@@ -5,6 +5,9 @@
     <Compile Update="BilliardLaserForm.cs">
       <SubType>Form</SubType>
     </Compile>
+    <Compile Update="DoubleRangeSelector.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Update="ImageProcessingDebugForm.cs">
       <SubType>Form</SubType>
     </Compile>

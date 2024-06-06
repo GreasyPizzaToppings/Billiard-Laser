@@ -10,6 +10,12 @@ using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 using AForge.Imaging.Filters;
+using Accord.MachineLearning;
+using Accord.Math;
+using static BallDetector;
+using AForge.Imaging;
+using static System.Windows.Forms.AxHost;
+
 
 public class BallDetector
 {
@@ -268,6 +274,96 @@ public class BallDetector
 
         return new SquareVectors(squareCtrs, output);
     }
-}
+    public static Bitmap GetDominantColor(SquareVectors sV)
+    {
+        Bitmap image = sV.output.ToBitmap();
 
- 
+        // Get the dimensions of the image
+
+
+        // Reshape the image into a 2D array, where each row represents a pixel
+        foreach (Point[] p in sV.points)
+        {
+            int startX = p[0].X;
+            int startY = p[0].Y;
+            int endX = p[2].X;
+            int endY = p[2].Y;
+            int w = Math.Abs(endX - startX);
+            int h = Math.Abs(endY - startY);
+            double[][] pixels = new double[w * h][];
+            int indexX = 0;
+
+            for (int i = startX; i < endX; i++)
+            {
+                int indexY = 0;
+                for (int j = startY; j < endY; j++)
+                {
+                    Color pixelColor = image.GetPixel(i, j);
+                    pixels[indexX * h + indexY] = new double[] { pixelColor.R, pixelColor.G, pixelColor.B };
+                    indexY++;
+                }
+                indexX++;
+            }
+
+            // Set the desired number of colors for the image
+            int n_colors = 6;
+
+            // Create a KMeans model with the specified number of clusters and fit it to the pixels
+            KMeans kmeans = new KMeans(n_colors);
+            var clusters = kmeans.Learn(pixels);
+
+            // Get the cluster centers (representing colors) from the model
+            double[][] colorPalette = clusters.Centroids;
+
+            // Convert the color palette to integers and reshape it for display
+            byte[][] colorPaletteInt = colorPalette.Apply(x => x.Apply(y => (byte)y));
+            Bitmap paletteImage = new Bitmap(n_colors, 1);
+            for (int i = 0; i < n_colors; i++)
+            {
+                paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+                Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+            }
+            return paletteImage;
+        }
+        return null;
+    }
+    public Bitmap dominantColorOfImage(Bitmap image)
+    {
+        int w = image.Width;
+        int h = image.Height;
+        double[][] pixels = new double[w * h][];
+        int indexX = 0;
+        // Resize the image (optional)
+        for (int i = 0; i < w; i++)
+        {
+            int indexY = 0;
+            for (int j = 0; j < h; j++)
+            {
+                Color pixelColor = image.GetPixel(i, j);
+                pixels[indexX * h + indexY] = new double[] { pixelColor.R, pixelColor.G, pixelColor.B };
+                indexY++;
+            }
+            indexX++;
+        }
+
+        // Set the desired number of colors for the image
+        int n_colors = 1;
+
+        // Create a KMeans model with the specified number of clusters and fit it to the pixels
+        KMeans kmeans = new KMeans(n_colors);
+        var clusters = kmeans.Learn(pixels);
+
+        // Get the cluster centers (representing colors) from the model
+        double[][] colorPalette = clusters.Centroids;
+
+        // Convert the color palette to integers and reshape it for display
+        byte[][] colorPaletteInt = colorPalette.Apply(x => x.Apply(y => (byte)y));
+        Bitmap paletteImage = new Bitmap(n_colors, 1);
+        for (int i = 0; i < n_colors; i++)
+        {
+            paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+            Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+        }
+        return paletteImage;
+    }
+}

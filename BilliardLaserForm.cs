@@ -135,7 +135,10 @@ namespace billiard_laser
 
         private void findColoredBalls_Click(object sender, EventArgs e)
         {
+            Bitmap og = (Bitmap)pictureBoxImage.Image;
+            ballDetector.dominantColorOfImage(og);
             pictureBoxImage.Image = ballDetector.FindAllBalls((Bitmap)pictureBoxImage.Image);
+            
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
