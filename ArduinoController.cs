@@ -29,7 +29,7 @@ public class ArduinoController
 
         catch (Exception ex)
         {
-            MessageBox.Show("Couldn't connect to arduino\n" + ex.Message);
+            Console.WriteLine("Couldn't connect to arduino\n" + ex.Message);
         }
     }
 
@@ -41,7 +41,7 @@ public class ArduinoController
         }
         catch (Exception ex)
         {
-            MessageBox.Show(ex.GetBaseException().Message);
+            Console.WriteLine(ex.GetBaseException().Message);
         }
     }
 

@@ -6,6 +6,7 @@ public class CameraController
     private FilterInfoCollection filterInfoCollection;
     private VideoCaptureDevice videoCaptureDevice;
     private ComboBox comboBox;
+    private ManualResetEvent frameReceivedEvent = new ManualResetEvent(false);
     private int frameIndex = 0;
 
     public event EventHandler<VideoFrame> ReceivedFrame;
@@ -23,7 +24,18 @@ public class CameraController
             videoCaptureDevice = new VideoCaptureDevice(filterInfoCollection[comboBox.SelectedIndex].MonikerString);
             videoCaptureDevice.NewFrame += FinalFrame_NewFrame;
             videoCaptureDevice.Start();
-            return true;
+
+            // wait for the first frame or timeout after 5 seconds
+            if (frameReceivedEvent.WaitOne(TimeSpan.FromSeconds(5)))
+            {
+                return true;
+            }
+            else
+            {
+                videoCaptureDevice.SignalToStop();
+                MessageBox.Show("Error: Camera did not start capturing frames in time.");
+                return false;
+            }
         }
 
         catch (Exception e) {
@@ -34,6 +46,9 @@ public class CameraController
 
     private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
+        frameReceivedEvent.Set(); //signal that we have received at least one frame
+
+        //put the frame into our adapter class
         VideoFrame frame = new VideoFrame((Bitmap)eventArgs.Frame.Clone(), frameIndex);
         frameIndex++;
 

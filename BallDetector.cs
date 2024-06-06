@@ -15,6 +15,7 @@ using Accord.Math;
 using static BallDetector;
 using AForge.Imaging;
 using static System.Windows.Forms.AxHost;
+using OpenCvSharp.Extensions;
 
 
 public class BallDetector
@@ -30,6 +31,15 @@ public class BallDetector
         }
 
     }
+
+    //default cloth mask values
+    public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
+    public Rgb UpperMaskRgb = new Rgb(70, 255, 255);
+
+    //default image manipulation values
+    public Boolean enableBlur = false;
+    public Boolean enableSharpening = true;
+
     private Color[] ballColors = {
         Color.Brown,
         Color.Green,
@@ -45,10 +55,6 @@ public class BallDetector
         Color.LightBlue,
         Color.Red
     };
-    public BallDetector()
-    {
-
-    }
 
     /// <summary>
     /// Detect and draw boxes around balls based on contours
@@ -57,14 +63,26 @@ public class BallDetector
     /// <returns>Image with balls highlighted</returns>
     public Bitmap FindAllBalls(Bitmap inputImage)
     {
-        Bitmap sharpenedImage = SharpenImage(inputImage);
-        Bitmap blurredImage = BlurImage(sharpenedImage);
-        Bitmap maskInv = MaskImage(blurredImage);
+        Bitmap processedImage = inputImage;
+
+        // Apply sharpening if enabled
+        if (enableSharpening)
+        {
+            processedImage = SharpenImage(processedImage);
+        }
+
+        // Apply blurring if enabled
+        if (enableBlur)
+        {
+            processedImage = BlurImage(processedImage);
+        }
+
+        Bitmap tableMask = GetTableMask(processedImage);
 
         //shows how it would look like if the mask is applied to original image
-        //Bitmap appliedMask = ApplyMask(blurredImage, maskInv);
+        //Bitmap appliedMask = ApplyMask(blurredImage, tableMask);
         //return appliedMask;
-        VectorOfVectorOfPoint contours = GetContours(maskInv);
+        VectorOfVectorOfPoint contours = GetContours(tableMask);
         VectorOfVectorOfPoint filteredContours = FilterContours(contours);
         Image<Rgb, byte> inputImageCopy = inputImage.ToImage<Rgb, byte>();
 
@@ -76,8 +94,46 @@ public class BallDetector
 
         return ballsHighlighted.ToBitmap();
     }
+    
 
-    public Bitmap SharpenImage(Bitmap image)
+    /// <summary>
+    /// Find all balls, and return all the stages of image processing involved
+    /// </summary>
+    /// <param name="tableImage">Image of the table</param>
+    /// <returns></returns>
+    public ImageProcessingResults FindAllBallsDebug(Bitmap tableImage)
+    {
+        Bitmap sharpenedImage = SharpenImage(tableImage);
+        Bitmap blurredImage = BlurImage(tableImage);
+        Bitmap blurredAndSharpenedImage = BlurImage(sharpenedImage);
+
+        
+        Bitmap tableMask = GetTableMask(blurredAndSharpenedImage);
+        Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask); //for debugging only
+
+        VectorOfVectorOfPoint allContoursFound = GetContours(tableMask);
+        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //remove non-ball anomalies
+
+        // final image with balls detected
+        Bitmap filteredBallsHighlighted = DrawRectanglesAroundBalls(filteredContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
+        
+        // image with non-filtered contours
+        Bitmap allBallsHighlighted = DrawRectanglesAroundBalls(allContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
+
+        return new ImageProcessingResults
+        {
+            OriginalImage = tableImage,
+            BlurredImage = blurredImage,
+            SharpenedImage = sharpenedImage,
+            BlurredAndSharpenedImage = blurredAndSharpenedImage,
+            ImageMask = tableMask,
+            ImageWithMaskApplied = tableWithMaskApplied,
+            AllBallsFound = allBallsHighlighted,
+            FilteredBallsFound = filteredBallsHighlighted
+        };
+    }
+
+    private Bitmap SharpenImage(Bitmap image)
     {
         // Define the kernel
         int[,] kernel = {
@@ -96,7 +152,7 @@ public class BallDetector
     }
 
     //Emgu CV bitmap to Mat doesn't convert some bitmaps properly so I had to implement this method. 
-    static Emgu.CV.Mat BitmapToMat(Bitmap bitmap, Emgu.CV.Mat mat, DepthType depthType = DepthType.Cv8U)
+    private static Emgu.CV.Mat BitmapToMat(Bitmap bitmap, Emgu.CV.Mat mat, DepthType depthType = DepthType.Cv8U)
     {
         BitmapData bmpData = bitmap.LockBits(
             new Rectangle(0, 0, bitmap.Width, bitmap.Height),
@@ -111,7 +167,8 @@ public class BallDetector
         bitmap.UnlockBits(bmpData);
         return mat;
     }
-    public Bitmap BlurImage(Bitmap inputImage)
+
+    private Bitmap BlurImage(Bitmap inputImage)
     {
         Emgu.CV.Mat transformed = new Emgu.CV.Mat();
         BitmapToMat(inputImage, transformed);
@@ -121,18 +178,22 @@ public class BallDetector
         return blurredImage.ToBitmap();
     }
 
-    //
-    public Bitmap MaskImage(Bitmap inputImage)
+    /// <summary>
+    /// get the mask image for the table to remove the cloth
+    /// </summary>
+    /// <param name="tableImage">Image of the table to mask</param>
+    /// <returns></returns>
+    private Bitmap GetTableMask(Bitmap tableImage)
     {
-        Emgu.CV.Mat blurredImageMat = inputImage.ToMat();
+        Emgu.CV.Mat imageMat = BitmapExtension.ToMat(tableImage);
         Emgu.CV.Mat hsv = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.CvtColor(blurredImageMat, hsv, ColorConversion.Bgr2Hsv);
+        Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
-
-        // Green hue colors
-        ScalarArray lower = new ScalarArray(new MCvScalar(40, 80, 40));
-        ScalarArray upper = new ScalarArray(new MCvScalar(70, 255, 255));
-        Emgu.CV.CvInvoke.InRange(hsv, lower, upper, mask);
+        
+        //mask based on a range of hues (cloth colour)
+        ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
+        ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
+        Emgu.CV.CvInvoke.InRange(hsv, LowerMaskValue, UpperMaskValue, mask);
 
         // Filter mask
         Emgu.CV.Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1));
@@ -143,36 +204,57 @@ public class BallDetector
         Emgu.CV.Mat maskInv = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
         return maskInv.ToBitmap();
-
     }
 
-    public Bitmap ApplyMask(Bitmap inputImage, Bitmap maskInv)
+    private Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
     {
+        //Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
+        //Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
+        //Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        Image<Bgra, byte> inputMat = inputImage.ToImage<Bgra, byte>();
+        Image<Bgra, byte> outputMat = tableMask.ToImage<Bgra, byte>();
+        Image<Bgra, byte> maskedObjects = new Image<Bgra, byte>(inputMat.Size);
+        // Perform bitwise AND operation with the mask
 
-        Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
-        Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
-        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(maskInv, outputMat), maskedObjects);
+        // Perform bitwise AND operation with the mask
+        CvInvoke.BitwiseAnd(inputMat, outputMat, maskedObjects);
+        //Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
+        for (int y = 0; y < maskedObjects.Height; y++)
+        {
+            for (int x = 0; x < maskedObjects.Width; x++)
+            {
+                Bgra color = maskedObjects[y, x];
+                if (color.Blue == 0 && color.Green == 0 && color.Red == 0)
+                {
+                    color.Alpha = 0; // make the pixel transparent
+                    maskedObjects[y, x] = color;
+                }
+            }
+        }
         return maskedObjects.ToBitmap();
+       
+
+        //return rgbaMat.ToBitmap();
+        //return maskedObjects.ToBitmap();
     }
 
     /// <summary>
     /// Find what Emgu thinks are edges
     /// </summary>
-    /// <param name="maskInv"></param>
+    /// <param name="tableMask"></param>
     /// <returns></returns>
-    public VectorOfVectorOfPoint GetContours(Bitmap maskInv)
+    private VectorOfVectorOfPoint GetContours(Bitmap tableMask)
     {
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
         Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
-        CvInvoke.CvtColor(maskInv.ToMat(), outputMat, ColorConversion.Bgr2Gray);
+        CvInvoke.CvtColor(BitmapExtension.ToMat(tableMask), outputMat, ColorConversion.Bgr2Gray);
         Emgu.CV.CvInvoke.FindContours(outputMat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
         return contours;
     }
 
     //TODO: improve and use, or remove if cant think of anything
-    public Color ColorApproximate(double blue, double green, double red)
+    private Color ColorApproximate(double blue, double green, double red)
     {
         Color nearestColor = Color.Empty;
         double distance = double.MaxValue;
@@ -203,7 +285,7 @@ public class BallDetector
 
     //sussy
     //remove non-ball contours that are too small or too big
-    public VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000, double alpha = 3.445)
+    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000, double alpha = 3.445)
     {
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
@@ -239,7 +321,7 @@ public class BallDetector
     /// <param name="ctrs"></param>
     /// <param name="img"></param>
     /// <returns></returns>
-    public SquareVectors DrawRectanglesAroundBalls(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
+    private SquareVectors DrawRectanglesAroundBalls(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
     {
         Image<Rgb, byte> output = img.Copy();
         List<Point[]> squareCtrs = new List<Point[]>();
