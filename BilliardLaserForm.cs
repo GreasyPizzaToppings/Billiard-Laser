@@ -176,7 +176,7 @@ namespace billiard_laser
         /// For each frame in the video, perform ball and/or shot tracking
         /// </summary>
         /// <returns></returns>
-        private async Task DetectBallsInLoadedVideo()
+        private void DetectBallsInLoadedVideo()
         {
             Stopwatch stopwatch = new Stopwatch();
             double totalProcessingTime = 0;
@@ -197,11 +197,6 @@ namespace billiard_laser
                     processedFrames.Dequeue();
                 }
 
-                stopwatch.Stop();
-                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
-                UpdateFpsLabel(totalProcessingTime, rawFrame.index);
-
                 if (detectingBalls)
                 {
                     buttonNextFrame.Enabled = false;
@@ -211,6 +206,11 @@ namespace billiard_laser
                 {
                     buttonNextFrame.Enabled = true;
                 }
+
+                stopwatch.Stop();
+                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+
+                UpdateFpsLabel(totalProcessingTime, rawFrame.index);
 
                 Application.DoEvents();
             }
@@ -237,7 +237,7 @@ namespace billiard_laser
                 buttonResume.Enabled = false;
                 buttonNextFrame.Enabled = false;
 
-                await DetectBallsInLoadedVideo();
+                DetectBallsInLoadedVideo();
 
                 detectingBalls = false;
                 buttonResume.Enabled = false;
