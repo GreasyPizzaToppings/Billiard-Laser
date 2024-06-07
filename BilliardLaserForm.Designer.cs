@@ -69,7 +69,7 @@ namespace billiard_laser
             listBoxProcessedFrames = new ListBox();
             labelFrameRate = new Label();
             btnDetectBalls = new Button();
-            findColoredBalls = new Button();
+            findFindAllBalls = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSpeedOverTime).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxAccelerationOverTime).BeginInit();
@@ -529,23 +529,23 @@ namespace billiard_laser
             btnDetectBalls.UseVisualStyleBackColor = true;
             btnDetectBalls.Click += btnDetectBalls_Click;
             // 
-            // findColoredBalls
+            // findFindAllBalls
             // 
-            findColoredBalls.Location = new Point(8, 116);
-            findColoredBalls.Margin = new Padding(3, 2, 3, 2);
-            findColoredBalls.Name = "findColoredBalls";
-            findColoredBalls.Size = new Size(75, 25);
-            findColoredBalls.TabIndex = 45;
-            findColoredBalls.Text = "Find All";
-            findColoredBalls.UseVisualStyleBackColor = true;
-            findColoredBalls.Click += findColoredBalls_Click;
+            findFindAllBalls.Location = new Point(8, 116);
+            findFindAllBalls.Margin = new Padding(3, 2, 3, 2);
+            findFindAllBalls.Name = "findFindAllBalls";
+            findFindAllBalls.Size = new Size(75, 25);
+            findFindAllBalls.TabIndex = 45;
+            findFindAllBalls.Text = "Find All";
+            findFindAllBalls.UseVisualStyleBackColor = true;
+            findFindAllBalls.Click += findFindAllBalls_Click;
             // 
             // BilliardLaserForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1305, 492);
-            Controls.Add(findColoredBalls);
+            Controls.Add(findFindAllBalls);
             Controls.Add(groupBoxVideoControls);
             Controls.Add(groupBoxShotInfo);
             Controls.Add(pictureBoxImage);
@@ -615,7 +615,7 @@ namespace billiard_laser
         private ListBox listBoxProcessedFrames;
         private Label labelFrameRate;
         private Button btnDetectBalls;
-        private Button findColoredBalls;
+        private Button findFindAllBalls;
         private Button buttonShowDebugForm;
     }
 }

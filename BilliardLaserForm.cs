@@ -91,7 +91,6 @@ namespace billiard_laser
                 {
                     try
                     {
-                        if (pictureBoxImage.Image != null) pictureBoxImage.Image.Dispose(); //dispose of old image
                         pictureBoxImage.Image = new Bitmap(openfiledialog.FileName);
                     }
                     catch (Exception ex)
@@ -141,9 +140,16 @@ namespace billiard_laser
             btnDetectBalls.Enabled = true;
         }
 
-        private void findColoredBalls_Click(object sender, EventArgs e)
+        private void findFindAllBalls_Click(object sender, EventArgs e)
         {
-            pictureBoxImage.Image = ballDetector.FindAllBalls((Bitmap)pictureBoxImage.Image);
+            Bitmap unprocessedImage = (Bitmap)pictureBoxImage.Image;
+            pictureBoxImage.Image = ballDetector.FindAllBalls(unprocessedImage);
+
+            //find all in debug form if open
+            if (debugForm != null && !debugForm.IsDisposed)
+            {
+                debugForm.ProcessRawFrame(new VideoFrame(unprocessedImage, listBoxProcessedFrames.SelectedIndex));
+            }
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
