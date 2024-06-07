@@ -68,7 +68,7 @@ namespace billiard_laser
             labelFrames = new Label();
             listBoxProcessedFrames = new ListBox();
             labelFrameRate = new Label();
-            btnProcessVideo = new Button();
+            btnDetectBalls = new Button();
             findColoredBalls = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSpeedOverTime).BeginInit();
@@ -375,7 +375,7 @@ namespace billiard_laser
             groupBoxVideoControls.Controls.Add(btnGetCameraInput);
             groupBoxVideoControls.Controls.Add(listBoxProcessedFrames);
             groupBoxVideoControls.Controls.Add(labelFrameRate);
-            groupBoxVideoControls.Controls.Add(btnProcessVideo);
+            groupBoxVideoControls.Controls.Add(btnDetectBalls);
             groupBoxVideoControls.Location = new Point(872, -1);
             groupBoxVideoControls.Margin = new Padding(3, 2, 3, 2);
             groupBoxVideoControls.Name = "groupBoxVideoControls";
@@ -516,18 +516,18 @@ namespace billiard_laser
             labelFrameRate.TabIndex = 31;
             labelFrameRate.Text = "FPS: ";
             // 
-            // btnProcessVideo
+            // btnDetectBalls
             // 
-            btnProcessVideo.Enabled = false;
-            btnProcessVideo.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnProcessVideo.Location = new Point(9, 173);
-            btnProcessVideo.Margin = new Padding(3, 2, 3, 2);
-            btnProcessVideo.Name = "btnProcessVideo";
-            btnProcessVideo.Size = new Size(181, 25);
-            btnProcessVideo.TabIndex = 30;
-            btnProcessVideo.Text = "Start Ball Detection";
-            btnProcessVideo.UseVisualStyleBackColor = true;
-            btnProcessVideo.Click += btnProcessVideo_ClickAsync;
+            btnDetectBalls.Enabled = false;
+            btnDetectBalls.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnDetectBalls.Location = new Point(9, 173);
+            btnDetectBalls.Margin = new Padding(3, 2, 3, 2);
+            btnDetectBalls.Name = "btnDetectBalls";
+            btnDetectBalls.Size = new Size(181, 25);
+            btnDetectBalls.TabIndex = 30;
+            btnDetectBalls.Text = "Start Ball Detection";
+            btnDetectBalls.UseVisualStyleBackColor = true;
+            btnDetectBalls.Click += btnDetectBalls_Click;
             // 
             // findColoredBalls
             // 
@@ -614,7 +614,7 @@ namespace billiard_laser
         private Label labelFrames;
         private ListBox listBoxProcessedFrames;
         private Label labelFrameRate;
-        private Button btnProcessVideo;
+        private Button btnDetectBalls;
         private Button findColoredBalls;
         private Button buttonShowDebugForm;
     }

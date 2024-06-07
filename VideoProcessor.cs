@@ -3,9 +3,8 @@ using OpenCvSharp.Extensions;
 
 public class VideoProcessor
 {
-    public static List<VideoFrame> GetVideoFrames(string videoPath, OpenCvSharp.Size outputResolution)
+    public static void EnqueueVideoFrames(string videoPath, OpenCvSharp.Size outputResolution, Queue<VideoFrame> rawFramesQueue, int maxFrames)
     {
-        var frames = new List<VideoFrame>();
         var capture = new VideoCapture(videoPath);
         int index = 0;
 
@@ -22,12 +21,18 @@ public class VideoProcessor
             }
 
             Cv2.Resize(image, image, outputResolution);
-            Bitmap bitmap = BitmapConverter.ToBitmap(image); // Corrected line
+            Bitmap bitmap = BitmapConverter.ToBitmap(image);
             VideoFrame frame = new VideoFrame(bitmap, index);
 
-            frames.Add(frame);
+            
+
+            if (rawFramesQueue.Count >= maxFrames)
+            {
+                rawFramesQueue.Dequeue();
+            }
+            rawFramesQueue.Enqueue(frame);
             index++;
         }
-        return frames;
     }
+
 }

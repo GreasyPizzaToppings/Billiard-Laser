@@ -21,6 +21,8 @@ make loading/resetting easy without closing form
 
 work on still image or paused video/camera. re-detect with changed image settings
 
+implement sliding window of 2000 frames or so (implemented, not tested)
+
 
 
 understand DI and interfaces

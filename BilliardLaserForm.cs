@@ -5,6 +5,7 @@ using System.IO.Ports;
 using AForge.Video.DirectShow;
 using AForge.Video;
 using System.Windows.Media;
+using System.ComponentModel;
 
 namespace billiard_laser
 {
@@ -31,14 +32,17 @@ namespace billiard_laser
         //testing output
         private OpenCvSharp.Size outputVideoResolution = p480;
 
-        private List<VideoFrame> videoFrames; 
-
+        //frames
+        private BindingList<int> processedFrameIndices = new BindingList<int>();
+        private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
+        private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
+        private const int maxFrames = 2000;
 
         //flags
         public Boolean detectingBalls = false;
         private bool replayInProgress = false;
 
-        public static event EventHandler<ImageProcessingResults> ProcessedDebugFrame; 
+        public static event EventHandler<ImageProcessingResults> ProcessedDebugFrame;
 
         public BilliardLaserForm()
         {
@@ -59,6 +63,8 @@ namespace billiard_laser
             //event handler methods
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
+
+            listBoxProcessedFrames.DataSource = processedFrameIndices;
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
@@ -70,11 +76,8 @@ namespace billiard_laser
 
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
-            if (cameraController.StartCameraCapture())
-            {
-                btnProcessVideo.Enabled = true;
-            }
-            else btnProcessVideo.Enabled = false;
+            if (cameraController.StartCameraCapture()) btnDetectBalls.Enabled = true;
+            else btnDetectBalls.Enabled = false;
         }
 
         private void btnLoadImage_Click(object sender, EventArgs e)
@@ -130,61 +133,39 @@ namespace billiard_laser
             }
         }
 
-        //todo make async?
         private void LoadVideo(string videoPath)
         {
-            videoFrames = VideoProcessor.GetVideoFrames(videoPath, outputVideoResolution);
-            btnProcessVideo.Enabled = true;
-        }
-
-        /// <summary>
-        /// method that handles getting the image of found balls. it handles the case if debugging is enabled or not
-        /// </summary>
-        /// <returns></returns>
-        private Bitmap GetHighlightedBalls(Bitmap tableImage) {
-
-            //no image debugging, just get filtered highlighted balls
-            if (debugForm == null)
-            {
-                return ballDetector.FindAllBalls(tableImage);
-            }
-
-            //debugging enabled
-            else
-            {
-                ImageProcessingResults results = ballDetector.FindAllBallsDebug(tableImage); //debug method
-
-                //send debug form the results
-                ProcessedDebugFrame.Invoke(this, results);
-
-                return results.FilteredBallsFound;
-            }
+            rawFrames.Clear();
+            processedFrames.Clear();
+            VideoProcessor.EnqueueVideoFrames(videoPath, outputVideoResolution, rawFrames, maxFrames);
+            btnDetectBalls.Enabled = true;
         }
 
         private void findColoredBalls_Click(object sender, EventArgs e)
         {
-            pictureBoxImage.Image = GetHighlightedBalls((Bitmap)pictureBoxImage.Image);
+            pictureBoxImage.Image = ballDetector.FindAllBalls((Bitmap)pictureBoxImage.Image);
         }
 
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
-            //add to combo box?
+            //remove too-old frames
+            if (rawFrames.Count >= maxFrames) rawFrames.Dequeue();
+            rawFrames.Enqueue(frame);
 
-            //detect balls
             if (detectingBalls)
             {
-                Bitmap highlightedBalls = GetHighlightedBalls(frame.frame);
+                Bitmap highlightedBalls = ballDetector.FindAllBalls(frame.frame);
                 pictureBoxImage.Image = highlightedBalls;
 
-                //update fps label
+                VideoFrame processedFrame = new VideoFrame(highlightedBalls, frame.index);
 
-                //add processed frame to list?
+                //remove too-old processed frames
+                if (processedFrames.Count >= maxFrames) processedFrames.Dequeue();
+                processedFrames.Enqueue(processedFrame);
 
                 Application.DoEvents();
             }
-
-            //raw input, no highlighting of balls
             else
             {
                 pictureBoxImage.Image = frame.frame;
@@ -195,38 +176,37 @@ namespace billiard_laser
         /// For each frame in the video, perform ball and/or shot tracking
         /// </summary>
         /// <returns></returns>
-        private async Task ProcessVideoAsync()
+        private async Task DetectBallsInLoadedVideo()
         {
             Stopwatch stopwatch = new Stopwatch();
             double totalProcessingTime = 0;
-            var processedFrames = new List<VideoFrame>();
 
-            foreach (VideoFrame frame in videoFrames)
+            foreach (VideoFrame rawFrame in rawFrames)
             {
-                //time how long it takes to process frame
                 stopwatch.Restart();
 
-                Bitmap highlightedBalls = GetHighlightedBalls(frame.frame);
+                var processedFrame = new VideoFrame(ballDetector.FindAllBalls(rawFrame.frame), rawFrame.index);
 
-                // put the processed frame in our container
-                var processedFrame = new VideoFrame(highlightedBalls, frame.index);
+                processedFrames.Enqueue(processedFrame);
+                processedFrameIndices.Add(processedFrame.index);
 
-                processedFrames.Add(processedFrame);
-                listBoxProcessedFrames.Items.Add(processedFrame);
+                // remove the oldest frame if the limit is reached
+                if (processedFrameIndices.Count > maxFrames)
+                {
+                    processedFrameIndices.RemoveAt(0);
+                    processedFrames.Dequeue();
+                }
 
                 stopwatch.Stop();
-
                 totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
 
-                UpdateFpsLabel(totalProcessingTime, frame.index);
+                UpdateFpsLabel(totalProcessingTime, rawFrame.index);
 
                 if (detectingBalls)
                 {
                     buttonNextFrame.Enabled = false;
                     listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-                    pictureBoxImage.Image = highlightedBalls;
                 }
-
                 else
                 {
                     buttonNextFrame.Enabled = true;
@@ -234,7 +214,6 @@ namespace billiard_laser
 
                 Application.DoEvents();
             }
-
         }
 
         private void UpdateFpsLabel(double totalTime, int index)
@@ -243,23 +222,27 @@ namespace billiard_laser
             labelFrameRate.Text = $"FPS: {fps:F2}";
         }
 
-        private async void btnProcessVideo_ClickAsync(object sender, EventArgs e)
+        private async void btnDetectBalls_Click(object sender, EventArgs e)
         {
             //set flag that ball detection is enabled
             detectingBalls = true;
+            btnDetectBalls.Enabled = false;
 
             //if we loaded a video, process that
-            if (videoFrames != null)
+            if (rawFrames != null)
             {
-                listBoxProcessedFrames.Items.Clear();
+                // refresh the listbox
+                processedFrameIndices.Clear();
+
                 buttonResume.Enabled = false;
                 buttonNextFrame.Enabled = false;
 
-                await ProcessVideoAsync();
+                await DetectBallsInLoadedVideo();
 
                 detectingBalls = false;
                 buttonResume.Enabled = false;
                 shotDetector.ShotFinished -= ShotDetector_ShotFinished;
+                btnDetectBalls.Enabled = true;
             }
 
             //else if its camera input, let it do its thing
@@ -285,20 +268,31 @@ namespace billiard_laser
 
         private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
 
-        //display a selected individual frame of the video
+
+        //display a selected individual frame of the video and send to debug form if its open
         private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
         {
-            // Check if any item is selected
-            if (listBoxProcessedFrames.SelectedItem != null)
+            if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
             {
-                // Get the selected frame from the list
-                VideoFrame selectedFrame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
+                // find the frame in the queue based on the index
+                var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
 
-                // Display the selected frame in the PictureBox
-                pictureBoxImage.Image = selectedFrame.frame;
+                if (processedFrame != null)
+                {
+                    pictureBoxImage.Image = processedFrame.frame;
+
+                    // send raw frame to debug form if open
+                    if (debugForm != null && !debugForm.IsDisposed)
+                    {
+                        var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                        if (rawFrame != null) debugForm.ProcessRawFrame(rawFrame);
+                        else Console.WriteLine("Raw frame was null. not sending to debug form!");
+                    }
+                }
             }
         }
 
+        //sussy. dont put in form? also updates picturebox twice. 
         private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
         {
             if (replayInProgress)
@@ -411,8 +405,6 @@ namespace billiard_laser
 
             //show latest processed frame from list box in the picturebox
             listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-            VideoFrame frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
-            pictureBoxImage.Image = frame.frame;
         }
 
         private void buttonPause_Click(object sender, EventArgs e)
@@ -429,15 +421,8 @@ namespace billiard_laser
         {
             cameraController.StopCameraCapture();
 
-            // Clear and dispose of the video frames
-            if (videoFrames != null)
-            {
-                videoFrames.Clear();
-                videoFrames = null;
-            }
-
             // Clear the processed frames list box
-            listBoxProcessedFrames.Items.Clear();
+            processedFrameIndices.Clear();
 
             // Dispose of the picture box image
             if (pictureBoxImage.Image != null)

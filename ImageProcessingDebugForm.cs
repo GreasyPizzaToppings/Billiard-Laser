@@ -43,6 +43,16 @@ namespace billiard_laser
             SetMaskTrackbars();
         }
 
+        public void ProcessRawFrame(VideoFrame rawFrame) {
+            //send to ball detector to get processed images
+            BallDetector ballDetector = new BallDetector();
+            ImageProcessingResults images = ballDetector.FindAllBallsDebug(rawFrame.frame);
+
+
+            //display
+            UpdateDebugImages(null, images);
+        }
+
         //signal to subscriber form to change its mask value or blur and sharpen in its image processing
         private void RaiseImageProcessingSettingsChanged()
         {
