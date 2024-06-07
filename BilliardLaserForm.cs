@@ -146,7 +146,6 @@ namespace billiard_laser
             pictureBoxImage.Image = ballDetector.FindAllBalls((Bitmap)pictureBoxImage.Image);
         }
 
-
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
             //remove too-old frames
@@ -292,6 +291,31 @@ namespace billiard_laser
             }
         }
 
+        private void buttonShowDebugForm_Click(object sender, EventArgs e)
+        {
+            if (debugForm == null || debugForm.IsDisposed)
+            {
+                debugForm = new ImageProcessingDebugForm(ballDetector.LowerMaskRgb, ballDetector.UpperMaskRgb, ballDetector.enableBlur, ballDetector.enableSharpening);
+
+                debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
+                debugForm.ImageProcessingSettingsChanged += HandleImageProcessingSettingsChanged; // subscribe to mask rgb value change updates
+                debugForm.Show();
+
+                //init debug form with current (raw) selected frame
+                if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
+                {
+                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    if (rawFrame != null) debugForm.ProcessRawFrame(rawFrame);
+                    else Console.WriteLine("Raw frame was null. not sending to debug form!");
+                }
+            }
+
+            else
+            {
+                debugForm.Focus();
+            }
+        }
+
         //sussy. dont put in form? also updates picturebox twice. 
         private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
         {
@@ -417,6 +441,7 @@ namespace billiard_laser
             buttonNextFrame.Enabled = true;
         }
 
+        //sussy
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
@@ -429,23 +454,6 @@ namespace billiard_laser
             {
                 pictureBoxImage.Image.Dispose();
                 pictureBoxImage.Image = null;
-            }
-        }
-
-        private void buttonShowDebugForm_Click(object sender, EventArgs e)
-        {
-            if (debugForm == null || debugForm.IsDisposed)
-            {
-                debugForm = new ImageProcessingDebugForm(ballDetector.LowerMaskRgb, ballDetector.UpperMaskRgb, ballDetector.enableBlur, ballDetector.enableSharpening);
-
-                debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
-                debugForm.ImageProcessingSettingsChanged += HandleImageProcessingSettingsChanged; // subscribe to mask rgb value change updates
-                debugForm.Show();
-            }
-
-            else
-            {
-                debugForm.Focus();
             }
         }
 
