@@ -30,7 +30,7 @@ namespace billiard_laser
         private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
         //testing output
-        private OpenCvSharp.Size outputVideoResolution = p480;
+        private OpenCvSharp.Size outputVideoResolution = p720;
 
         //frames
         private BindingList<int> processedFrameIndices = new BindingList<int>();
@@ -41,8 +41,6 @@ namespace billiard_laser
         //flags
         public Boolean detectingBalls = false;
         private bool replayInProgress = false;
-
-        public static event EventHandler<ImageProcessingResults> ProcessedDebugFrame;
 
         public BilliardLaserForm()
         {
@@ -65,6 +63,14 @@ namespace billiard_laser
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
             listBoxProcessedFrames.DataSource = processedFrameIndices;
+        }
+
+        private void UpdateDebugForm(Bitmap rawImage)
+        {
+            if (debugForm != null && !debugForm.IsDisposed)
+            {
+                debugForm.DebugRawImage(rawImage);
+            }
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
@@ -142,14 +148,10 @@ namespace billiard_laser
 
         private void findFindAllBalls_Click(object sender, EventArgs e)
         {
-            Bitmap unprocessedImage = (Bitmap)pictureBoxImage.Image;
-            pictureBoxImage.Image = ballDetector.FindAllBalls(unprocessedImage);
+            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
+            pictureBoxImage.Image = ballDetector.FindAllBalls(rawImage);
 
-            //find all in debug form if open
-            if (debugForm != null && !debugForm.IsDisposed)
-            {
-                debugForm.ProcessRawFrame(new VideoFrame(unprocessedImage, listBoxProcessedFrames.SelectedIndex));
-            }
+            UpdateDebugForm(rawImage);
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
@@ -254,23 +256,6 @@ namespace billiard_laser
 
         }
 
-        private void HandleImageProcessingSettingsChanged(object sender, ImageProcessingSettingsChanged e)
-        {
-            //update ball detector mask values
-            ballDetector.LowerMaskRgb = e.LowerMaskRgb;
-            ballDetector.UpperMaskRgb = e.UpperMaskRgb;
-
-            //update blur and sharpen status
-            ballDetector.enableBlur = e.EnableBlur;
-            ballDetector.enableSharpening = e.EnableSharpening;
-
-            Console.WriteLine($"Image processing settings changed! Editing ballDetector values:" +
-                  $"\nLower Mask RGB: {e.LowerMaskRgb}" +
-                  $"\nUpper Mask RGB: {e.UpperMaskRgb}" +
-                  $"\nEnable Blur: {e.EnableBlur}" +
-                  $"\nEnable Sharpening: {e.EnableSharpening}\n");
-        }
-
         private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
 
 
@@ -286,13 +271,9 @@ namespace billiard_laser
                 {
                     pictureBoxImage.Image = processedFrame.frame;
 
-                    // send raw frame to debug form if open
-                    if (debugForm != null && !debugForm.IsDisposed)
-                    {
-                        var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                        if (rawFrame != null) debugForm.ProcessRawFrame(rawFrame);
-                        else Console.WriteLine("Raw frame was null. not sending to debug form!");
-                    }
+                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    if (rawFrame != null) UpdateDebugForm(rawFrame.frame);
+                    else Console.WriteLine("Raw frame was null. not sending to debug form!");
                 }
             }
         }
@@ -301,25 +282,21 @@ namespace billiard_laser
         {
             if (debugForm == null || debugForm.IsDisposed)
             {
-                debugForm = new ImageProcessingDebugForm(ballDetector.LowerMaskRgb, ballDetector.UpperMaskRgb, ballDetector.enableBlur, ballDetector.enableSharpening);
+                debugForm = new ImageProcessingDebugForm(ballDetector);
 
                 debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
-                debugForm.ImageProcessingSettingsChanged += HandleImageProcessingSettingsChanged; // subscribe to mask rgb value change updates
                 debugForm.Show();
 
                 //init debug form with current (raw) selected frame
                 if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
                 {
                     var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null) debugForm.ProcessRawFrame(rawFrame);
+                    if (rawFrame != null) debugForm.DebugRawImage(rawFrame.frame);
                     else Console.WriteLine("Raw frame was null. not sending to debug form!");
                 }
             }
 
-            else
-            {
-                debugForm.Focus();
-            }
+            else debugForm.Focus();
         }
 
         //sussy. dont put in form? also updates picturebox twice. 

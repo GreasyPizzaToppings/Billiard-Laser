@@ -15,57 +15,67 @@ namespace billiard_laser
 {
     public partial class ImageProcessingDebugForm : Form
     {
-        //controls
         private List<PictureBox> pictureBoxes = new List<PictureBox>();
         private List<Label> labels = new List<Label>();
 
-        //image processing settings
-        public Rgb LowerMaskRgb { get; }
-        public Rgb UpperMaskRgb { get; }
+        private bool initialisingControls = true;
+        private BallDetector ballDetector;
 
-        //events
         public event EventHandler DebugFormClosed;
-        public event EventHandler<ImageProcessingSettingsChanged> ImageProcessingSettingsChanged;
 
-        public ImageProcessingDebugForm(Rgb lowerMaskRgb, Rgb upperMaskRgb, bool enableBlur, bool enableSharpening)
+        public ImageProcessingDebugForm(BallDetector ballDetector)
         {
-            InitializeComponent();
+            this.ballDetector = ballDetector;
             this.FormClosed += ImageProcessingDebugForm_FormClosed;
-            BilliardLaserForm.ProcessedDebugFrame += UpdateDebugImages; //subscribe to event where it processes a debug frame
 
+            InitializeComponent();
             GetControlsLists();
+            InitMaskTrackbars();
+            InitCheckBoxes();
 
-            LowerMaskRgb = lowerMaskRgb;
-            UpperMaskRgb = upperMaskRgb;
-            checkBoxEnableBlurr.Checked = enableBlur;
-            checkBoxEnableSharpen.Checked = enableSharpening;
-
-            SetMaskTrackbars();
+            initialisingControls = false;
         }
 
-        public void ProcessRawFrame(VideoFrame rawFrame) {
-            //send to ball detector to get processed images
-            BallDetector ballDetector = new BallDetector();
-            ImageProcessingResults images = ballDetector.FindAllBallsDebug(rawFrame.frame);
-
-
-            //display
-            UpdateDebugImages(null, images);
+        public void DebugRawImage(Bitmap rawImage) {
+            ShowDebugImages(ballDetector.FindAllBallsDebug(rawImage));
         }
 
-        //signal to subscriber form to change its mask value or blur and sharpen in its image processing
-        private void RaiseImageProcessingSettingsChanged()
+        private void ImageProcessingDebugForm_Load(object sender, EventArgs e)
         {
-            Rgb lowerMaskRgb = new Rgb(trackBarMaskRedMin.Value, trackBarMaskGreenMin.Value, trackBarMaskBlueMin.Value);
-            Rgb upperMaskRgb = new Rgb(trackBarMaskRedMax.Value, trackBarMaskGreenMax.Value, trackBarMaskBlueMax.Value);
-
-            ImageProcessingSettingsChanged?.Invoke(this, new ImageProcessingSettingsChanged { LowerMaskRgb = lowerMaskRgb, UpperMaskRgb = upperMaskRgb, EnableBlur = checkBoxEnableBlurr.Checked, EnableSharpening = checkBoxEnableSharpen.Checked });
+            ImageProcessingDebugForm_Resize(this, EventArgs.Empty);
         }
 
-        public void UpdateDebugImages(object sender, ImageProcessingResults images)
+        private void InitCheckBoxes()
         {
-            //set pictureboxes with all the images
+            checkBoxEnableBlurr.Checked = ballDetector.EnableBlur;
+            checkBoxEnableSharpen.Checked = ballDetector.EnableSharpening;
+        }
 
+        private void SetBallDetectorSettings()
+        {
+            if (initialisingControls)
+                return;
+
+            ballDetector.LowerMaskRgb = new Rgb(trackBarMaskRedMin.Value, trackBarMaskGreenMin.Value, trackBarMaskBlueMin.Value);
+            ballDetector.UpperMaskRgb = new Rgb(trackBarMaskRedMax.Value, trackBarMaskGreenMax.Value, trackBarMaskBlueMax.Value);
+            ballDetector.EnableBlur = checkBoxEnableBlurr.Checked;
+            ballDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
+
+            PrintBallDetectorSettings();
+        }
+
+        private void PrintBallDetectorSettings() {
+            Console.WriteLine(
+              $"\nImage processing settings changed! BallDetector Values:" +
+              $"\nLower Mask RGB: {ballDetector.LowerMaskRgb}" +
+              $"\nUpper Mask RGB: {ballDetector.UpperMaskRgb}" +
+              $"\nEnable Blur: {ballDetector.EnableBlur}" +
+              $"\nEnable Sharpening: {ballDetector.EnableSharpening}\n"
+            );
+        }
+
+        private void ShowDebugImages(ImageProcessingResults images)
+        {
             originalImagePicBox.Image = images.OriginalImage;
             blurredImagePicBox.Image = images.BlurredImage;
             sharpenedImagePicBox.Image = images.SharpenedImage;
@@ -74,11 +84,6 @@ namespace billiard_laser
             allContoursPicBox.Image = images.AllBallsFound;
             invMaskPicBox.Image = images.ImageMask;
             appliedMaskPicBox.Image = images.ImageWithMaskApplied;
-        }
-
-        private void ImageProcessingDebugForm_Load(object sender, EventArgs e)
-        {
-            ImageProcessingDebugForm_Resize(this, EventArgs.Empty);
         }
 
         private void GetControlsLists()
@@ -99,17 +104,17 @@ namespace billiard_laser
         #region Trackbars/Sliders
 
         //initialise to mask value
-        private void SetMaskTrackbars()
+        private void InitMaskTrackbars()
         {
             // Set trackbar values for the lower mask
-            trackBarMaskRedMin.Value = (int)LowerMaskRgb.Red;
-            trackBarMaskGreenMin.Value = (int)LowerMaskRgb.Green;
-            trackBarMaskBlueMin.Value = (int)LowerMaskRgb.Blue;
+            trackBarMaskRedMin.Value = (int)ballDetector.LowerMaskRgb.Red;
+            trackBarMaskGreenMin.Value = (int)ballDetector.LowerMaskRgb.Green;
+            trackBarMaskBlueMin.Value = (int)ballDetector.LowerMaskRgb.Blue;
 
             // Set trackbar values for the upper mask
-            trackBarMaskRedMax.Value = (int)UpperMaskRgb.Red;
-            trackBarMaskGreenMax.Value = (int)UpperMaskRgb.Green;
-            trackBarMaskBlueMax.Value = (int)UpperMaskRgb.Blue;
+            trackBarMaskRedMax.Value = (int)ballDetector.UpperMaskRgb.Red;
+            trackBarMaskGreenMax.Value = (int)ballDetector.UpperMaskRgb.Green;
+            trackBarMaskBlueMax.Value = (int)ballDetector.UpperMaskRgb.Blue;
 
             // Update label text to reflect trackbar values
             labelMaskRedMinValue.Text = trackBarMaskRedMin.Value.ToString();
@@ -123,37 +128,37 @@ namespace billiard_laser
         private void trackBarMaskRedMin_ValueChanged(object sender, EventArgs e)
         {
             labelMaskRedMinValue.Text = trackBarMaskRedMin.Value.ToString();
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
 
         private void trackBarMaskGreenMin_ValueChanged(object sender, EventArgs e)
         {
             labelMaskGreenMinValue.Text = trackBarMaskGreenMin.Value.ToString();
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
 
         private void trackBarMaskBlueMin_ValueChanged(object sender, EventArgs e)
         {
             labelMaskBlueMinValue.Text = trackBarMaskBlueMin.Value.ToString();
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
 
         private void trackBarMaskRedMax_ValueChanged(object sender, EventArgs e)
         {
             labelMaskRedMaxValue.Text = trackBarMaskRedMax.Value.ToString();
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
 
         private void trackBarMaskGreenMax_ValueChanged(object sender, EventArgs e)
         {
             labelMaskGreenMaxValue.Text = trackBarMaskGreenMax.Value.ToString();
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
 
         private void trackBarMaskBlueMax_ValueChanged(object sender, EventArgs e)
         {
             labelMaskBlueMaxValue.Text = trackBarMaskBlueMax.Value.ToString();
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
 
         #endregion
@@ -223,20 +228,12 @@ namespace billiard_laser
 
         private void checkBoxEnableSharpen_CheckedChanged(object sender, EventArgs e)
         {
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
 
         private void checkBoxEnableBlurr_CheckedChanged(object sender, EventArgs e)
         {
-            RaiseImageProcessingSettingsChanged();
+            SetBallDetectorSettings();
         }
-    }
-
-    public class ImageProcessingSettingsChanged : EventArgs
-    {
-        public Rgb LowerMaskRgb { get; set; }
-        public Rgb UpperMaskRgb { get; set; }
-        public bool EnableBlur { get; set; }
-        public bool EnableSharpening { get; set; }
     }
 }

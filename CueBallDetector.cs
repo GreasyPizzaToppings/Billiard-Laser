@@ -1,37 +1,6 @@
-﻿using Emgu.CV.Structure;
-using Emgu.CV;
-//using OpenCvSharp;
-using System;
-using System.Collections.Generic;
-using System.Drawing.Imaging;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
-using OpenCvSharp.WpfExtensions;
-using System.Drawing;
-using Emgu.CV.XPhoto;
-//using OpenCvSharp;
-using Emgu.CV.Reg;
-using Accord;
-using Point = System.Drawing.Point;
-using OpenCvSharp;
-using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
-using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
-using CvInvoke = Emgu.CV.CvInvoke;
-using System.Transactions;
-using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
-using BorderType = Emgu.CV.CvEnum.BorderType;
+﻿using Point = System.Drawing.Point;
 
-using Emgu.CV.Structure;
-using System.Security.AccessControl;
-using static System.Windows.Forms.AxHost;
-
-
-
+//TODO: probably remove
 public class CueBallDetector
 {
 

@@ -30,19 +30,8 @@ public class BallDetector
     public Rgb UpperMaskRgb = new Rgb(70, 255, 255);
 
     //default image manipulation values
-    public Boolean enableBlur = false;
-    public Boolean enableSharpening = true;
-
-    private Color[] ballColors = {
-        Color.Red,
-        Color.Green,
-        Color.Blue,
-        Color.Black,
-        Color.White,
-        Color.Yellow,
-        Color.Brown,
-        Color.Pink
-    };
+    public Boolean EnableBlur = false;
+    public Boolean EnableSharpening = false;
 
     /// <summary>
     /// Detect and draw boxes around balls based on contours
@@ -54,13 +43,13 @@ public class BallDetector
         Bitmap processedImage = inputImage;
 
         // Apply sharpening if enabled
-        if (enableSharpening)
+        if (EnableSharpening)
         {
             processedImage = SharpenImage(processedImage);
         }
 
         // Apply blurring if enabled
-        if (enableBlur)
+        if (EnableBlur)
         {
             processedImage = BlurImage(processedImage);
         }
@@ -221,12 +210,23 @@ public class BallDetector
     //TODO: improve and use, or remove if cant think of anything
     private Color ColorApproximate(double blue, double green, double red)
     {
+        Color[] BallColors = {
+            Color.Red,
+            Color.Green,
+            Color.Blue,
+            Color.Black,
+            Color.White,
+            Color.Yellow,
+            Color.Brown,
+            Color.Pink
+        };
+
         Color nearestColor = Color.Empty;
         double distance = double.MaxValue;
         //For detected vectors, find the closest color it's associated to. 
         //so something like... 
         //
-        foreach (Color c in ballColors)
+        foreach (Color c in BallColors)
         {
             double redDiff = Math.Pow(c.R - red, 2.0);
             double greenDiff = Math.Pow(c.G - green, 2.0);

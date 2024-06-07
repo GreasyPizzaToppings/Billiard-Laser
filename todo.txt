@@ -24,5 +24,6 @@ work on still image or paused video/camera. re-detect with changed image setting
 implement sliding window of 2000 frames or so (implemented, not tested)
 
 
+remove videoframe?
 
 understand DI and interfaces
