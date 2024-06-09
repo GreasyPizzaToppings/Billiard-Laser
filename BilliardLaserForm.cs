@@ -17,7 +17,6 @@ namespace billiard_laser
         //utility classes
         private ArduinoController arduinoController;
         private CameraController cameraController;
-        private CueBallDetector cueBallDetector;
         private ShotDetector shotDetector;
         private BallDetector ballDetector;
 
@@ -66,7 +65,6 @@ namespace billiard_laser
             //utility classes
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(cboCamera);
-            cueBallDetector = new CueBallDetector(); //todo remove later?
             shotDetector = new ShotDetector();
             ballDetector = new BallDetector();
 
@@ -130,20 +128,7 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            // Get a new cueball
-            Ball cueBall = cueBallDetector.FindCueBall(null, pictureBoxImage.Image);
-
-            // Create a new bitmap to draw the ball on
-            Bitmap drawnImage = new Bitmap(pictureBoxImage.Image.Width, pictureBoxImage.Image.Height);
-
-            using (Graphics g = Graphics.FromImage(drawnImage))
-            {
-                g.DrawImage(pictureBoxImage.Image, System.Drawing.Point.Empty);
-
-                // Draw the ball on the new bitmap
-                drawnImage = DrawingHelper.DrawBallOnImage(cueBall, drawnImage);
-                pictureBoxImage.Image = drawnImage;
-            }
+            throw new NotImplementedException(); //need to implement cueball finder in BallDetector
         }
 
         private void btnLoadVideo_Click(object sender, EventArgs e)
@@ -367,7 +352,6 @@ namespace billiard_laser
 
                 labelMaxAcceleration.Text = $"Max: {Math.Round(selectedShot.MaxAcceleration, 2)}";
                 labelAverageAcceleration.Text = $"Avg: {Math.Round(selectedShot.AverageAcceleration, 2)}";
-
             }
         }
 
