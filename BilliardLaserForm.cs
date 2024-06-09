@@ -199,7 +199,7 @@ namespace billiard_laser
                     processedFrames.Dequeue();
                 }
 
-                //update list box (and picturebox) . sussy
+                //calls selectedIndexChanged(). updates list box and picturebox . sussy
                 listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
                 
                 stopwatch.Stop();
@@ -433,7 +433,6 @@ namespace billiard_laser
             buttonNextFrame.Enabled = true;
         }
 
-        //sussy
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
@@ -449,7 +448,6 @@ namespace billiard_laser
             }
         }
 
-        //set our debug form object to null when it closes
         private void DebugForm_DebugFormClosed(object sender, EventArgs e)
         {
             debugForm = null;
