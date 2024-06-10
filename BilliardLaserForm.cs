@@ -79,7 +79,7 @@ namespace billiard_laser
         {
             if (debugForm != null && !debugForm.IsDisposed)
             {
-                debugForm.DebugRawImage(rawImage);
+                debugForm.ShowDebugImages(rawImage);
             }
         }
 
@@ -285,7 +285,7 @@ namespace billiard_laser
                 if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
                 {
                     var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null) debugForm.DebugRawImage(rawFrame.frame);
+                    if (rawFrame != null) debugForm.ShowDebugImages(rawFrame.frame);
                     else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
                 }
             }

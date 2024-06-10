@@ -36,8 +36,18 @@ namespace billiard_laser
             initialisingControls = false;
         }
 
-        public void DebugRawImage(Bitmap rawImage) {
-            ShowDebugImages(ballDetector.FindAllBallsDebug(rawImage));
+        public void ShowDebugImages(Bitmap rawImage)
+        {
+            ImageProcessingResults images = ballDetector.FindAllBallsDebug(rawImage);
+
+            originalImagePicBox.Image = images.OriginalImage;
+            blurredImagePicBox.Image = images.BlurredImage;
+            sharpenedImagePicBox.Image = images.SharpenedImage;
+            blurredSharpenedImagePicBox.Image = images.BlurredAndSharpenedImage;
+            filteredContoursPicBox.Image = images.FilteredBallsFound;
+            allContoursPicBox.Image = images.AllBallsFound;
+            invMaskPicBox.Image = images.ImageMask;
+            appliedMaskPicBox.Image = images.ImageWithMaskApplied;
         }
 
         private void ImageProcessingDebugForm_Load(object sender, EventArgs e)
@@ -62,6 +72,8 @@ namespace billiard_laser
             ballDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
 
             PrintBallDetectorSettings();
+
+            ShowDebugImages((Bitmap)originalImagePicBox.Image);
         }
 
         private void PrintBallDetectorSettings() {
@@ -72,18 +84,6 @@ namespace billiard_laser
               $"\nEnable Blur: {ballDetector.EnableBlur}" +
               $"\nEnable Sharpening: {ballDetector.EnableSharpening}\n"
             );
-        }
-
-        private void ShowDebugImages(ImageProcessingResults images)
-        {
-            originalImagePicBox.Image = images.OriginalImage;
-            blurredImagePicBox.Image = images.BlurredImage;
-            sharpenedImagePicBox.Image = images.SharpenedImage;
-            blurredSharpenedImagePicBox.Image = images.BlurredAndSharpenedImage;
-            filteredContoursPicBox.Image = images.FilteredBallsFound;
-            allContoursPicBox.Image = images.AllBallsFound;
-            invMaskPicBox.Image = images.ImageMask;
-            appliedMaskPicBox.Image = images.ImageWithMaskApplied;
         }
 
         private void GetControlsLists()
