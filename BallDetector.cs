@@ -10,6 +10,7 @@ using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 using AForge.Imaging.Filters;
+using System.Drawing;
 
 public class BallDetector
 {
@@ -22,78 +23,60 @@ public class BallDetector
             this.points = points;
             this.output = output;
         }
-
     }
 
-    //default cloth mask values
+    //default cloth color (green)
     public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
     public Rgb UpperMaskRgb = new Rgb(70, 255, 255);
 
-    //default image manipulation values
+    //image manipulation of the mask
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
 
+
     /// <summary>
-    /// Detect and draw boxes around balls based on contours
+    /// Get the image with all balls highlighted
     /// </summary>
-    /// <param name="inputImage">Input image of table to process</param>
-    /// <returns>Image with balls highlighted</returns>
-    public Bitmap FindAllBalls(Bitmap inputImage)
+    /// <param name="tableImage">Image of the table</param>
+    /// <returns></returns>
+    public Bitmap FindAllBalls(Bitmap tableImage)
     {
-        Bitmap processedImage = inputImage;
-
-        // Apply sharpening if enabled
-        if (EnableSharpening)
-        {
-            processedImage = SharpenImage(processedImage);
-        }
-
-        // Apply blurring if enabled
-        if (EnableBlur)
-        {
-            processedImage = BlurImage(processedImage);
-        }
-
-        Bitmap tableMask = GetTableMask(processedImage);
-
-        //shows how it would look like if the mask is applied to original image
-        //Bitmap appliedMask = ApplyMask(blurredImage, tableMask);
-        //return appliedMask;
-        VectorOfVectorOfPoint contours = GetContours(tableMask);
-        VectorOfVectorOfPoint filteredContours = FilterContours(contours);
-        Image<Rgb, byte> inputImageCopy = inputImage.ToImage<Rgb, byte>();
-
-        SquareVectors squareVectors = DrawRectanglesAroundBalls(filteredContours, inputImageCopy); //change back to filters
-        Image<Rgb, byte> ballsHighlighted = squareVectors.output;
-
-        //        squareVectors.output = appliedMask.ToImage<Rgb, byte>();
-        //FindCtrsColor(squareVectors, maskedImage); //prints stuff to console
-
-        return ballsHighlighted.ToBitmap();
+        return FindAllBallsDebug(tableImage).FilteredBallsFound;
     }
-    
 
     /// <summary>
-    /// Find all balls, and return all the stages of image processing involved
+    /// Return all the stages of image processing involved with finding balls
     /// </summary>
     /// <param name="tableImage">Image of the table</param>
     /// <returns></returns>
     public ImageProcessingResults FindAllBallsDebug(Bitmap tableImage)
     {
-        Bitmap sharpenedImage = SharpenImage(tableImage);
-        Bitmap blurredImage = BlurImage(tableImage);
-        Bitmap blurredAndSharpenedImage = BlurImage(sharpenedImage);
+        Bitmap workingImage = tableImage;
+        Bitmap sharpenedImage = null, blurredImage = null, blurredAndSharpenedImage = null;
 
-        
-        Bitmap tableMask = GetTableMask(blurredAndSharpenedImage);
-        Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask); //for debugging only
+        if (EnableSharpening)
+        {
+            sharpenedImage = SharpenImage(workingImage);
+            workingImage = sharpenedImage;
+        }
+
+        if (EnableBlur)
+        {
+            blurredImage = BlurImage(workingImage);
+            workingImage = blurredImage;
+
+            if (EnableSharpening) blurredAndSharpenedImage = workingImage;
+        }
+
+        Bitmap tableMask = GetTableMask(workingImage);
+        Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
         VectorOfVectorOfPoint allContoursFound = GetContours(tableMask);
-        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //remove non-ball anomalies
+        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); // remove non-ball anomalies
 
         // final image with balls detected
         Bitmap filteredBallsHighlighted = DrawRectanglesAroundBalls(filteredContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
-        
+
         // image with non-filtered contours
         Bitmap allBallsHighlighted = DrawRectanglesAroundBalls(allContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
 
