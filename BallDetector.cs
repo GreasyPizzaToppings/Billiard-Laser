@@ -233,8 +233,9 @@ public class BallDetector
 
     //sussy
     //remove non-ball contours that are too small or too big
-    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000, double alpha = 3.445)
+    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 500, double alpha = 3.445)
     {
+        Console.WriteLine("---");
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
         {
@@ -244,22 +245,23 @@ public class BallDetector
                 float w = rotRect.Size.Width;
                 float h = rotRect.Size.Height;
                 double area = Emgu.CV.CvInvoke.ContourArea(contour);
-                
+
+                Console.WriteLine($"\nFilter Contours Info: \nWidth:{w}\nHeight:{h}\nArea{area}\n");
 
                 //this assumes the the balls are of the same width and height. 
                 //maybe now I'll try to warp the images. but for now, nah. 
-                
+
                 //filter out non-squares or non-ball shaped things
-                if ((h > w * 1.5) || (w > h*1.5)) continue;
+                if ((h > w * 2) || (w > h*2)) continue;
 
                 //filter out balls with very small area or too big areas
                 if ((area < (min_s*min_s)) || (area > (max_s*max_s)))
                     continue;
 
-                //Console.WriteLine($"Filter contours: Area: {area}");
                 filteredContours.Push(contour);
             }
         }
+        Console.WriteLine("---");
         return filteredContours;
     }
 

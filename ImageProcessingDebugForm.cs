@@ -73,7 +73,7 @@ namespace billiard_laser
 
             PrintBallDetectorSettings();
 
-            ShowDebugImages((Bitmap)originalImagePicBox.Image);
+            if(originalImagePicBox.Image != null) ShowDebugImages((Bitmap)originalImagePicBox.Image);
         }
 
         private void PrintBallDetectorSettings() {
