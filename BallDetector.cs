@@ -10,13 +10,13 @@ using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 using AForge.Imaging.Filters;
+using System.Drawing;
 using Accord.MachineLearning;
 using Accord.Math;
 using static BallDetector;
 using AForge.Imaging;
 using static System.Windows.Forms.AxHost;
 using OpenCvSharp.Extensions;
-
 
 public class BallDetector
 {
@@ -29,7 +29,6 @@ public class BallDetector
             this.points = points;
             this.output = output;
         }
-
     }
     public class BallAreasAndContours
     {
@@ -42,13 +41,13 @@ public class BallDetector
         }
     }
 
-    //default cloth mask values
+    //default cloth color (green)
     public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
     public Rgb UpperMaskRgb = new Rgb(70, 255, 255);
 
-    //default image manipulation values
-    public Boolean enableBlur = false;
-    public Boolean enableSharpening = true;
+    //image manipulation of the mask
+    public Boolean EnableBlur = false;
+    public Boolean EnableSharpening = false;
 
     private Color[] ballColors = {
         Color.Brown,
@@ -67,66 +66,48 @@ public class BallDetector
     };
 
     /// <summary>
-    /// Detect and draw boxes around balls based on contours
+    /// Get the image with all balls highlighted
     /// </summary>
-    /// <param name="inputImage">Input image of table to process</param>
-    /// <returns>Image with balls highlighted</returns>
-    public Bitmap FindAllBalls(Bitmap inputImage)
+    /// <param name="tableImage">Image of the table</param>
+    /// <returns></returns>
+    public Bitmap FindAllBalls(Bitmap tableImage)
     {
-        Bitmap processedImage = inputImage;
-
-        // Apply sharpening if enabled
-        if (enableSharpening)
-        {
-            processedImage = SharpenImage(processedImage);
-        }
-
-        // Apply blurring if enabled
-        if (enableBlur)
-        {
-            processedImage = BlurImage(processedImage);
-        }
-
-        Bitmap tableMask = GetTableMask(processedImage);
-
-        //shows how it would look like if the mask is applied to original image
-        //Bitmap appliedMask = ApplyMask(blurredImage, tableMask);
-        //return appliedMask;
-        VectorOfVectorOfPoint contours = GetContours(tableMask);
-        VectorOfVectorOfPoint filteredContours = FilterContours(contours);
-        Image<Rgb, byte> inputImageCopy = inputImage.ToImage<Rgb, byte>();
-
-        SquareVectors squareVectors = DrawRectanglesAroundBalls(filteredContours, inputImageCopy); //change back to filters
-        Image<Rgb, byte> ballsHighlighted = squareVectors.output;
-
-        //        squareVectors.output = appliedMask.ToImage<Rgb, byte>();
-        //FindCtrsColor(squareVectors, maskedImage); //prints stuff to console
-
-        return ballsHighlighted.ToBitmap();
+        return FindAllBallsDebug(tableImage).FilteredBallsFound;
     }
-    
 
     /// <summary>
-    /// Find all balls, and return all the stages of image processing involved
+    /// Return all the stages of image processing involved with finding balls
     /// </summary>
     /// <param name="tableImage">Image of the table</param>
     /// <returns></returns>
     public ImageProcessingResults FindAllBallsDebug(Bitmap tableImage)
     {
-        Bitmap sharpenedImage = SharpenImage(tableImage);
-        Bitmap blurredImage = BlurImage(tableImage);
-        Bitmap blurredAndSharpenedImage = BlurImage(sharpenedImage);
+        Bitmap workingImage = tableImage;
+        Bitmap sharpenedImage = null, blurredImage = null, blurredAndSharpenedImage = null;
 
-        
-        Bitmap tableMask = GetTableMask(blurredAndSharpenedImage);
-        Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask); //for debugging only
+        if (EnableSharpening)
+        {
+            sharpenedImage = SharpenImage(workingImage);
+            workingImage = sharpenedImage;
+        }
+
+        if (EnableBlur)
+        {
+            blurredImage = BlurImage(workingImage);
+            workingImage = blurredImage;
+
+            if (EnableSharpening) blurredAndSharpenedImage = workingImage;
+        }
+
+        Bitmap tableMask = GetTableMask(workingImage);
+        Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
         VectorOfVectorOfPoint allContoursFound = GetContours(tableMask);
-        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //remove non-ball anomalies
+        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); // remove non-ball anomalies
 
         // final image with balls detected
         Bitmap filteredBallsHighlighted = DrawRectanglesAroundBalls(filteredContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
-        
+
         // image with non-filtered contours
         Bitmap allBallsHighlighted = DrawRectanglesAroundBalls(allContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
 
@@ -266,12 +247,23 @@ public class BallDetector
     //TODO: improve and use, or remove if cant think of anything
     private Color ColorApproximate(double blue, double green, double red)
     {
+        Color[] BallColors = {
+            Color.Red,
+            Color.Green,
+            Color.Blue,
+            Color.Black,
+            Color.White,
+            Color.Yellow,
+            Color.Brown,
+            Color.Pink
+        };
+
         Color nearestColor = Color.Empty;
         double distance = double.MaxValue;
         //For detected vectors, find the closest color it's associated to. 
         //so something like... 
         //
-        foreach (Color c in ballColors)
+        foreach (Color c in BallColors)
         {
             double redDiff = Math.Pow(c.R - red, 2.0);
             double greenDiff = Math.Pow(c.G - green, 2.0);
@@ -297,6 +289,7 @@ public class BallDetector
     //remove non-ball contours that are too small or too big
     private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000)
     {
+        Console.WriteLine("---");
         List<BallAreasAndContours> ballAreasAndContours = new List<BallAreasAndContours>();
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
@@ -307,23 +300,28 @@ public class BallDetector
                 float w = rotRect.Size.Width;
                 float h = rotRect.Size.Height;
                 double area = Emgu.CV.CvInvoke.ContourArea(contour);
-                
+
+                Console.WriteLine($"\nFilter Contours Info: \nWidth:{w}\nHeight:{h}\nArea{area}\n");
 
                 //this assumes the the balls are of the same width and height. 
                 //maybe now I'll try to warp the images. but for now, nah. 
-                
+
                 //filter out non-squares or non-ball shaped things
-                //if ((h > w * 1.5) || (w > h*1.5)) continue;
+                if ((h > w * 2) || (w > h*2)) continue;
 
                 //filter out balls with very small area or too big areas
                 if ((area < (min_s*min_s)) || (area > (max_s*max_s)))
                     continue;
-                BallAreasAndContours anc = new BallAreasAndContours(area, contour);                
-                ballAreasAndContours.Add(anc);
-                //Console.WriteLine($"Filter contours: Area: {area}");
-                
+
+                filteredContours.Push(contour);
             }
         }
+      
+        Console.WriteLine("---");
+
+        BallAreasAndContours anc = new BallAreasAndContours(area, contour);                
+        ballAreasAndContours.Add(anc);
+
         double averageArea = ballAreasAndContours.Average(b => b.area);
         foreach (var i in ballAreasAndContours)
         {

@@ -1,3 +1,6 @@
+better way to add frames to raw and processed queues
+better way to have int list of indices of processed/raw frames
+
 UI redesign. main form, make cleaner. hide/show shot tracking stats
 
 better media controls
@@ -10,8 +13,6 @@ way to make it faster at higher res / increase performance
 update fps label when replaying shots too. and for camera input
 
 
-video replayback modifying original frame
-
 **debug form:
 fullscreen/bigger picturebox viewing 
 
@@ -20,7 +21,5 @@ implement toggle start/stop ball detection instead of just start
 make loading/resetting easy without closing form
 
 work on still image or paused video/camera. re-detect with changed image settings
-
-
 
 understand DI and interfaces

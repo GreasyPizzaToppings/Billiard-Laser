@@ -251,9 +251,9 @@ namespace billiard_laser
             checkBoxEnableBlurr.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
             checkBoxEnableBlurr.Location = new Point(0, 0);
             checkBoxEnableBlurr.Name = "checkBoxEnableBlurr";
-            checkBoxEnableBlurr.Size = new Size(103, 93);
+            checkBoxEnableBlurr.Size = new Size(82, 93);
             checkBoxEnableBlurr.TabIndex = 16;
-            checkBoxEnableBlurr.Text = "Enable Blur";
+            checkBoxEnableBlurr.Text = "Use Blur";
             checkBoxEnableBlurr.UseVisualStyleBackColor = true;
             checkBoxEnableBlurr.CheckedChanged += checkBoxEnableBlurr_CheckedChanged;
             // 
@@ -262,11 +262,11 @@ namespace billiard_laser
             checkBoxEnableSharpen.AutoSize = true;
             checkBoxEnableSharpen.Dock = DockStyle.Left;
             checkBoxEnableSharpen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            checkBoxEnableSharpen.Location = new Point(103, 0);
+            checkBoxEnableSharpen.Location = new Point(82, 0);
             checkBoxEnableSharpen.Name = "checkBoxEnableSharpen";
-            checkBoxEnableSharpen.Size = new Size(152, 93);
+            checkBoxEnableSharpen.Size = new Size(131, 93);
             checkBoxEnableSharpen.TabIndex = 17;
-            checkBoxEnableSharpen.Text = "Enable Sharpening";
+            checkBoxEnableSharpen.Text = "Use Sharpening";
             checkBoxEnableSharpen.UseVisualStyleBackColor = true;
             checkBoxEnableSharpen.CheckedChanged += checkBoxEnableSharpen_CheckedChanged;
             // 

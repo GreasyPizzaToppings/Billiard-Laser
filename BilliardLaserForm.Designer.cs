@@ -68,8 +68,8 @@ namespace billiard_laser
             labelFrames = new Label();
             listBoxProcessedFrames = new ListBox();
             labelFrameRate = new Label();
-            btnProcessVideo = new Button();
-            findColoredBalls = new Button();
+            btnDetectBalls = new Button();
+            findFindAllBalls = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxSpeedOverTime).BeginInit();
             ((System.ComponentModel.ISupportInitialize)pictureBoxAccelerationOverTime).BeginInit();
@@ -375,7 +375,7 @@ namespace billiard_laser
             groupBoxVideoControls.Controls.Add(btnGetCameraInput);
             groupBoxVideoControls.Controls.Add(listBoxProcessedFrames);
             groupBoxVideoControls.Controls.Add(labelFrameRate);
-            groupBoxVideoControls.Controls.Add(btnProcessVideo);
+            groupBoxVideoControls.Controls.Add(btnDetectBalls);
             groupBoxVideoControls.Location = new Point(872, -1);
             groupBoxVideoControls.Margin = new Padding(3, 2, 3, 2);
             groupBoxVideoControls.Name = "groupBoxVideoControls";
@@ -516,36 +516,36 @@ namespace billiard_laser
             labelFrameRate.TabIndex = 31;
             labelFrameRate.Text = "FPS: ";
             // 
-            // btnProcessVideo
+            // btnDetectBalls
             // 
-            btnProcessVideo.Enabled = false;
-            btnProcessVideo.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnProcessVideo.Location = new Point(9, 173);
-            btnProcessVideo.Margin = new Padding(3, 2, 3, 2);
-            btnProcessVideo.Name = "btnProcessVideo";
-            btnProcessVideo.Size = new Size(181, 25);
-            btnProcessVideo.TabIndex = 30;
-            btnProcessVideo.Text = "Start Ball Detection";
-            btnProcessVideo.UseVisualStyleBackColor = true;
-            btnProcessVideo.Click += btnProcessVideo_ClickAsync;
+            btnDetectBalls.Enabled = false;
+            btnDetectBalls.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnDetectBalls.Location = new Point(9, 173);
+            btnDetectBalls.Margin = new Padding(3, 2, 3, 2);
+            btnDetectBalls.Name = "btnDetectBalls";
+            btnDetectBalls.Size = new Size(181, 25);
+            btnDetectBalls.TabIndex = 30;
+            btnDetectBalls.Text = "Start Ball Detection";
+            btnDetectBalls.UseVisualStyleBackColor = true;
+            btnDetectBalls.Click += btnDetectBalls_Click;
             // 
-            // findColoredBalls
+            // findFindAllBalls
             // 
-            findColoredBalls.Location = new Point(8, 116);
-            findColoredBalls.Margin = new Padding(3, 2, 3, 2);
-            findColoredBalls.Name = "findColoredBalls";
-            findColoredBalls.Size = new Size(75, 25);
-            findColoredBalls.TabIndex = 45;
-            findColoredBalls.Text = "Find All";
-            findColoredBalls.UseVisualStyleBackColor = true;
-            findColoredBalls.Click += findColoredBalls_Click;
+            findFindAllBalls.Location = new Point(8, 116);
+            findFindAllBalls.Margin = new Padding(3, 2, 3, 2);
+            findFindAllBalls.Name = "findFindAllBalls";
+            findFindAllBalls.Size = new Size(75, 25);
+            findFindAllBalls.TabIndex = 45;
+            findFindAllBalls.Text = "Find All";
+            findFindAllBalls.UseVisualStyleBackColor = true;
+            findFindAllBalls.Click += findFindAllBalls_Click;
             // 
             // BilliardLaserForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1305, 492);
-            Controls.Add(findColoredBalls);
+            Controls.Add(findFindAllBalls);
             Controls.Add(groupBoxVideoControls);
             Controls.Add(groupBoxShotInfo);
             Controls.Add(pictureBoxImage);
@@ -614,8 +614,8 @@ namespace billiard_laser
         private Label labelFrames;
         private ListBox listBoxProcessedFrames;
         private Label labelFrameRate;
-        private Button btnProcessVideo;
-        private Button findColoredBalls;
+        private Button btnDetectBalls;
+        private Button findFindAllBalls;
         private Button buttonShowDebugForm;
     }
 }
