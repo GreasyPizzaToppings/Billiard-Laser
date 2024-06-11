@@ -3,4 +3,5 @@ write steps in pseudocode and fill it out
 try and write without looking at ColoredBallDetection
 comment the old one out and test
 
-make programs work with lower resolutions
+find the prportion of colors?
+and how many are in the buckets

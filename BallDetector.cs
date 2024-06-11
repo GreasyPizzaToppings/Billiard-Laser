@@ -11,6 +11,12 @@ using CvInvoke = Emgu.CV.CvInvoke;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 using AForge.Imaging.Filters;
 using System.Drawing;
+using Accord.MachineLearning;
+using Accord.Math;
+using static BallDetector;
+using AForge.Imaging;
+using static System.Windows.Forms.AxHost;
+using OpenCvSharp.Extensions;
 
 public class BallDetector
 {
@@ -24,6 +30,16 @@ public class BallDetector
             this.output = output;
         }
     }
+    public class BallAreasAndContours
+    {
+        public double area;
+        public VectorOfPoint contour;
+        public BallAreasAndContours(double area, VectorOfPoint contour)
+        {
+            this.area = area;
+            this.contour = contour;
+        }
+    }
 
     //default cloth color (green)
     public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
@@ -33,6 +49,21 @@ public class BallDetector
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
 
+    private Color[] ballColors = {
+        Color.Brown,
+        Color.Green,
+        Color.Blue,
+        Color.Black,
+        Color.White,
+        Color.Yellow,
+        Color.Purple,
+        Color.DarkRed,
+        Color.DarkViolet,
+        Color.AliceBlue,
+        Color.DarkCyan,
+        Color.LightBlue,
+        Color.Red
+    };
 
     /// <summary>
     /// Get the image with all balls highlighted
@@ -122,7 +153,7 @@ public class BallDetector
         CvInvoke.CvtColor(
             new Emgu.CV.Mat(bmpData.Height, bmpData.Width, depthType, 3, bmpData.Scan0, bmpData.Stride),
             mat,
-            ColorConversion.Bgr2Bgra);
+            ColorConversion.Rgb2Rgba);
 
         bitmap.UnlockBits(bmpData);
         return mat;
@@ -145,11 +176,11 @@ public class BallDetector
     /// <returns></returns>
     private Bitmap GetTableMask(Bitmap tableImage)
     {
-        Emgu.CV.Mat imageMat = tableImage.ToMat();
+        Emgu.CV.Mat imageMat = BitmapExtension.ToMat(tableImage);
         Emgu.CV.Mat hsv = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
-
+        
         //mask based on a range of hues (cloth colour)
         ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
         ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
@@ -168,11 +199,34 @@ public class BallDetector
 
     private Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
     {
-        Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
-        Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
-        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
+        //Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
+        //Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
+        //Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        Image<Bgra, byte> inputMat = inputImage.ToImage<Bgra, byte>();
+        Image<Bgra, byte> outputMat = tableMask.ToImage<Bgra, byte>();
+        Image<Bgra, byte> maskedObjects = new Image<Bgra, byte>(inputMat.Size);
+        // Perform bitwise AND operation with the mask
+
+        // Perform bitwise AND operation with the mask
+        CvInvoke.BitwiseAnd(inputMat, outputMat, maskedObjects);
+        //Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
+        for (int y = 0; y < maskedObjects.Height; y++)
+        {
+            for (int x = 0; x < maskedObjects.Width; x++)
+            {
+                Bgra color = maskedObjects[y, x];
+                if (color.Blue == 0 && color.Green == 0 && color.Red == 0)
+                {
+                    color.Alpha = 0; // make the pixel transparent
+                    maskedObjects[y, x] = color;
+                }
+            }
+        }
         return maskedObjects.ToBitmap();
+       
+
+        //return rgbaMat.ToBitmap();
+        //return maskedObjects.ToBitmap();
     }
 
     /// <summary>
@@ -185,7 +239,7 @@ public class BallDetector
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
         Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
-        CvInvoke.CvtColor(tableMask.ToMat(), outputMat, ColorConversion.Bgr2Gray);
+        CvInvoke.CvtColor(BitmapExtension.ToMat(tableMask), outputMat, ColorConversion.Bgr2Gray);
         Emgu.CV.CvInvoke.FindContours(outputMat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
         return contours;
     }
@@ -233,9 +287,10 @@ public class BallDetector
 
     //sussy
     //remove non-ball contours that are too small or too big
-    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 500, double alpha = 3.445)
+    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000)
     {
         Console.WriteLine("---");
+        List<BallAreasAndContours> ballAreasAndContours = new List<BallAreasAndContours>();
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
         {
@@ -261,7 +316,17 @@ public class BallDetector
                 filteredContours.Push(contour);
             }
         }
+      
         Console.WriteLine("---");
+
+        BallAreasAndContours anc = new BallAreasAndContours(area, contour);                
+        ballAreasAndContours.Add(anc);
+
+        double averageArea = ballAreasAndContours.Average(b => b.area);
+        foreach (var i in ballAreasAndContours)
+        {
+            if(i.area + 10 > averageArea && i.area - 10 < averageArea)filteredContours.Push(i.contour);
+        }
         return filteredContours;
     }
 
@@ -305,5 +370,97 @@ public class BallDetector
         }
 
         return new SquareVectors(squareCtrs, output);
+    }
+    public static Bitmap GetDominantColor(SquareVectors sV)
+    {
+        Bitmap image = sV.output.ToBitmap();
+
+        // Get the dimensions of the image
+
+
+        // Reshape the image into a 2D array, where each row represents a pixel
+        foreach (Point[] p in sV.points)
+        {
+            int startX = p[0].X;
+            int startY = p[0].Y;
+            int endX = p[2].X;
+            int endY = p[2].Y;
+            int w = Math.Abs(endX - startX);
+            int h = Math.Abs(endY - startY);
+            double[][] pixels = new double[w * h][];
+            int indexX = 0;
+
+            for (int i = startX; i < endX; i++)
+            {
+                int indexY = 0;
+                for (int j = startY; j < endY; j++)
+                {
+                    Color pixelColor = image.GetPixel(i, j);
+                    pixels[indexX * h + indexY] = new double[] { pixelColor.R, pixelColor.G, pixelColor.B };
+                    indexY++;
+                }
+                indexX++;
+            }
+
+            // Set the desired number of colors for the image
+            int n_colors = 6;
+
+            // Create a KMeans model with the specified number of clusters and fit it to the pixels
+            KMeans kmeans = new KMeans(n_colors);
+            var clusters = kmeans.Learn(pixels);
+
+            // Get the cluster centers (representing colors) from the model
+            double[][] colorPalette = clusters.Centroids;
+
+            // Convert the color palette to integers and reshape it for display
+            byte[][] colorPaletteInt = colorPalette.Apply(x => x.Apply(y => (byte)y));
+            Bitmap paletteImage = new Bitmap(n_colors, 1);
+            for (int i = 0; i < n_colors; i++)
+            {
+                paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+                Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+            }
+            return paletteImage;
+        }
+        return null;
+    }
+    public Bitmap dominantColorOfImage(Bitmap image)
+    {
+        int w = image.Width;
+        int h = image.Height;
+        double[][] pixels = new double[w * h][];
+        int indexX = 0;
+        // Resize the image (optional)
+        for (int i = 0; i < w; i++)
+        {
+            int indexY = 0;
+            for (int j = 0; j < h; j++)
+            {
+                Color pixelColor = image.GetPixel(i, j);
+                pixels[indexX * h + indexY] = new double[] { pixelColor.R, pixelColor.G, pixelColor.B };
+                indexY++;
+            }
+            indexX++;
+        }
+
+        // Set the desired number of colors for the image
+        int n_colors = 1;
+
+        // Create a KMeans model with the specified number of clusters and fit it to the pixels
+        KMeans kmeans = new KMeans(n_colors);
+        var clusters = kmeans.Learn(pixels);
+
+        // Get the cluster centers (representing colors) from the model
+        double[][] colorPalette = clusters.Centroids;
+
+        // Convert the color palette to integers and reshape it for display
+        byte[][] colorPaletteInt = colorPalette.Apply(x => x.Apply(y => (byte)y));
+        Bitmap paletteImage = new Bitmap(n_colors, 1);
+        for (int i = 0; i < n_colors; i++)
+        {
+            paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+            Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+        }
+        return paletteImage;
     }
 }
