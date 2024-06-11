@@ -106,10 +106,10 @@ public class BallDetector
         VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); // remove non-ball anomalies
 
         // final image with balls detected
-        Bitmap filteredBallsHighlighted = DrawRectanglesAroundBalls(filteredContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
+        Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
 
         // image with non-filtered contours
-        Bitmap allBallsHighlighted = DrawRectanglesAroundBalls(allContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
+        Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
 
         return new ImageProcessingResults
         {
@@ -299,108 +299,39 @@ public class BallDetector
       
         Console.WriteLine("---");
 
-        double averageArea = ballAreasAndContours.Average(b => b.area);
-        foreach (var i in ballAreasAndContours)
-        {
-            if(i.area + 10 > averageArea && i.area - 10 < averageArea)filteredContours.Push(i.contour);
-        }
+        double? averageArea = ballAreasAndContours?.Any() == true ? ballAreasAndContours.Average(b => b.area) : (double?)null;
+        if (averageArea.HasValue) foreach (var i in ballAreasAndContours) if (i.area + 10 > averageArea.Value && i.area - 10 < averageArea.Value) filteredContours.Push(i.contour);
+
         return filteredContours;
     }
 
     /// <summary>
-    /// Draw rectangles around the balls we detected
+    /// Draw the contours as they are exactly
     /// </summary>
     /// <param name="ctrs"></param>
     /// <param name="img"></param>
     /// <returns></returns>
-    private SquareVectors DrawRectanglesAroundBalls(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
+    private SquareVectors DrawContours(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
     {
         Image<Rgb, byte> output = img.Copy();
-        List<Point[]> squareCtrs = new List<Point[]>();
+        List<Point[]> contourPoints = new List<Point[]>();
 
         for (int i = 0; i < ctrs.Size; i++)
         {
             using (VectorOfPoint contour = ctrs[i])
             {
-                // Calculate moments
-                Emgu.CV.Moments moments = CvInvoke.Moments(contour, false);
+                // Store the points of the contour
+                contourPoints.Add(contour.ToArray());
 
-                // Calculate minimum area rectangle
-                Emgu.CV.Structure.RotatedRect rotatedRect = CvInvoke.MinAreaRect(contour);
-                float w = rotatedRect.Size.Width; // width
-                float h = rotatedRect.Size.Height; // height
-
-                // Calculate box points and draw contours
-                PointF[] boxPoints = CvInvoke.BoxPoints(rotatedRect);
-                Point[] boxPointsInt = Array.ConvertAll(boxPoints, Point.Round);
-
-                using (VectorOfPoint boxContour = new VectorOfPoint(boxPointsInt))
-                {
-                    using (VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint())
-                    {
-                        contours.Push(boxContour);
-                        squareCtrs.Add(boxPointsInt);
-                        CvInvoke.DrawContours(output, contours, -1, new MCvScalar(255, 100, 1), 2);
-                    }
-                }
+                // Draw the contour on the image
+                CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 3);
             }
         }
 
-        return new SquareVectors(squareCtrs, output);
+        return new SquareVectors(contourPoints, output);
     }
-    public static Bitmap GetDominantColor(SquareVectors sV)
-    {
-        Bitmap image = sV.output.ToBitmap();
-
-        // Get the dimensions of the image
 
 
-        // Reshape the image into a 2D array, where each row represents a pixel
-        foreach (Point[] p in sV.points)
-        {
-            int startX = p[0].X;
-            int startY = p[0].Y;
-            int endX = p[2].X;
-            int endY = p[2].Y;
-            int w = Math.Abs(endX - startX);
-            int h = Math.Abs(endY - startY);
-            double[][] pixels = new double[w * h][];
-            int indexX = 0;
-
-            for (int i = startX; i < endX; i++)
-            {
-                int indexY = 0;
-                for (int j = startY; j < endY; j++)
-                {
-                    Color pixelColor = image.GetPixel(i, j);
-                    pixels[indexX * h + indexY] = new double[] { pixelColor.R, pixelColor.G, pixelColor.B };
-                    indexY++;
-                }
-                indexX++;
-            }
-
-            // Set the desired number of colors for the image
-            int n_colors = 6;
-
-            // Create a KMeans model with the specified number of clusters and fit it to the pixels
-            KMeans kmeans = new KMeans(n_colors);
-            var clusters = kmeans.Learn(pixels);
-
-            // Get the cluster centers (representing colors) from the model
-            double[][] colorPalette = clusters.Centroids;
-
-            // Convert the color palette to integers and reshape it for display
-            byte[][] colorPaletteInt = colorPalette.Apply(x => x.Apply(y => (byte)y));
-            Bitmap paletteImage = new Bitmap(n_colors, 1);
-            for (int i = 0; i < n_colors; i++)
-            {
-                paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
-                Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
-            }
-            return paletteImage;
-        }
-        return null;
-    }
     public Bitmap dominantColorOfImage(Bitmap image)
     {
         int w = image.Width;
