@@ -199,34 +199,11 @@ public class BallDetector
 
     private Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
     {
-        //Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
-        //Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
-        //Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
-        Image<Bgra, byte> inputMat = inputImage.ToImage<Bgra, byte>();
-        Image<Bgra, byte> outputMat = tableMask.ToImage<Bgra, byte>();
-        Image<Bgra, byte> maskedObjects = new Image<Bgra, byte>(inputMat.Size);
-        // Perform bitwise AND operation with the mask
-
-        // Perform bitwise AND operation with the mask
-        CvInvoke.BitwiseAnd(inputMat, outputMat, maskedObjects);
-        //Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
-        for (int y = 0; y < maskedObjects.Height; y++)
-        {
-            for (int x = 0; x < maskedObjects.Width; x++)
-            {
-                Bgra color = maskedObjects[y, x];
-                if (color.Blue == 0 && color.Green == 0 && color.Red == 0)
-                {
-                    color.Alpha = 0; // make the pixel transparent
-                    maskedObjects[y, x] = color;
-                }
-            }
-        }
+        Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
+        Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
+        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
         return maskedObjects.ToBitmap();
-       
-
-        //return rgbaMat.ToBitmap();
-        //return maskedObjects.ToBitmap();
     }
 
     /// <summary>
@@ -314,13 +291,13 @@ public class BallDetector
                     continue;
 
                 filteredContours.Push(contour);
+
+                BallAreasAndContours anc = new BallAreasAndContours(area, contour);
+                ballAreasAndContours.Add(anc);
             }
         }
       
         Console.WriteLine("---");
-
-        BallAreasAndContours anc = new BallAreasAndContours(area, contour);                
-        ballAreasAndContours.Add(anc);
 
         double averageArea = ballAreasAndContours.Average(b => b.area);
         foreach (var i in ballAreasAndContours)
