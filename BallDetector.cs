@@ -31,6 +31,16 @@ public class BallDetector
         }
 
     }
+    public class BallAreasAndContours
+    {
+        public double area;
+        public VectorOfPoint contour;
+        public BallAreasAndContours(double area, VectorOfPoint contour)
+        {
+            this.area = area;
+            this.contour = contour;
+        }
+    }
 
     //default cloth mask values
     public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
@@ -285,8 +295,9 @@ public class BallDetector
 
     //sussy
     //remove non-ball contours that are too small or too big
-    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000, double alpha = 3.445)
+    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000)
     {
+        List<BallAreasAndContours> ballAreasAndContours = new List<BallAreasAndContours>();
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         for (int i = 0; i < contours.Size; i++)
         {
@@ -302,15 +313,21 @@ public class BallDetector
                 //maybe now I'll try to warp the images. but for now, nah. 
                 
                 //filter out non-squares or non-ball shaped things
-                if ((h > w * 1.5) || (w > h*1.5)) continue;
+                //if ((h > w * 1.5) || (w > h*1.5)) continue;
 
                 //filter out balls with very small area or too big areas
                 if ((area < (min_s*min_s)) || (area > (max_s*max_s)))
                     continue;
-
+                BallAreasAndContours anc = new BallAreasAndContours(area, contour);                
+                ballAreasAndContours.Add(anc);
                 //Console.WriteLine($"Filter contours: Area: {area}");
-                filteredContours.Push(contour);
+                
             }
+        }
+        double averageArea = ballAreasAndContours.Average(b => b.area);
+        foreach (var i in ballAreasAndContours)
+        {
+            if(i.area + 10 > averageArea && i.area - 10 < averageArea)filteredContours.Push(i.contour);
         }
         return filteredContours;
     }
