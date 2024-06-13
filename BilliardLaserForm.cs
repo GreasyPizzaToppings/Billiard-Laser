@@ -99,7 +99,7 @@ namespace billiard_laser
                 currentInputType = InputType.Camera;
             }
 
-            else 
+            else
             {
                 btnDetectBalls.Enabled = false;
             }
@@ -150,7 +150,7 @@ namespace billiard_laser
         private void findFindAllBalls_Click(object sender, EventArgs e)
         {
             Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            pictureBoxImage.Image = ballDetector.FindAllBalls(rawImage); 
+            pictureBoxImage.Image = ballDetector.FindAllBalls(rawImage);
 
             UpdateDebugForm(rawImage);
         }
@@ -186,7 +186,7 @@ namespace billiard_laser
 
                 //calls selectedIndexChanged(). updates list box and picturebox . sussy
                 listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-                
+
                 stopwatch.Stop();
                 totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
 

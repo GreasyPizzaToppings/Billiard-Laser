@@ -91,7 +91,7 @@ namespace billiard_laser
             // 
             // btnLaserOn
             // 
-            btnLaserOn.Location = new Point(9, 177);
+            btnLaserOn.Location = new Point(8, 172);
             btnLaserOn.Margin = new Padding(3, 2, 3, 2);
             btnLaserOn.Name = "btnLaserOn";
             btnLaserOn.Size = new Size(75, 25);
@@ -102,7 +102,7 @@ namespace billiard_laser
             // 
             // btnLaserOff
             // 
-            btnLaserOff.Location = new Point(8, 206);
+            btnLaserOff.Location = new Point(8, 201);
             btnLaserOff.Margin = new Padding(3, 2, 3, 2);
             btnLaserOff.Name = "btnLaserOff";
             btnLaserOff.Size = new Size(75, 25);
@@ -536,7 +536,7 @@ namespace billiard_laser
             findFindAllBalls.Name = "findFindAllBalls";
             findFindAllBalls.Size = new Size(75, 25);
             findFindAllBalls.TabIndex = 45;
-            findFindAllBalls.Text = "Find All";
+            findFindAllBalls.Text = "Find All Balls";
             findFindAllBalls.UseVisualStyleBackColor = true;
             findFindAllBalls.Click += findFindAllBalls_Click;
             // 

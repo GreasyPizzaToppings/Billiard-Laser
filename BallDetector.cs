@@ -20,6 +20,7 @@ using OpenCvSharp.Extensions;
 using ScottPlot.Palettes;
 using System.Windows.Markup;
 using Emgu.CV.Linemod;
+using OpenCvSharp.Internal.Vectors;
 
 public class BallDetector
 {
@@ -29,9 +30,10 @@ public class BallDetector
     public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
     public Rgb UpperMaskRgb = new Rgb(70, 255, 255);
 
-    //image manipulation of the mask
+    //image manipulation settings
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
+    public Boolean EnableTableBoundary = false;
 
     /// <summary>
     /// Get the image with all balls highlighted
@@ -53,8 +55,7 @@ public class BallDetector
         imageSize = tableImage.Size;
 
         Bitmap workingImage = tableImage;
-        imageSize = tableImage.Size;
-        Bitmap sharpenedImage = null, blurredImage = null, blurredAndSharpenedImage = null;
+        Bitmap sharpenedImage = null, blurredImage = null, blurredAndSharpenedImage = null, tableHighlighted = null; //optional images
 
         if (EnableSharpening)
         {
@@ -74,13 +75,24 @@ public class BallDetector
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
         VectorOfVectorOfPoint allContoursFound = GetAllContours(tableMask);
-        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); // remove non-ball anomalies
+        VectorOfVectorOfPoint filteredContoursFound;
+
+        if (EnableTableBoundary)
+        {
+            VectorOfPoint tableContour = GetTableContour(allContoursFound);
+            filteredContoursFound = FilterContours(allContoursFound, tableContour);
+            tableHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { tableContour }), tableImage.ToImage<Rgb, byte>());
+        }
+        else
+        {
+            filteredContoursFound = FilterContours(allContoursFound);
+        }
+
+
         Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
         Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
 
 
-
-            
         return new ImageProcessingResults
         {
             OriginalImage = tableImage,
@@ -90,7 +102,8 @@ public class BallDetector
             ImageMask = tableMask,
             ImageWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = allBallsHighlighted,
-            FilteredBallsHighlighted = filteredBallsHighlighted
+            FilteredBallsHighlighted = filteredBallsHighlighted,
+            TableHighlighted = tableHighlighted
         };
     }
 
@@ -195,17 +208,8 @@ public class BallDetector
     /// <param name="min_s"></param>
     /// <param name="max_s"></param>
     /// <returns></returns>
-    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 5, double max_s = 50)
+    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
     {
-        (Point leftMost, Point rightMost, Point topMost, Point bottomMost) tableEdges = GetContourEdges(GetTableContour(contours));
-
-        List<double> contourAreas = new List<double>();
-        for (int i = 0; i < contours.Size; i++)
-        {
-            VectorOfPoint contour = contours[i];
-            contourAreas.Add(CvInvoke.ContourArea(contour));
-        }
-
         Console.WriteLine("---");
         
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
@@ -213,24 +217,19 @@ public class BallDetector
         {
             using (VectorOfPoint contour = contours[i])
             {
-                (Point leftMost, Point rightMost, Point topMost, Point bottomMost) = GetContourEdges(contour);
+                //filter out contours that are not inside the table contour
+                if (tableContour != null && !IsContourInside(contour, tableContour)) continue;
 
-                // remove contours that are outside the table
-                if (leftMost.X < tableEdges.leftMost.X || rightMost.X > tableEdges.rightMost.X ||
-                    topMost.Y < tableEdges.topMost.Y || bottomMost.Y > tableEdges.bottomMost.Y)
-                {
-                    continue;
-                }
-
-                //filter out non-squares or non-ball shaped things
-                Emgu.CV.Structure.RotatedRect rotRect = Emgu.CV.CvInvoke.MinAreaRect(contour);
+                RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
                 float w = rotRect.Size.Width;
                 float h = rotRect.Size.Height;
-                if ((h > w * 4) || (w > h * 4)) continue; //allows some ball-speed to be detected (elongated)
+
+                //allows some ball-speed to be detected (elongated ball shape)
+                if ((h > w * 4) || (w > h * 4)) continue; 
 
                 //filter out balls with very small area or too big areas
-                double area = contourAreas[i];
-                if ((area < (min_s*min_s)) || (area > (max_s*max_s)))
+                double area = CvInvoke.ContourArea(contour);
+                if ((area < (min_s * min_s)) || (area > (max_s * max_s)))
                     continue;
 
                 filteredContours.Push(contour);
@@ -244,6 +243,23 @@ public class BallDetector
         return filteredContours;
     }
 
+
+    /// <summary>
+    /// Check if a contour is completely inside another contour.
+    /// </summary>
+    /// <param name="innerContour">The contour that is being checked if it is inside the outer contour.</param>
+    /// <param name="outerContour">The contour that is being checked to contain the inner contour.</param>
+    /// <returns>True if the inner contour is completely inside the outer contour, false otherwise.</returns>
+    public static bool IsContourInside(VectorOfPoint innerContour, VectorOfPoint outerContour)
+    {
+        for (int i = 0; i < innerContour.Size; i++)
+        {
+            Point point = innerContour[i];
+            double result = CvInvoke.PointPolygonTest(outerContour, point, false);
+            if (result < 0) return false;
+        }
+        return true;
+    }
 
     /// <summary>
     /// Given all contours found in the image, find the table contour
