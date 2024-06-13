@@ -29,7 +29,7 @@ namespace billiard_laser
         private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
         //testing output
-        private OpenCvSharp.Size outputVideoResolution = p720;
+        private OpenCvSharp.Size outputVideoResolution = p360;
 
         //frames
         private BindingList<int> processedFrameIndices = new BindingList<int>();
