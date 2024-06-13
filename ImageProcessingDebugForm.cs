@@ -44,8 +44,8 @@ namespace billiard_laser
             blurredImagePicBox.Image = images.BlurredImage;
             sharpenedImagePicBox.Image = images.SharpenedImage;
             blurredSharpenedImagePicBox.Image = images.BlurredAndSharpenedImage;
-            filteredContoursPicBox.Image = images.FilteredBallsFound;
-            allContoursPicBox.Image = images.AllBallsFound;
+            filteredContoursPicBox.Image = images.FilteredBallsHighlighted;
+            allContoursPicBox.Image = images.AllBallsHighlighted;
             invMaskPicBox.Image = images.ImageMask;
             appliedMaskPicBox.Image = images.ImageWithMaskApplied;
         }
