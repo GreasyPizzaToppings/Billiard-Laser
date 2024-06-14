@@ -213,6 +213,10 @@ public class BallDetector
         Console.WriteLine("---");
         
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
+
+        //show table contour if enabled
+        if (tableContour != null) filteredContours.Push(tableContour);
+
         for (int i = 0; i < contours.Size; i++)
         {
             using (VectorOfPoint contour = contours[i])
