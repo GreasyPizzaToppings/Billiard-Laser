@@ -9,4 +9,5 @@
     public Bitmap? AllBallsHighlighted { get; set; }
     public Bitmap? FilteredBallsHighlighted { get; set; }
     public Bitmap? TableHighlighted { get; set; }
+    public Bitmap? CueBallHighlighted { get; set; }
 }

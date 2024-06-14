@@ -93,6 +93,20 @@ public class BallDetector
         Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
 
 
+        // detect the cue ball
+        VectorOfPoint cueBallContour = null;
+        if (filteredContoursFound.Size > 0)
+        {
+            cueBallContour = FindCueBall(filteredContoursFound, tableWithMaskApplied);
+        }
+
+        // highlight the cue ball
+        Bitmap cueBallHighlighted = null;
+        if (cueBallContour != null)
+        {
+            cueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueBallContour }), tableImage.ToImage<Rgb, byte>());
+        }
+
         return new ImageProcessingResults
         {
             OriginalImage = tableImage,
@@ -102,8 +116,9 @@ public class BallDetector
             ImageMask = tableMask,
             ImageWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = allBallsHighlighted,
-            FilteredBallsHighlighted = filteredBallsHighlighted,
-            TableHighlighted = tableHighlighted
+            FilteredBallsHighlighted = cueBallHighlighted, //debug test
+            TableHighlighted = tableHighlighted,
+            CueBallHighlighted = cueBallHighlighted
         };
     }
 
@@ -143,7 +158,7 @@ public class BallDetector
         BitmapToMat(inputImage, transformed);
         Emgu.CV.Mat blurredImage = new Emgu.CV.Mat();
         CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
-        
+
         return blurredImage.ToBitmap();
     }
 
@@ -168,7 +183,7 @@ public class BallDetector
         Emgu.CV.Mat hsv = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
-        
+
         //mask based on a range of hues (cloth colour)
         ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
         ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
@@ -183,6 +198,59 @@ public class BallDetector
         Emgu.CV.Mat maskInv = new Emgu.CV.Mat();
         Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
         return maskInv.ToBitmap();
+    }
+
+    /// <summary>
+    /// Find the cue ball by finding the brightest contour
+    /// </summary>
+    /// <param name="filteredContours"></param>
+    /// <param name="tableImage"></param>
+    /// <returns></returns>
+    public VectorOfPoint FindCueBall(VectorOfVectorOfPoint filteredContours, Bitmap maskedTableImage)
+    {
+        VectorOfPoint cueBallContour = null;
+        double maxBrightness = -1;
+
+        for (int i = 0; i < filteredContours.Size; i++)
+        {
+            using (VectorOfPoint contour = filteredContours[i])
+            {
+                //double area = CvInvoke.ContourArea(contour);
+                Rectangle boundingRect = CvInvoke.BoundingRectangle(contour);
+                double brightness = CalculateAverageBrightness(maskedTableImage, boundingRect);
+
+                if (brightness > maxBrightness)
+                {
+                    maxBrightness = brightness;
+                    cueBallContour = contour;
+                }
+            }
+        }
+
+        return cueBallContour;
+    }
+
+    private double CalculateAverageBrightness(Bitmap image, Rectangle boundingRect)
+    {
+        double totalBrightness = 0;
+        int count = 0;
+
+        for (int x = boundingRect.Left; x < boundingRect.Right; x++)
+        {
+            for (int y = boundingRect.Top; y < boundingRect.Bottom; y++)
+            {
+                // make sure the point is within the image bounds
+                if (x >= 0 && x < image.Width && y >= 0 && y < image.Height)
+                {
+                    Color pixelColor = image.GetPixel(x, y);
+                    double brightness = pixelColor.GetBrightness();
+                    totalBrightness += brightness;
+                    count++;
+                }
+            }
+        }
+
+        return totalBrightness / count;
     }
 
     /// <summary>
@@ -211,8 +279,12 @@ public class BallDetector
     private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
     {
         Console.WriteLine("---");
-        
+
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
+
+        //show table contour if enabled
+        if (tableContour != null) filteredContours.Push(tableContour);
+
         for (int i = 0; i < contours.Size; i++)
         {
             using (VectorOfPoint contour = contours[i])
@@ -225,7 +297,7 @@ public class BallDetector
                 float h = rotRect.Size.Height;
 
                 //allows some ball-speed to be detected (elongated ball shape)
-                if ((h > w * 4) || (w > h * 4)) continue; 
+                if ((h > w * 4) || (w > h * 4)) continue;
 
                 //filter out balls with very small area or too big areas
                 double area = CvInvoke.ContourArea(contour);
@@ -237,7 +309,7 @@ public class BallDetector
                 Console.WriteLine($"Accepted Contour Info: \nWidth: {w}\nHeight: {h}\nArea: {area}\n");
             }
         }
-      
+
         Console.WriteLine("---");
 
         return filteredContours;
@@ -335,12 +407,20 @@ public class BallDetector
             using (VectorOfPoint contour = ctrs[i])
             {
                 CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 2);
-                
+
             }
         }
 
         return output.ToBitmap();
     }
+
+
+
+
+
+
+
+
 
     /// <summary>
     /// Draw the contours, but try and draw them as circles, with some error
