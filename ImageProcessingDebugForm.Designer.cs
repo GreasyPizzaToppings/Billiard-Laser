@@ -66,6 +66,7 @@ namespace billiard_laser
             trackBarMaskGreenMax = new TrackBar();
             trackBarMaskBlueMax = new TrackBar();
             labelMaskRedMaxValue = new Label();
+            checkBoxEnableTableBoundary = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)originalImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
@@ -360,6 +361,7 @@ namespace billiard_laser
             // panelImageSettings
             // 
             panelImageSettings.BackColor = SystemColors.ActiveBorder;
+            panelImageSettings.Controls.Add(checkBoxEnableTableBoundary);
             panelImageSettings.Controls.Add(panelMaskValues);
             panelImageSettings.Controls.Add(checkBoxEnableSharpen);
             panelImageSettings.Controls.Add(checkBoxEnableBlurr);
@@ -472,6 +474,19 @@ namespace billiard_laser
             labelMaskRedMaxValue.TabIndex = 30;
             labelMaskRedMaxValue.Text = "0";
             // 
+            // checkBoxEnableTableBoundary
+            // 
+            checkBoxEnableTableBoundary.AutoSize = true;
+            checkBoxEnableTableBoundary.Dock = DockStyle.Left;
+            checkBoxEnableTableBoundary.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            checkBoxEnableTableBoundary.Location = new Point(213, 0);
+            checkBoxEnableTableBoundary.Name = "checkBoxEnableTableBoundary";
+            checkBoxEnableTableBoundary.Size = new Size(158, 93);
+            checkBoxEnableTableBoundary.TabIndex = 36;
+            checkBoxEnableTableBoundary.Text = "Use Table Boundary";
+            checkBoxEnableTableBoundary.UseVisualStyleBackColor = true;
+            checkBoxEnableTableBoundary.CheckedChanged += checkBoxEnableTableBoundary_CheckedChanged;
+            // 
             // ImageProcessingDebugForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -562,5 +577,6 @@ namespace billiard_laser
         private Label labelMin;
         private Label labelMax;
         private Panel panelMaskValues;
+        private CheckBox checkBoxEnableTableBoundary;
     }
 }

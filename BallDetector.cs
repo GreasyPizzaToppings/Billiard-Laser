@@ -17,53 +17,23 @@ using static BallDetector;
 using AForge.Imaging;
 using static System.Windows.Forms.AxHost;
 using OpenCvSharp.Extensions;
+using ScottPlot.Palettes;
+using System.Windows.Markup;
+using Emgu.CV.Linemod;
+using OpenCvSharp.Internal.Vectors;
 
 public class BallDetector
 {
-    public class SquareVectors
-    {
-        public List<Point[]> points;
-        public Image<Rgb, byte> output;
-        public SquareVectors(List<Point[]> points, Image<Rgb, byte> output)
-        {
-            this.points = points;
-            this.output = output;
-        }
-    }
-    public class BallAreasAndContours
-    {
-        public double area;
-        public VectorOfPoint contour;
-        public BallAreasAndContours(double area, VectorOfPoint contour)
-        {
-            this.area = area;
-            this.contour = contour;
-        }
-    }
+    private Size imageSize = new Size(0, 0);
 
     //default cloth color (green)
     public Rgb LowerMaskRgb = new Rgb(40, 80, 40);
     public Rgb UpperMaskRgb = new Rgb(70, 255, 255);
 
-    //image manipulation of the mask
+    //image manipulation settings
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
-
-    private Color[] ballColors = {
-        Color.Brown,
-        Color.Green,
-        Color.Blue,
-        Color.Black,
-        Color.White,
-        Color.Yellow,
-        Color.Purple,
-        Color.DarkRed,
-        Color.DarkViolet,
-        Color.AliceBlue,
-        Color.DarkCyan,
-        Color.LightBlue,
-        Color.Red
-    };
+    public Boolean EnableTableBoundary = false;
 
     /// <summary>
     /// Get the image with all balls highlighted
@@ -72,7 +42,7 @@ public class BallDetector
     /// <returns></returns>
     public Bitmap FindAllBalls(Bitmap tableImage)
     {
-        return FindAllBallsDebug(tableImage).FilteredBallsFound;
+        return FindAllBallsDebug(tableImage).FilteredBallsHighlighted;
     }
 
     /// <summary>
@@ -82,8 +52,10 @@ public class BallDetector
     /// <returns></returns>
     public ImageProcessingResults FindAllBallsDebug(Bitmap tableImage)
     {
+        imageSize = tableImage.Size;
+
         Bitmap workingImage = tableImage;
-        Bitmap sharpenedImage = null, blurredImage = null, blurredAndSharpenedImage = null;
+        Bitmap sharpenedImage = null, blurredImage = null, blurredAndSharpenedImage = null, tableHighlighted = null; //optional images
 
         if (EnableSharpening)
         {
@@ -102,14 +74,24 @@ public class BallDetector
         Bitmap tableMask = GetTableMask(workingImage);
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
-        VectorOfVectorOfPoint allContoursFound = GetContours(tableMask);
-        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); // remove non-ball anomalies
+        VectorOfVectorOfPoint allContoursFound = GetAllContours(tableMask);
+        VectorOfVectorOfPoint filteredContoursFound;
 
-        // final image with balls detected
-        Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
+        if (EnableTableBoundary)
+        {
+            VectorOfPoint tableContour = GetTableContour(allContoursFound);
+            filteredContoursFound = FilterContours(allContoursFound, tableContour);
+            tableHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { tableContour }), tableImage.ToImage<Rgb, byte>());
+        }
+        else
+        {
+            filteredContoursFound = FilterContours(allContoursFound);
+        }
 
-        // image with non-filtered contours
-        Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()).output.ToBitmap();
+
+        Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
+        Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
+
 
         return new ImageProcessingResults
         {
@@ -119,12 +101,13 @@ public class BallDetector
             BlurredAndSharpenedImage = blurredAndSharpenedImage,
             ImageMask = tableMask,
             ImageWithMaskApplied = tableWithMaskApplied,
-            AllBallsFound = allBallsHighlighted,
-            FilteredBallsFound = filteredBallsHighlighted
+            AllBallsHighlighted = allBallsHighlighted,
+            FilteredBallsHighlighted = filteredBallsHighlighted,
+            TableHighlighted = tableHighlighted
         };
     }
 
-    private Bitmap SharpenImage(Bitmap image)
+    private static Bitmap SharpenImage(Bitmap image)
     {
         // Define the kernel
         int[,] kernel = {
@@ -133,13 +116,8 @@ public class BallDetector
             { -1, -1, -1 }
          };
 
-        // Create the Convolution filter
         Convolution filter = new Convolution(kernel);
-
-        // Apply the filter
-        Bitmap resultImage = filter.Apply(image);
-
-        return resultImage;
+        return filter.Apply(image);
     }
 
     //Emgu CV bitmap to Mat doesn't convert some bitmaps properly so I had to implement this method. 
@@ -159,7 +137,7 @@ public class BallDetector
         return mat;
     }
 
-    private Bitmap BlurImage(Bitmap inputImage)
+    private static Bitmap BlurImage(Bitmap inputImage)
     {
         Emgu.CV.Mat transformed = new Emgu.CV.Mat();
         BitmapToMat(inputImage, transformed);
@@ -168,6 +146,16 @@ public class BallDetector
         
         return blurredImage.ToBitmap();
     }
+
+    private static Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
+    {
+        Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
+        Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
+        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
+        return maskedObjects.ToBitmap();
+    }
+
 
     /// <summary>
     /// get the mask image for the table to remove the cloth
@@ -197,21 +185,12 @@ public class BallDetector
         return maskInv.ToBitmap();
     }
 
-    private Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
-    {
-        Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
-        Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
-        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
-        Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
-        return maskedObjects.ToBitmap();
-    }
-
     /// <summary>
     /// Find what Emgu thinks are edges
     /// </summary>
     /// <param name="tableMask"></param>
     /// <returns></returns>
-    private VectorOfVectorOfPoint GetContours(Bitmap tableMask)
+    private static VectorOfVectorOfPoint GetAllContours(Bitmap tableMask)
     {
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
         Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
@@ -221,8 +200,186 @@ public class BallDetector
         return contours;
     }
 
+
+    /// <summary>
+    /// remove contours that are unlikely to be a ball
+    /// </summary>
+    /// <param name="contours"></param>
+    /// <param name="min_s"></param>
+    /// <param name="max_s"></param>
+    /// <returns></returns>
+    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
+    {
+        Console.WriteLine("---");
+        
+        VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
+        for (int i = 0; i < contours.Size; i++)
+        {
+            using (VectorOfPoint contour = contours[i])
+            {
+                //filter out contours that are not inside the table contour
+                if (tableContour != null && !IsContourInside(contour, tableContour)) continue;
+
+                RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
+                float w = rotRect.Size.Width;
+                float h = rotRect.Size.Height;
+
+                //allows some ball-speed to be detected (elongated ball shape)
+                if ((h > w * 4) || (w > h * 4)) continue; 
+
+                //filter out balls with very small area or too big areas
+                double area = CvInvoke.ContourArea(contour);
+                if ((area < (min_s * min_s)) || (area > (max_s * max_s)))
+                    continue;
+
+                filteredContours.Push(contour);
+
+                Console.WriteLine($"Accepted Contour Info: \nWidth: {w}\nHeight: {h}\nArea: {area}\n");
+            }
+        }
+      
+        Console.WriteLine("---");
+
+        return filteredContours;
+    }
+
+
+    /// <summary>
+    /// Check if a contour is completely inside another contour.
+    /// </summary>
+    /// <param name="innerContour">The contour that is being checked if it is inside the outer contour.</param>
+    /// <param name="outerContour">The contour that is being checked to contain the inner contour.</param>
+    /// <returns>True if the inner contour is completely inside the outer contour, false otherwise.</returns>
+    public static bool IsContourInside(VectorOfPoint innerContour, VectorOfPoint outerContour)
+    {
+        for (int i = 0; i < innerContour.Size; i++)
+        {
+            Point point = innerContour[i];
+            double result = CvInvoke.PointPolygonTest(outerContour, point, false);
+            if (result < 0) return false;
+        }
+        return true;
+    }
+
+    /// <summary>
+    /// Given all contours found in the image, find the table contour
+    /// </summary>
+    /// <param name="contours"></param>
+    /// <returns>VectorOfPoint contour with points if found, empty VectorOfPoint if not found</returns>
+    public VectorOfPoint GetTableContour(VectorOfVectorOfPoint allContours)
+    {
+        double imageArea = this.imageSize.Width * this.imageSize.Height;
+        double maxArea = 0;
+        int maxIndex = -1;
+
+        //find the biggest contour that isnt the whole frame or close to it. 90% and under seems to work
+        for (int i = 0; i < allContours.Size; i++)
+        {
+            VectorOfPoint contour = allContours[i];
+            double area = CvInvoke.ContourArea(contour);
+
+            if (area < (imageArea * 0.90) && area > maxArea)
+            {
+                maxArea = area;
+                maxIndex = i;
+            }
+        }
+
+        if (maxIndex == -1)
+        {
+            Console.WriteLine("No valid table contour found.");
+            return new VectorOfPoint();
+        }
+
+        return allContours[maxIndex]; //table
+    }
+
+    /// <summary>
+    /// Find the left, right, top, and bottom points of a given contour
+    /// </summary>
+    /// <param name="contour"></param>
+    /// <returns></returns>
+    public static (Point leftMost, Point rightMost, Point topMost, Point bottomMost) GetContourEdges(VectorOfPoint contour)
+    {
+        Point leftMost = contour[0];
+        Point rightMost = contour[0];
+        Point topMost = contour[0];
+        Point bottomMost = contour[0];
+
+        for (int i = 1; i < contour.Size; i++)
+        {
+            Point point = contour[i];
+
+            if (point.X < leftMost.X) leftMost = point;
+            if (point.X > rightMost.X) rightMost = point;
+            if (point.Y < topMost.Y) topMost = point;
+            if (point.Y > bottomMost.Y) bottomMost = point;
+        }
+
+        return (leftMost, rightMost, topMost, bottomMost);
+    }
+
+
+    /// <summary>
+    /// Draw the contours as they are exactly
+    /// </summary>
+    /// <param name="ctrs"></param>
+    /// <param name="img"></param>
+    /// <returns></returns>
+    private static Bitmap DrawContours(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
+    {
+        Image<Rgb, byte> output = img.Copy();
+
+        for (int i = 0; i < ctrs.Size; i++)
+        {
+            using (VectorOfPoint contour = ctrs[i])
+            {
+                CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 2);
+                
+            }
+        }
+
+        return output.ToBitmap();
+    }
+
+    /// <summary>
+    /// Draw the contours, but try and draw them as circles, with some error
+    /// </summary>
+    /// <param name="ctrs"></param>
+    /// <param name="img"></param>
+    /// <returns></returns>
+    private static Bitmap DrawContoursAsCircles(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
+    {
+        Image<Rgb, byte> output = img.Copy();
+
+        for (int i = 0; i < ctrs.Size; i++)
+        {
+            using (VectorOfPoint contour = ctrs[i])
+            {
+                // Calculate the moments of the contour to get the centroid
+                var moments = CvInvoke.Moments(contour);
+
+                if (moments.M00 != 0)
+                {
+                    // Calculate centroid
+                    int centerX = (int)(moments.M10 / moments.M00);
+                    int centerY = (int)(moments.M01 / moments.M00);
+                    Point center = new Point(centerX, centerY);
+
+                    // Calculate the radius as the mean distance from the centroid to the contour points
+                    double meanRadius = Math.Sqrt(CvInvoke.ContourArea(contour) / Math.PI);
+
+                    // Draw the circle on the image
+                    CvInvoke.Circle(output, center, (int)meanRadius, new MCvScalar(244, 0, 250), 3);
+                }
+            }
+        }
+
+        return output.ToBitmap();
+    }
+
     //TODO: improve and use, or remove if cant think of anything
-    private Color ColorApproximate(double blue, double green, double red)
+    private static Color ColorApproximate(double blue, double green, double red)
     {
         Color[] BallColors = {
             Color.Red,
@@ -262,77 +419,7 @@ public class BallDetector
         return nearestColor;
     }
 
-    //sussy
-    //remove non-ball contours that are too small or too big
-    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, double min_s = 8, double max_s = 9000)
-    {
-        Console.WriteLine("---");
-        List<BallAreasAndContours> ballAreasAndContours = new List<BallAreasAndContours>();
-        VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
-        for (int i = 0; i < contours.Size; i++)
-        {
-            using (Emgu.CV.Util.VectorOfPoint contour = contours[i])
-            {
-                Emgu.CV.Structure.RotatedRect rotRect = Emgu.CV.CvInvoke.MinAreaRect(contour);
-                float w = rotRect.Size.Width;
-                float h = rotRect.Size.Height;
-                double area = Emgu.CV.CvInvoke.ContourArea(contour);
-
-                Console.WriteLine($"\nFilter Contours Info: \nWidth:{w}\nHeight:{h}\nArea{area}\n");
-
-                //this assumes the the balls are of the same width and height. 
-                //maybe now I'll try to warp the images. but for now, nah. 
-
-                //filter out non-squares or non-ball shaped things
-                if ((h > w * 2) || (w > h*2)) continue;
-
-                //filter out balls with very small area or too big areas
-                if ((area < (min_s*min_s)) || (area > (max_s*max_s)))
-                    continue;
-
-                filteredContours.Push(contour);
-
-                BallAreasAndContours anc = new BallAreasAndContours(area, contour);
-                ballAreasAndContours.Add(anc);
-            }
-        }
-      
-        Console.WriteLine("---");
-
-        double? averageArea = ballAreasAndContours?.Any() == true ? ballAreasAndContours.Average(b => b.area) : (double?)null;
-        if (averageArea.HasValue) foreach (var i in ballAreasAndContours) if (i.area + 10 > averageArea.Value && i.area - 10 < averageArea.Value) filteredContours.Push(i.contour);
-
-        return filteredContours;
-    }
-
-    /// <summary>
-    /// Draw the contours as they are exactly
-    /// </summary>
-    /// <param name="ctrs"></param>
-    /// <param name="img"></param>
-    /// <returns></returns>
-    private SquareVectors DrawContours(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
-    {
-        Image<Rgb, byte> output = img.Copy();
-        List<Point[]> contourPoints = new List<Point[]>();
-
-        for (int i = 0; i < ctrs.Size; i++)
-        {
-            using (VectorOfPoint contour = ctrs[i])
-            {
-                // Store the points of the contour
-                contourPoints.Add(contour.ToArray());
-
-                // Draw the contour on the image
-                CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 3);
-            }
-        }
-
-        return new SquareVectors(contourPoints, output);
-    }
-
-
-    public Bitmap dominantColorOfImage(Bitmap image)
+    public static Bitmap GetDominantColorOfImage(Bitmap image)
     {
         int w = image.Width;
         int h = image.Height;

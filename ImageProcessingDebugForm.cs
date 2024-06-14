@@ -44,8 +44,8 @@ namespace billiard_laser
             blurredImagePicBox.Image = images.BlurredImage;
             sharpenedImagePicBox.Image = images.SharpenedImage;
             blurredSharpenedImagePicBox.Image = images.BlurredAndSharpenedImage;
-            filteredContoursPicBox.Image = images.FilteredBallsFound;
-            allContoursPicBox.Image = images.AllBallsFound;
+            filteredContoursPicBox.Image = images.FilteredBallsHighlighted;
+            allContoursPicBox.Image = images.AllBallsHighlighted;
             invMaskPicBox.Image = images.ImageMask;
             appliedMaskPicBox.Image = images.ImageWithMaskApplied;
         }
@@ -68,15 +68,19 @@ namespace billiard_laser
 
             ballDetector.LowerMaskRgb = new Rgb(trackBarMaskRedMin.Value, trackBarMaskGreenMin.Value, trackBarMaskBlueMin.Value);
             ballDetector.UpperMaskRgb = new Rgb(trackBarMaskRedMax.Value, trackBarMaskGreenMax.Value, trackBarMaskBlueMax.Value);
+            
             ballDetector.EnableBlur = checkBoxEnableBlurr.Checked;
             ballDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
+            ballDetector.EnableTableBoundary = checkBoxEnableTableBoundary.Checked;
 
             PrintBallDetectorSettings();
 
-            if(originalImagePicBox.Image != null) ShowDebugImages((Bitmap)originalImagePicBox.Image);
+            //update images upon setting changes
+            if (originalImagePicBox.Image != null) ShowDebugImages((Bitmap)originalImagePicBox.Image);
         }
 
-        private void PrintBallDetectorSettings() {
+        private void PrintBallDetectorSettings()
+        {
             Console.WriteLine(
               $"\nImage processing settings changed! BallDetector Values:" +
               $"\nLower Mask RGB: {ballDetector.LowerMaskRgb}" +
@@ -232,6 +236,11 @@ namespace billiard_laser
         }
 
         private void checkBoxEnableBlurr_CheckedChanged(object sender, EventArgs e)
+        {
+            SetBallDetectorSettings();
+        }
+
+        private void checkBoxEnableTableBoundary_CheckedChanged(object sender, EventArgs e)
         {
             SetBallDetectorSettings();
         }
