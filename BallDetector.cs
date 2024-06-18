@@ -33,8 +33,8 @@ public class BallDetector
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
     public Boolean EnableTableBoundary = false;
-    public Rgb LowerClothMask = new Rgb(0, 0, 160);
-    public Rgb UpperClothMask = new Rgb(255, 255, 255);
+    public Rgb LowerClothMask = new Rgb(40, 80, 40);
+    public Rgb UpperClothMask = new Rgb(70, 255, 255);
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(255, 255, 255);
     /// <summary>
