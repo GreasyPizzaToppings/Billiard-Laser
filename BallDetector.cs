@@ -71,7 +71,7 @@ public class BallDetector
             if (EnableSharpening) blurredAndSharpenedImage = workingImage;
         }
 
-        Bitmap tableMask = GetTableMask(workingImage);
+        Bitmap tableMask = GetMaskImage(workingImage);
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
         VectorOfVectorOfPoint allContoursFound = GetAllContours(tableMask);
@@ -177,7 +177,7 @@ public class BallDetector
     /// </summary>
     /// <param name="tableImage">Image of the table to mask</param>
     /// <returns></returns>
-    private Bitmap GetTableMask(Bitmap tableImage)
+    private Bitmap GetMaskImage(Bitmap tableImage)
     {
         Emgu.CV.Mat imageMat = BitmapExtension.ToMat(tableImage);
         Emgu.CV.Mat hsv = new Emgu.CV.Mat();
@@ -413,14 +413,6 @@ public class BallDetector
 
         return output.ToBitmap();
     }
-
-
-
-
-
-
-
-
 
     /// <summary>
     /// Draw the contours, but try and draw them as circles, with some error
