@@ -32,12 +32,7 @@ namespace billiard_laser
             appliedMaskPicBox.Image = images.TableWithMaskApplied;
             cueBallMaskPicBox.Image = images.CueballMask;
             cueBallFoundPicBox.Image = images.CueballImage;
-
-
-            if (images.CueballImage != null) transformedImagePicBox.Image = images.CueballImage;
-            else if (images.TransformedImage != null) transformedImagePicBox.Image = images.TransformedImage;
-            else if (images.CueballMask != null) transformedImagePicBox.Image = images.CueballMask;
-            else transformedImagePicBox.Image = null;
+            transformedImagePicBox.Image = images.TransformedImage;
         }
 
         private void InitCheckBoxes()

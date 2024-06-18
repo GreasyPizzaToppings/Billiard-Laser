@@ -18,17 +18,19 @@ public class BallDetector
 {
     private Size imageSize = new Size(0, 0);
 
-
     //image manipulation settings
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
     public Boolean EnableTableBoundary = false;
+
     //Default cloth mask
     public Rgb LowerClothMask = new Rgb(40, 80, 40);
     public Rgb UpperClothMask = new Rgb(70, 255, 255);
+
     //Default cueball mask
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(255, 255, 255);
+
     /// <summary>
     /// Get the image with all balls highlighted
     /// </summary>
@@ -49,21 +51,20 @@ public class BallDetector
         imageSize = tableImage.Size;
 
         Bitmap workingImage = tableImage;
-        Bitmap sharpenedImage = null, blurredImage = null, blurredAndSharpenedImage = null, tableHighlighted = null; //optional images
+        Bitmap transformedImage = null, tableHighlighted = null; //optional images
 
         if (EnableSharpening)
         {
-            sharpenedImage = SharpenImage(workingImage);
-            workingImage = sharpenedImage;
+            transformedImage = SharpenImage(workingImage);
+            workingImage = transformedImage;
         }
 
         if (EnableBlur)
         {
-            blurredImage = BlurImage(workingImage);
-            workingImage = blurredImage;
-
-            if (EnableSharpening) blurredAndSharpenedImage = workingImage;
+            transformedImage = BlurImage(workingImage);
+            workingImage = transformedImage;
         }
+
         Bitmap tableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
@@ -90,9 +91,10 @@ public class BallDetector
         (Bitmap cueBallFiltered, VectorOfPoint cueBallContour)? test = null;
         if (filteredContoursFound.Size > 0)
         {
-            test = FindCueBall(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask);
+            test = FindCueBall(tableWithMaskApplied);
         }
         Bitmap cueBallHighlighted = DrawCueball(test.Value.cueBallContour, tableImage.ToImage<Rgb, byte>());
+
         //// highlight the cue ball
         //Bitmap cueBallHighlighted = null;
         //if (cueBallContour != null)
@@ -103,13 +105,13 @@ public class BallDetector
         return new ImageProcessingResults
         {
             OriginalImage = tableImage,
-            TransformedImage = blurredImage,
+            TransformedImage = transformedImage,
             CueballMask = test.Value.cueBallFiltered,
             CueballImage = cueBallHighlighted,
             TableMask = tableMask,
             TableWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = allBallsHighlighted,
-            FilteredBallsHighlighted = filteredBallsHighlighted, //debug test
+            FilteredBallsHighlighted = filteredBallsHighlighted,
             TableHighlighted = tableHighlighted,
             CueBallHighlighted = cueBallHighlighted
         };
@@ -129,7 +131,7 @@ public class BallDetector
     }
 
     //Emgu CV bitmap to Mat doesn't convert some bitmaps properly so I had to implement this method. 
-    private static Emgu.CV.Mat BitmapToMat(Bitmap bitmap, Emgu.CV.Mat mat, DepthType depthType = DepthType.Cv8U)
+    private static Mat BitmapToMat(Bitmap bitmap, Mat mat, DepthType depthType = DepthType.Cv8U)
     {
         BitmapData bmpData = bitmap.LockBits(
             new Rectangle(0, 0, bitmap.Width, bitmap.Height),
@@ -137,7 +139,7 @@ public class BallDetector
             PixelFormat.Format24bppRgb);
 
         CvInvoke.CvtColor(
-            new Emgu.CV.Mat(bmpData.Height, bmpData.Width, depthType, 3, bmpData.Scan0, bmpData.Stride),
+            new Mat(bmpData.Height, bmpData.Width, depthType, 3, bmpData.Scan0, bmpData.Stride),
             mat,
             ColorConversion.Rgb2Rgba);
 
@@ -147,9 +149,9 @@ public class BallDetector
 
     private static Bitmap BlurImage(Bitmap inputImage)
     {
-        Emgu.CV.Mat transformed = new Emgu.CV.Mat();
+        Mat transformed = new Mat();
         BitmapToMat(inputImage, transformed);
-        Emgu.CV.Mat blurredImage = new Emgu.CV.Mat();
+        Mat blurredImage = new Mat();
         CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
 
         return blurredImage.ToBitmap();
@@ -157,9 +159,9 @@ public class BallDetector
 
     private static Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
     {
-        Emgu.CV.Mat maskedObjects = new Emgu.CV.Mat();
-        Emgu.CV.Mat inputMat = new Emgu.CV.Mat();
-        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        Mat maskedObjects = new Mat();
+        Mat inputMat = new Mat();
+        Mat outputMat = new Mat();
         Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
         return maskedObjects.ToBitmap();
     }
@@ -172,10 +174,10 @@ public class BallDetector
     /// <returns></returns>
     private Bitmap GetMaskImage(Bitmap tableImage, Rgb LowerMaskRgb, Rgb UpperMaskRgb)
     {
-        Emgu.CV.Mat imageMat = BitmapExtension.ToMat(tableImage);
-        Emgu.CV.Mat hsv = new Emgu.CV.Mat();
+        Mat imageMat = BitmapExtension.ToMat(tableImage);
+        Mat hsv = new Mat();
         Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
-        Emgu.CV.Mat mask = new Emgu.CV.Mat();
+        Mat mask = new Mat();
 
         //mask based on a range of hues (cloth colour)
         ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerClothMask.Red, LowerClothMask.Green, LowerClothMask.Blue));
@@ -183,12 +185,12 @@ public class BallDetector
         Emgu.CV.CvInvoke.InRange(hsv, LowerMaskValue, UpperMaskValue, mask);
 
         // Filter mask
-        Emgu.CV.Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1));
-        Emgu.CV.Mat maskClosing = new Emgu.CV.Mat();
+        Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1));
+        Mat maskClosing = new Mat();
         Emgu.CV.CvInvoke.MorphologyEx(mask, maskClosing, MorphOp.Close, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar());
 
         // Apply threshold
-        Emgu.CV.Mat maskInv = new Emgu.CV.Mat();
+        Mat maskInv = new Mat();
         Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
         return maskInv.ToBitmap();
     }
@@ -223,17 +225,22 @@ public class BallDetector
         return cueBallContour;
     }
 
-    public (Bitmap, VectorOfPoint)? FindCueBall(Bitmap maskedTableImage, Rgb LowerWhiteMask, Rgb UpperWhiteMask)
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="maskedTableImage"></param>
+    /// <returns></returns>
+    public (Bitmap, VectorOfPoint)? FindCueBall(Bitmap maskedTableImage)
     {
         //For the masked image, it should only show the filtered image already
 
         //For the filtered image, we then do a masking based on the possible values of the cueball. 
         Bitmap workingImage = maskedTableImage;
-        Bitmap tableMask = GetMaskImage(workingImage, LowerWhiteMask, UpperWhiteMask);
+        Bitmap tableMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
         Bitmap tableWithMaskApplied = ApplyMask(workingImage, tableMask);
         VectorOfVectorOfPoint allContoursFound = GetAllContours(tableWithMaskApplied);
-        VectorOfVectorOfPoint filteredContoursFound;
-        filteredContoursFound = FilterContours(allContoursFound);
+        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound);
+        
         double MaxArea = 0;
         VectorOfPoint Cueball = new VectorOfPoint();
         for (int i = 0; i < filteredContoursFound.Size; i++)
@@ -299,8 +306,8 @@ public class BallDetector
     private static VectorOfVectorOfPoint GetAllContours(Bitmap tableMask)
     {
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-        Emgu.CV.Mat hierarchy = new Emgu.CV.Mat();
-        Emgu.CV.Mat outputMat = new Emgu.CV.Mat();
+        Mat hierarchy = new Mat();
+        Mat outputMat = new Mat();
         CvInvoke.CvtColor(BitmapExtension.ToMat(tableMask), outputMat, ColorConversion.Bgr2Gray);
         Emgu.CV.CvInvoke.FindContours(outputMat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
         return contours;
