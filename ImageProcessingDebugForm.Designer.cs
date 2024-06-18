@@ -937,8 +937,6 @@ namespace billiard_laser
             Name = "ImageProcessingDebugForm";
             Text = "Image Processing Debugging";
             FormClosed += ImageProcessingDebugForm_FormClosed;
-            Load += ImageProcessingDebugForm_Load;
-            Resize += ImageProcessingDebugForm_Resize;
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)allContoursPicBox).EndInit();

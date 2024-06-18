@@ -1,23 +1,9 @@
-﻿using Emgu.CV;
-using Emgu.CV.Structure;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿using Emgu.CV.Structure;
 
 namespace billiard_laser
 {
     public partial class ImageProcessingDebugForm : Form
     {
-        private List<PictureBox> pictureBoxes = new List<PictureBox>();
-        private List<Label> labels = new List<Label>();
-
         private bool initialisingControls = true;
         private BallDetector ballDetector;
 
@@ -29,7 +15,6 @@ namespace billiard_laser
             this.FormClosed += ImageProcessingDebugForm_FormClosed;
 
             InitializeComponent();
-            GetControlsLists();
             InitMaskTrackbars();
             InitCheckBoxes();
 
@@ -52,15 +37,11 @@ namespace billiard_laser
             else transformedImagePicBox.Image = null;
         }
 
-        private void ImageProcessingDebugForm_Load(object sender, EventArgs e)
-        {
-            ImageProcessingDebugForm_Resize(this, EventArgs.Empty);
-        }
-
         private void InitCheckBoxes()
         {
             checkBoxEnableBlurr.Checked = ballDetector.EnableBlur;
             checkBoxEnableSharpen.Checked = ballDetector.EnableSharpening;
+            checkBoxEnableTableBoundary.Checked = ballDetector.EnableTableBoundary;
         }
 
         private void SetBallDetectorSettings()
@@ -93,51 +74,33 @@ namespace billiard_laser
               $"\nLower Cb Mask RGB: {ballDetector.LowerCueBallMask}" +
               $"\nUpper Cb Mask RGB: {ballDetector.UpperCueBallMask}" +
               $"\nEnable Blur: {ballDetector.EnableBlur}" +
-              $"\nEnable Sharpening: {ballDetector.EnableSharpening}\n"
+              $"\nEnable Sharpening: {ballDetector.EnableSharpening}\n" +
+              $"\nEnable Table Boundary: {ballDetector.EnableTableBoundary}\n"
             );
-        }
-
-        private void GetControlsLists()
-        {
-            // Filter and sort PictureBox controls by their position
-            pictureBoxes = this.Controls.OfType<PictureBox>()
-                                          .OrderBy(p => p.Top)
-                                          .ThenBy(p => p.Left)
-                                          .ToList();
-
-            // Filter and sort Label controls by their position
-            labels = this.Controls.OfType<Label>()
-                                   .OrderBy(l => l.Top)
-                                   .ThenBy(l => l.Left)
-                                   .ToList();
         }
 
         #region Trackbars/Sliders
 
-        //initialise to mask value
         private void InitMaskTrackbars()
         {
-            // Set trackbar values for the lower mask
+            //trackbar values
             trackBarClothMaskRedMin.Value = (int)ballDetector.LowerClothMask.Red;
             trackBarClothMaskGreenMin.Value = (int)ballDetector.LowerClothMask.Green;
             trackBarClothMaskBlueMin.Value = (int)ballDetector.LowerClothMask.Blue;
 
-            // Set trackbar values for the upper mask
             trackBarClothMaskRedMax.Value = (int)ballDetector.UpperClothMask.Red;
             trackBarClothMaskGreenMax.Value = (int)ballDetector.UpperClothMask.Green;
             trackBarClothMaskBlueMax.Value = (int)ballDetector.UpperClothMask.Blue;
 
-            // set trackbar values for the lower cb mask
             trackBarCbMaskRedMin.Value = (int)ballDetector.LowerCueBallMask.Red;
             trackBarCbMaskGreenMin.Value = (int)ballDetector.LowerCueBallMask.Green;
             trackBarCbMaskBlueMin.Value = (int)ballDetector.LowerCueBallMask.Blue;
 
-            // set trackbar values for the upper cb mask
             trackBarCbMaskRedMax.Value = (int)ballDetector.UpperCueBallMask.Red;
             trackBarCbMaskGreenMax.Value = (int)ballDetector.UpperCueBallMask.Green;
             trackBarCbMaskBlueMax.Value = (int)ballDetector.UpperCueBallMask.Blue;
 
-            // Update label text to reflect trackbar values
+            //labels
             labelClothMaskRedMinValue.Text = trackBarClothMaskRedMin.Value.ToString();
             labelClothMaskGreenMinValue.Text = trackBarClothMaskGreenMin.Value.ToString();
             labelClothMaskBlueMinValue.Text = trackBarClothMaskBlueMin.Value.ToString();
@@ -223,63 +186,6 @@ namespace billiard_laser
         {
             DebugFormClosed?.Invoke(this, EventArgs.Empty);
             this.Dispose();
-        }
-
-        private void ImageProcessingDebugForm_Resize(object sender, EventArgs e)
-        {
-            ResizePictureBoxes(10, 4, 2);
-            RepositionPictureBoxes(10);
-
-            RepositionLabels();
-        }
-
-        private void RepositionLabels()
-        {
-            //picturebox labels
-            for (int i = 0; i < pictureBoxes.Count; i++)
-            {
-                PictureBox pictureBox = pictureBoxes[i];
-                Label label = labels[i];
-
-                // Calculate the new position of the label
-                int labelX = pictureBox.Left + (pictureBox.Width - label.Width) / 2;
-                int labelY = pictureBox.Top;
-
-                // Set the new position of the label
-                label.Location = new Point(labelX, labelY);
-            }
-        }
-
-        private void ResizePictureBoxes(int padding, int columns, int rows)
-        {
-            // Calculate the size of each PictureBox based on the size of the form
-            int pictureBoxWidth = (this.ClientSize.Width - (padding * (columns + 1))) / columns;
-            int pictureBoxHeight = (this.ClientSize.Height - (padding * (rows + 1))) / (rows); //to make room for the controls at the bottom
-
-            // Set the size of each PictureBox
-            foreach (PictureBox pictureBox in pictureBoxes)
-            {
-                pictureBox.Size = new Size(pictureBoxWidth, pictureBoxHeight);
-            }
-        }
-
-        private void RepositionPictureBoxes(int padding)
-        {
-            // Calculate the position of each PictureBox
-            int x = padding;
-            int y = padding;
-            foreach (PictureBox pictureBox in pictureBoxes)
-            {
-                pictureBox.Location = new Point(x, y);
-                x += pictureBox.Width + padding;
-
-                //move down when no room
-                if (x + pictureBox.Width > this.ClientSize.Width)
-                {
-                    x = padding;
-                    y += pictureBox.Height + padding;
-                }
-            }
         }
 
         private void checkBoxEnableSharpen_CheckedChanged(object sender, EventArgs e)

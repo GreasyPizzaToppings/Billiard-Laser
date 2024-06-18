@@ -189,8 +189,8 @@ public class BallDetector
         Emgu.CV.Mat mask = new Emgu.CV.Mat();
 
         //mask based on a range of hues (cloth colour)
-        ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
-        ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
+        ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerClothMask.Red, LowerClothMask.Green, LowerClothMask.Blue));
+        ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperClothMask.Red, UpperClothMask.Green, UpperClothMask.Blue));
         Emgu.CV.CvInvoke.InRange(hsv, LowerMaskValue, UpperMaskValue, mask);
 
         // Filter mask
