@@ -26,7 +26,16 @@ public class BallDetector
 {
     private Size imageSize = new Size(0, 0);
 
+<<<<<<< HEAD
     //default cloth color (green)
+=======
+    //mask values
+    public Rgb LowerClothMask = new Rgb(40, 80, 40);
+    public Rgb UpperClothMask = new Rgb(70, 255, 255);
+
+    public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
+    public Rgb UpperCueBallMask = new Rgb(255, 255, 255);
+>>>>>>> origin/cueball-detection
 
 
     //image manipulation settings
