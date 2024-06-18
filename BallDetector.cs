@@ -26,24 +26,15 @@ public class BallDetector
 {
     private Size imageSize = new Size(0, 0);
 
-<<<<<<< HEAD
-    //default cloth color (green)
-=======
-    //mask values
-    public Rgb LowerClothMask = new Rgb(40, 80, 40);
-    public Rgb UpperClothMask = new Rgb(70, 255, 255);
-
-    public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
-    public Rgb UpperCueBallMask = new Rgb(255, 255, 255);
->>>>>>> origin/cueball-detection
-
 
     //image manipulation settings
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
     public Boolean EnableTableBoundary = false;
+    //Default cloth mask
     public Rgb LowerClothMask = new Rgb(40, 80, 40);
     public Rgb UpperClothMask = new Rgb(70, 255, 255);
+    //Default cueball mask
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(255, 255, 255);
     /// <summary>
@@ -81,7 +72,7 @@ public class BallDetector
 
             if (EnableSharpening) blurredAndSharpenedImage = workingImage;
         }
-        Bitmap tableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
+        Bitmap tableMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
         
         VectorOfVectorOfPoint allContoursFound = GetAllContours(tableMask);
@@ -106,8 +97,6 @@ public class BallDetector
         // detect the cue ball
         VectorOfPoint cueBallContour = null;
 
-        Rgb LowerWhiteMask = new Rgb(180, 180, 100);
-        Rgb UpperWhiteMask = new Rgb(255, 255, 255);
         //if (filteredContoursFound.Size > 0)
         //{
         //    cueBallContour = FindCueBall(tableWithMaskApplied, LowerWhiteMask, UpperWhiteMask);
@@ -129,7 +118,7 @@ public class BallDetector
             ImageMask = tableMask,
             ImageWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = allBallsHighlighted,
-            //FilteredBallsHighlighted = cueBallHighlighted, //debug test
+            FilteredBallsHighlighted = filteredBallsHighlighted, //debug test
             TableHighlighted = tableHighlighted,
             //CueBallHighlighted = cueBallHighlighted
         };
