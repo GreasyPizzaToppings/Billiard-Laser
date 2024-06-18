@@ -29,22 +29,15 @@ namespace billiard_laser
         /// </summary>
         private void InitializeComponent()
         {
-            originalImagePicBox = new PictureBox();
             invMaskPicBox = new PictureBox();
             appliedMaskPicBox = new PictureBox();
-            blurredImagePicBox = new PictureBox();
             allContoursPicBox = new PictureBox();
-            filteredContoursPicBox = new PictureBox();
             labelOriginalImage = new Label();
             labelBlurredImage = new Label();
             labelMask = new Label();
             labelMaskApplied = new Label();
             labelFilteredContours = new Label();
             label1 = new Label();
-            sharpenedImagePicBox = new PictureBox();
-            blurredSharpenedImagePicBox = new PictureBox();
-            labelSharpenedImage = new Label();
-            labelBlurredSharpened = new Label();
             trackBarClothMaskBlueMin = new TrackBar();
             trackBarClothMaskGreenMin = new TrackBar();
             labelClothMaskRedMinValue = new Label();
@@ -89,14 +82,19 @@ namespace billiard_laser
             tableLayoutPanel1 = new TableLayoutPanel();
             label13 = new Label();
             label14 = new Label();
-            ((System.ComponentModel.ISupportInitialize)originalImagePicBox).BeginInit();
+            tableLayoutPanelDebugImages = new TableLayoutPanel();
+            cueBallFoundPicBox = new PictureBox();
+            cueBallMaskPicBox = new PictureBox();
+            transformedImagePicBox = new PictureBox();
+            label3 = new Label();
+            label2 = new Label();
+            originalImagePicBox = new PictureBox();
+            filteredContoursPicBox = new PictureBox();
+            labelCueBallMaskArea = new Label();
+            labelClothMaskArea = new Label();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)blurredImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)allContoursPicBox).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)sharpenedImagePicBox).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)blurredSharpenedImagePicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarClothMaskBlueMin).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMin).BeginInit();
             tableLayoutPanelMain.SuspendLayout();
@@ -114,73 +112,53 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)trackBarClothMaskBlueMax).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMax).BeginInit();
             tableLayoutPanel1.SuspendLayout();
+            tableLayoutPanelDebugImages.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)cueBallFoundPicBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)cueBallMaskPicBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)transformedImagePicBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)originalImagePicBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).BeginInit();
             SuspendLayout();
-            // 
-            // originalImagePicBox
-            // 
-            originalImagePicBox.Location = new Point(12, 39);
-            originalImagePicBox.Margin = new Padding(3, 2, 3, 2);
-            originalImagePicBox.Name = "originalImagePicBox";
-            originalImagePicBox.Size = new Size(300, 188);
-            originalImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
-            originalImagePicBox.TabIndex = 0;
-            originalImagePicBox.TabStop = false;
             // 
             // invMaskPicBox
             // 
-            invMaskPicBox.Location = new Point(624, 259);
-            invMaskPicBox.Margin = new Padding(3, 2, 3, 2);
+            invMaskPicBox.Dock = DockStyle.Fill;
+            invMaskPicBox.Location = new Point(622, 286);
+            invMaskPicBox.Margin = new Padding(0);
             invMaskPicBox.Name = "invMaskPicBox";
-            invMaskPicBox.Size = new Size(300, 188);
+            invMaskPicBox.Size = new Size(311, 227);
             invMaskPicBox.SizeMode = PictureBoxSizeMode.Zoom;
             invMaskPicBox.TabIndex = 1;
             invMaskPicBox.TabStop = false;
             // 
             // appliedMaskPicBox
             // 
-            appliedMaskPicBox.Location = new Point(930, 259);
-            appliedMaskPicBox.Margin = new Padding(3, 2, 3, 2);
+            appliedMaskPicBox.Dock = DockStyle.Fill;
+            appliedMaskPicBox.Location = new Point(933, 286);
+            appliedMaskPicBox.Margin = new Padding(0);
             appliedMaskPicBox.Name = "appliedMaskPicBox";
-            appliedMaskPicBox.Size = new Size(300, 188);
+            appliedMaskPicBox.Size = new Size(314, 227);
             appliedMaskPicBox.SizeMode = PictureBoxSizeMode.Zoom;
             appliedMaskPicBox.TabIndex = 2;
             appliedMaskPicBox.TabStop = false;
             // 
-            // blurredImagePicBox
-            // 
-            blurredImagePicBox.Location = new Point(318, 39);
-            blurredImagePicBox.Margin = new Padding(3, 2, 3, 2);
-            blurredImagePicBox.Name = "blurredImagePicBox";
-            blurredImagePicBox.Size = new Size(300, 188);
-            blurredImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
-            blurredImagePicBox.TabIndex = 3;
-            blurredImagePicBox.TabStop = false;
-            // 
             // allContoursPicBox
             // 
-            allContoursPicBox.Location = new Point(318, 259);
-            allContoursPicBox.Margin = new Padding(3, 2, 3, 2);
+            allContoursPicBox.Dock = DockStyle.Fill;
+            allContoursPicBox.Location = new Point(311, 286);
+            allContoursPicBox.Margin = new Padding(0);
             allContoursPicBox.Name = "allContoursPicBox";
-            allContoursPicBox.Size = new Size(300, 188);
+            allContoursPicBox.Size = new Size(311, 227);
             allContoursPicBox.SizeMode = PictureBoxSizeMode.Zoom;
             allContoursPicBox.TabIndex = 4;
             allContoursPicBox.TabStop = false;
             // 
-            // filteredContoursPicBox
-            // 
-            filteredContoursPicBox.Location = new Point(12, 259);
-            filteredContoursPicBox.Margin = new Padding(3, 2, 3, 2);
-            filteredContoursPicBox.Name = "filteredContoursPicBox";
-            filteredContoursPicBox.Size = new Size(300, 188);
-            filteredContoursPicBox.SizeMode = PictureBoxSizeMode.Zoom;
-            filteredContoursPicBox.TabIndex = 5;
-            filteredContoursPicBox.TabStop = false;
-            // 
             // labelOriginalImage
             // 
+            labelOriginalImage.Anchor = AnchorStyles.None;
             labelOriginalImage.AutoSize = true;
             labelOriginalImage.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelOriginalImage.Location = new Point(12, 15);
+            labelOriginalImage.Location = new Point(101, 5);
             labelOriginalImage.Name = "labelOriginalImage";
             labelOriginalImage.Size = new Size(108, 20);
             labelOriginalImage.TabIndex = 6;
@@ -188,93 +166,58 @@ namespace billiard_laser
             // 
             // labelBlurredImage
             // 
+            labelBlurredImage.Anchor = AnchorStyles.None;
             labelBlurredImage.AutoSize = true;
             labelBlurredImage.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelBlurredImage.Location = new Point(318, 15);
+            labelBlurredImage.Location = new Point(397, 5);
             labelBlurredImage.Name = "labelBlurredImage";
-            labelBlurredImage.Size = new Size(103, 20);
+            labelBlurredImage.Size = new Size(138, 20);
             labelBlurredImage.TabIndex = 7;
-            labelBlurredImage.Text = "Blurred Image";
+            labelBlurredImage.Text = "Transformed Image";
             // 
             // labelMask
             // 
+            labelMask.Anchor = AnchorStyles.None;
             labelMask.AutoSize = true;
             labelMask.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMask.Location = new Point(624, 235);
+            labelMask.Location = new Point(727, 261);
             labelMask.Name = "labelMask";
-            labelMask.Size = new Size(43, 20);
+            labelMask.Size = new Size(100, 20);
             labelMask.TabIndex = 8;
-            labelMask.Text = "Mask";
+            labelMask.Text = "All Balls Mask";
             // 
             // labelMaskApplied
             // 
+            labelMaskApplied.Anchor = AnchorStyles.None;
             labelMaskApplied.AutoSize = true;
             labelMaskApplied.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaskApplied.Location = new Point(929, 235);
+            labelMaskApplied.Location = new Point(1011, 261);
             labelMaskApplied.Name = "labelMaskApplied";
-            labelMaskApplied.Size = new Size(100, 20);
+            labelMaskApplied.Size = new Size(157, 20);
             labelMaskApplied.TabIndex = 9;
-            labelMaskApplied.Text = "Mask Applied";
+            labelMaskApplied.Text = "All Balls Mask Applied";
             // 
             // labelFilteredContours
             // 
+            labelFilteredContours.Anchor = AnchorStyles.None;
             labelFilteredContours.AutoSize = true;
             labelFilteredContours.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelFilteredContours.Location = new Point(11, 235);
+            labelFilteredContours.Location = new Point(102, 261);
             labelFilteredContours.Name = "labelFilteredContours";
-            labelFilteredContours.Size = new Size(122, 20);
+            labelFilteredContours.Size = new Size(107, 20);
             labelFilteredContours.TabIndex = 10;
-            labelFilteredContours.Text = "Contours Filtered";
+            labelFilteredContours.Text = "All Balls Found";
             // 
             // label1
             // 
+            label1.Anchor = AnchorStyles.None;
             label1.AutoSize = true;
             label1.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            label1.Location = new Point(318, 235);
+            label1.Location = new Point(421, 261);
             label1.Name = "label1";
             label1.Size = new Size(90, 20);
             label1.TabIndex = 11;
             label1.Text = "All Contours";
-            // 
-            // sharpenedImagePicBox
-            // 
-            sharpenedImagePicBox.Location = new Point(624, 39);
-            sharpenedImagePicBox.Margin = new Padding(3, 2, 3, 2);
-            sharpenedImagePicBox.Name = "sharpenedImagePicBox";
-            sharpenedImagePicBox.Size = new Size(300, 188);
-            sharpenedImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
-            sharpenedImagePicBox.TabIndex = 12;
-            sharpenedImagePicBox.TabStop = false;
-            // 
-            // blurredSharpenedImagePicBox
-            // 
-            blurredSharpenedImagePicBox.Location = new Point(930, 39);
-            blurredSharpenedImagePicBox.Margin = new Padding(3, 2, 3, 2);
-            blurredSharpenedImagePicBox.Name = "blurredSharpenedImagePicBox";
-            blurredSharpenedImagePicBox.Size = new Size(300, 188);
-            blurredSharpenedImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
-            blurredSharpenedImagePicBox.TabIndex = 13;
-            blurredSharpenedImagePicBox.TabStop = false;
-            // 
-            // labelSharpenedImage
-            // 
-            labelSharpenedImage.AutoSize = true;
-            labelSharpenedImage.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelSharpenedImage.Location = new Point(624, 15);
-            labelSharpenedImage.Name = "labelSharpenedImage";
-            labelSharpenedImage.Size = new Size(126, 20);
-            labelSharpenedImage.TabIndex = 14;
-            labelSharpenedImage.Text = "Sharpened Image";
-            // 
-            // labelBlurredSharpened
-            // 
-            labelBlurredSharpened.AutoSize = true;
-            labelBlurredSharpened.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelBlurredSharpened.Location = new Point(930, 15);
-            labelBlurredSharpened.Name = "labelBlurredSharpened";
-            labelBlurredSharpened.Size = new Size(194, 20);
-            labelBlurredSharpened.TabIndex = 15;
-            labelBlurredSharpened.Text = "Blurred && Sharpened Image";
             // 
             // trackBarClothMaskBlueMin
             // 
@@ -362,6 +305,7 @@ namespace billiard_laser
             tableLayoutPanelCueballMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
             tableLayoutPanelCueballMask.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
             tableLayoutPanelCueballMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+            tableLayoutPanelCueballMask.Controls.Add(labelCueBallMaskArea, 0, 0);
             tableLayoutPanelCueballMask.Controls.Add(labelCbMaskBlue, 5, 0);
             tableLayoutPanelCueballMask.Controls.Add(labelCbMaskGreen, 3, 0);
             tableLayoutPanelCueballMask.Controls.Add(labelCbMaskRed, 1, 0);
@@ -476,6 +420,7 @@ namespace billiard_laser
             trackBarCbMaskGreenMin.Name = "trackBarCbMaskGreenMin";
             trackBarCbMaskGreenMin.Size = new Size(126, 36);
             trackBarCbMaskGreenMin.TabIndex = 43;
+            trackBarCbMaskGreenMin.Value = 3;
             trackBarCbMaskGreenMin.ValueChanged += trackBarCbMaskGreenMin_ValueChanged;
             // 
             // trackBarCbMaskRedMin
@@ -606,6 +551,7 @@ namespace billiard_laser
             checkBoxEnableSharpen.TabIndex = 39;
             checkBoxEnableSharpen.Text = "Use Sharpening";
             checkBoxEnableSharpen.UseVisualStyleBackColor = true;
+            checkBoxEnableSharpen.CheckedChanged += checkBoxEnableSharpen_CheckedChanged;
             // 
             // checkBoxEnableTableBoundary
             // 
@@ -617,6 +563,7 @@ namespace billiard_laser
             checkBoxEnableTableBoundary.TabIndex = 39;
             checkBoxEnableTableBoundary.Text = "Use Table Boundary";
             checkBoxEnableTableBoundary.UseVisualStyleBackColor = true;
+            checkBoxEnableTableBoundary.CheckedChanged += checkBoxEnableTableBoundary_CheckedChanged;
             // 
             // checkBoxEnableBlurr
             // 
@@ -628,6 +575,7 @@ namespace billiard_laser
             checkBoxEnableBlurr.TabIndex = 38;
             checkBoxEnableBlurr.Text = "Use Blur";
             checkBoxEnableBlurr.UseVisualStyleBackColor = true;
+            checkBoxEnableBlurr.CheckedChanged += checkBoxEnableBlurr_CheckedChanged;
             // 
             // tableLayoutPanelClothMask
             // 
@@ -640,6 +588,7 @@ namespace billiard_laser
             tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
             tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
             tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
+            tableLayoutPanelClothMask.Controls.Add(labelClothMaskArea, 0, 0);
             tableLayoutPanelClothMask.Controls.Add(labelClothMaskBlue, 5, 0);
             tableLayoutPanelClothMask.Controls.Add(trackBarClothMaskRedMax, 1, 2);
             tableLayoutPanelClothMask.Controls.Add(labelClothMaskGreenMaxValue, 4, 2);
@@ -842,42 +791,157 @@ namespace billiard_laser
             label14.TabIndex = 36;
             label14.Text = "Mask Green";
             // 
+            // tableLayoutPanelDebugImages
+            // 
+            tableLayoutPanelDebugImages.BackColor = Color.MistyRose;
+            tableLayoutPanelDebugImages.ColumnCount = 4;
+            tableLayoutPanelDebugImages.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanelDebugImages.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanelDebugImages.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanelDebugImages.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 25F));
+            tableLayoutPanelDebugImages.Controls.Add(cueBallFoundPicBox, 3, 1);
+            tableLayoutPanelDebugImages.Controls.Add(cueBallMaskPicBox, 2, 1);
+            tableLayoutPanelDebugImages.Controls.Add(appliedMaskPicBox, 3, 3);
+            tableLayoutPanelDebugImages.Controls.Add(allContoursPicBox, 1, 3);
+            tableLayoutPanelDebugImages.Controls.Add(invMaskPicBox, 2, 3);
+            tableLayoutPanelDebugImages.Controls.Add(labelMaskApplied, 3, 2);
+            tableLayoutPanelDebugImages.Controls.Add(label1, 1, 2);
+            tableLayoutPanelDebugImages.Controls.Add(labelMask, 2, 2);
+            tableLayoutPanelDebugImages.Controls.Add(transformedImagePicBox, 1, 1);
+            tableLayoutPanelDebugImages.Controls.Add(label3, 3, 0);
+            tableLayoutPanelDebugImages.Controls.Add(labelBlurredImage, 1, 0);
+            tableLayoutPanelDebugImages.Controls.Add(label2, 2, 0);
+            tableLayoutPanelDebugImages.Controls.Add(labelOriginalImage, 0, 0);
+            tableLayoutPanelDebugImages.Controls.Add(originalImagePicBox, 0, 1);
+            tableLayoutPanelDebugImages.Controls.Add(filteredContoursPicBox, 0, 3);
+            tableLayoutPanelDebugImages.Controls.Add(labelFilteredContours, 0, 2);
+            tableLayoutPanelDebugImages.Dock = DockStyle.Fill;
+            tableLayoutPanelDebugImages.Location = new Point(0, 0);
+            tableLayoutPanelDebugImages.Name = "tableLayoutPanelDebugImages";
+            tableLayoutPanelDebugImages.RowCount = 4;
+            tableLayoutPanelDebugImages.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanelDebugImages.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelDebugImages.RowStyles.Add(new RowStyle(SizeType.Absolute, 30F));
+            tableLayoutPanelDebugImages.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
+            tableLayoutPanelDebugImages.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableLayoutPanelDebugImages.Size = new Size(1247, 513);
+            tableLayoutPanelDebugImages.TabIndex = 30;
+            // 
+            // cueBallFoundPicBox
+            // 
+            cueBallFoundPicBox.Dock = DockStyle.Fill;
+            cueBallFoundPicBox.Location = new Point(933, 30);
+            cueBallFoundPicBox.Margin = new Padding(0);
+            cueBallFoundPicBox.Name = "cueBallFoundPicBox";
+            cueBallFoundPicBox.Size = new Size(314, 226);
+            cueBallFoundPicBox.SizeMode = PictureBoxSizeMode.Zoom;
+            cueBallFoundPicBox.TabIndex = 38;
+            cueBallFoundPicBox.TabStop = false;
+            // 
+            // cueBallMaskPicBox
+            // 
+            cueBallMaskPicBox.Dock = DockStyle.Fill;
+            cueBallMaskPicBox.Location = new Point(622, 30);
+            cueBallMaskPicBox.Margin = new Padding(0);
+            cueBallMaskPicBox.Name = "cueBallMaskPicBox";
+            cueBallMaskPicBox.Size = new Size(311, 226);
+            cueBallMaskPicBox.SizeMode = PictureBoxSizeMode.Zoom;
+            cueBallMaskPicBox.TabIndex = 37;
+            cueBallMaskPicBox.TabStop = false;
+            // 
+            // transformedImagePicBox
+            // 
+            transformedImagePicBox.Dock = DockStyle.Fill;
+            transformedImagePicBox.Location = new Point(311, 30);
+            transformedImagePicBox.Margin = new Padding(0);
+            transformedImagePicBox.Name = "transformedImagePicBox";
+            transformedImagePicBox.Size = new Size(311, 226);
+            transformedImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
+            transformedImagePicBox.TabIndex = 36;
+            transformedImagePicBox.TabStop = false;
+            // 
+            // label3
+            // 
+            label3.Anchor = AnchorStyles.None;
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            label3.Location = new Point(1038, 5);
+            label3.Name = "label3";
+            label3.Size = new Size(104, 20);
+            label3.TabIndex = 34;
+            label3.Text = "Cueball Found";
+            // 
+            // label2
+            // 
+            label2.Anchor = AnchorStyles.None;
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            label2.Location = new Point(729, 5);
+            label2.Name = "label2";
+            label2.Size = new Size(97, 20);
+            label2.TabIndex = 32;
+            label2.Text = "Cueball Mask";
+            // 
+            // originalImagePicBox
+            // 
+            originalImagePicBox.Dock = DockStyle.Fill;
+            originalImagePicBox.Location = new Point(0, 30);
+            originalImagePicBox.Margin = new Padding(0);
+            originalImagePicBox.Name = "originalImagePicBox";
+            originalImagePicBox.Size = new Size(311, 226);
+            originalImagePicBox.SizeMode = PictureBoxSizeMode.Zoom;
+            originalImagePicBox.TabIndex = 35;
+            originalImagePicBox.TabStop = false;
+            // 
+            // filteredContoursPicBox
+            // 
+            filteredContoursPicBox.Dock = DockStyle.Fill;
+            filteredContoursPicBox.Location = new Point(0, 286);
+            filteredContoursPicBox.Margin = new Padding(0);
+            filteredContoursPicBox.Name = "filteredContoursPicBox";
+            filteredContoursPicBox.Size = new Size(311, 227);
+            filteredContoursPicBox.SizeMode = PictureBoxSizeMode.Zoom;
+            filteredContoursPicBox.TabIndex = 39;
+            filteredContoursPicBox.TabStop = false;
+            // 
+            // labelCueBallMaskArea
+            // 
+            labelCueBallMaskArea.Anchor = AnchorStyles.None;
+            labelCueBallMaskArea.AutoSize = true;
+            labelCueBallMaskArea.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            labelCueBallMaskArea.Location = new Point(11, 2);
+            labelCueBallMaskArea.Name = "labelCueBallMaskArea";
+            labelCueBallMaskArea.Size = new Size(22, 15);
+            labelCueBallMaskArea.TabIndex = 40;
+            labelCueBallMaskArea.Text = "CB";
+            // 
+            // labelClothMaskArea
+            // 
+            labelClothMaskArea.Anchor = AnchorStyles.None;
+            labelClothMaskArea.AutoSize = true;
+            labelClothMaskArea.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            labelClothMaskArea.Location = new Point(4, 2);
+            labelClothMaskArea.Name = "labelClothMaskArea";
+            labelClothMaskArea.Size = new Size(36, 15);
+            labelClothMaskArea.TabIndex = 45;
+            labelClothMaskArea.Text = "Cloth";
+            // 
             // ImageProcessingDebugForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1247, 606);
+            Controls.Add(tableLayoutPanelDebugImages);
             Controls.Add(tableLayoutPanelMain);
-            Controls.Add(labelBlurredSharpened);
-            Controls.Add(labelSharpenedImage);
-            Controls.Add(blurredSharpenedImagePicBox);
-            Controls.Add(sharpenedImagePicBox);
-            Controls.Add(label1);
-            Controls.Add(labelFilteredContours);
-            Controls.Add(labelMaskApplied);
-            Controls.Add(labelMask);
-            Controls.Add(labelBlurredImage);
-            Controls.Add(labelOriginalImage);
-            Controls.Add(filteredContoursPicBox);
-            Controls.Add(allContoursPicBox);
-            Controls.Add(blurredImagePicBox);
-            Controls.Add(appliedMaskPicBox);
-            Controls.Add(invMaskPicBox);
-            Controls.Add(originalImagePicBox);
             Margin = new Padding(3, 2, 3, 2);
             Name = "ImageProcessingDebugForm";
             Text = "Image Processing Debugging";
             FormClosed += ImageProcessingDebugForm_FormClosed;
             Load += ImageProcessingDebugForm_Load;
             Resize += ImageProcessingDebugForm_Resize;
-            ((System.ComponentModel.ISupportInitialize)originalImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).EndInit();
-            ((System.ComponentModel.ISupportInitialize)blurredImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)allContoursPicBox).EndInit();
-            ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).EndInit();
-            ((System.ComponentModel.ISupportInitialize)sharpenedImagePicBox).EndInit();
-            ((System.ComponentModel.ISupportInitialize)blurredSharpenedImagePicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarClothMaskBlueMin).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMin).EndInit();
             tableLayoutPanelMain.ResumeLayout(false);
@@ -899,29 +963,26 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMax).EndInit();
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
+            tableLayoutPanelDebugImages.ResumeLayout(false);
+            tableLayoutPanelDebugImages.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)cueBallFoundPicBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)cueBallMaskPicBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)transformedImagePicBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)originalImagePicBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)filteredContoursPicBox).EndInit();
             ResumeLayout(false);
-            PerformLayout();
         }
 
-
         #endregion
-
-        private PictureBox originalImagePicBox;
         private PictureBox invMaskPicBox;
         private PictureBox appliedMaskPicBox;
-        private PictureBox blurredImagePicBox;
         private PictureBox allContoursPicBox;
-        private PictureBox filteredContoursPicBox;
         private Label labelOriginalImage;
         private Label labelBlurredImage;
         private Label labelMask;
         private Label labelMaskApplied;
         private Label labelFilteredContours;
         private Label label1;
-        private PictureBox sharpenedImagePicBox;
-        private PictureBox blurredSharpenedImagePicBox;
-        private Label labelSharpenedImage;
-        private Label labelBlurredSharpened;
         private TrackBar trackBarClothMaskBlueMin;
         private TrackBar trackBarClothMaskGreenMin;
         private Label labelClothMaskRedMinValue;
@@ -966,5 +1027,15 @@ namespace billiard_laser
         private Label label13;
         private Label label14;
         private TrackBar trackBarClothMaskRedMin;
+        private TableLayoutPanel tableLayoutPanelDebugImages;
+        private Label label2;
+        private Label label3;
+        private PictureBox cueBallFoundPicBox;
+        private PictureBox cueBallMaskPicBox;
+        private PictureBox transformedImagePicBox;
+        private PictureBox originalImagePicBox;
+        private PictureBox filteredContoursPicBox;
+        private Label labelCueBallMaskArea;
+        private Label labelClothMaskArea;
     }
 }

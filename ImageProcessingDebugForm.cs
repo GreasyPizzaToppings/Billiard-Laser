@@ -41,13 +41,15 @@ namespace billiard_laser
             ImageProcessingResults images = ballDetector.FindAllBallsDebug(rawImage);
 
             originalImagePicBox.Image = images.OriginalImage;
-            blurredImagePicBox.Image = images.BlurredImage;
-            sharpenedImagePicBox.Image = images.SharpenedImage;
-            blurredSharpenedImagePicBox.Image = images.BlurredAndSharpenedImage;
             filteredContoursPicBox.Image = images.FilteredBallsHighlighted;
             allContoursPicBox.Image = images.AllBallsHighlighted;
             invMaskPicBox.Image = images.ImageMask;
             appliedMaskPicBox.Image = images.ImageWithMaskApplied;
+
+            if (images.BlurredAndSharpenedImage != null) transformedImagePicBox.Image = images.BlurredAndSharpenedImage;
+            else if (images.BlurredImage != null) transformedImagePicBox.Image = images.BlurredImage;
+            else if (images.SharpenedImage != null) transformedImagePicBox.Image = images.SharpenedImage;
+            else transformedImagePicBox.Image = null;
         }
 
         private void ImageProcessingDebugForm_Load(object sender, EventArgs e)
@@ -294,7 +296,5 @@ namespace billiard_laser
         {
             SetBallDetectorSettings();
         }
-
-
     }
 }
