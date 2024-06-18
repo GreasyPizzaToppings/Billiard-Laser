@@ -28,12 +28,15 @@ namespace billiard_laser
             originalImagePicBox.Image = images.OriginalImage;
             filteredContoursPicBox.Image = images.FilteredBallsHighlighted;
             allContoursPicBox.Image = images.AllBallsHighlighted;
-            invMaskPicBox.Image = images.ImageMask;
-            appliedMaskPicBox.Image = images.ImageWithMaskApplied;
+            invMaskPicBox.Image = images.TableMask;
+            appliedMaskPicBox.Image = images.TableWithMaskApplied;
+            cueBallMaskPicBox.Image = images.CueballMask;
+            cueBallFoundPicBox.Image = images.CueballImage;
 
-            if (images.BlurredAndSharpenedImage != null) transformedImagePicBox.Image = images.BlurredAndSharpenedImage;
-            else if (images.BlurredImage != null) transformedImagePicBox.Image = images.BlurredImage;
-            else if (images.SharpenedImage != null) transformedImagePicBox.Image = images.SharpenedImage;
+
+            if (images.CueballImage != null) transformedImagePicBox.Image = images.CueballImage;
+            else if (images.TransformedImage != null) transformedImagePicBox.Image = images.TransformedImage;
+            else if (images.CueballMask != null) transformedImagePicBox.Image = images.CueballMask;
             else transformedImagePicBox.Image = null;
         }
 

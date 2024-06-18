@@ -1,44 +1,34 @@
-﻿using System;
-using Emgu.CV.Structure;
-using Emgu.CV;
-using System.Drawing.Imaging;
-using Emgu.CV.CvEnum;
-using Emgu.CV.Util;
-using Point = System.Drawing.Point;
-using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
-using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
-using CvInvoke = Emgu.CV.CvInvoke;
-using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
-using AForge.Imaging.Filters;
-using System.Drawing;
+﻿using Accord;
 using Accord.MachineLearning;
 using Accord.Math;
-using static BallDetector;
-using AForge.Imaging;
-using static System.Windows.Forms.AxHost;
+using AForge.Imaging.Filters;
+using Emgu.CV;
+using Emgu.CV.CvEnum;
+using Emgu.CV.Structure;
+using Emgu.CV.Util;
 using OpenCvSharp.Extensions;
-using ScottPlot.Palettes;
-using System.Windows.Markup;
-using Emgu.CV.Linemod;
-using OpenCvSharp.Internal.Vectors;
+using System.Drawing.Imaging;
+using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
+using CvInvoke = Emgu.CV.CvInvoke;
+using Point = System.Drawing.Point;
+using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
+using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 
 public class BallDetector
 {
     private Size imageSize = new Size(0, 0);
-
-    //mask values
-    public Rgb LowerClothMask = new Rgb(40, 80, 40);
-    public Rgb UpperClothMask = new Rgb(70, 255, 255);
-
-    public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
-    public Rgb UpperCueBallMask = new Rgb(255, 255, 255);
 
 
     //image manipulation settings
     public Boolean EnableBlur = false;
     public Boolean EnableSharpening = false;
     public Boolean EnableTableBoundary = false;
-
+    //Default cloth mask
+    public Rgb LowerClothMask = new Rgb(40, 80, 40);
+    public Rgb UpperClothMask = new Rgb(70, 255, 255);
+    //Default cueball mask
+    public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
+    public Rgb UpperCueBallMask = new Rgb(255, 255, 255);
     /// <summary>
     /// Get the image with all balls highlighted
     /// </summary>
@@ -74,11 +64,10 @@ public class BallDetector
 
             if (EnableSharpening) blurredAndSharpenedImage = workingImage;
         }
-
-        Bitmap tableMask = GetTableMask(workingImage);
+        Bitmap tableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
-        VectorOfVectorOfPoint allContoursFound = GetAllContours(tableMask);
+        VectorOfVectorOfPoint allContoursFound = GetAllContours(tableWithMaskApplied);
         VectorOfVectorOfPoint filteredContoursFound;
 
         if (EnableTableBoundary)
@@ -98,29 +87,29 @@ public class BallDetector
 
 
         // detect the cue ball
-        VectorOfPoint cueBallContour = null;
+        (Bitmap cueBallFiltered, VectorOfPoint cueBallContour)? test = null;
         if (filteredContoursFound.Size > 0)
         {
-            cueBallContour = FindCueBall(filteredContoursFound, tableWithMaskApplied);
+            test = FindCueBall(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask);
         }
-
-        // highlight the cue ball
-        Bitmap cueBallHighlighted = null;
-        if (cueBallContour != null)
-        {
-            cueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueBallContour }), tableImage.ToImage<Rgb, byte>());
-        }
+        Bitmap cueBallHighlighted = DrawCueball(test.Value.cueBallContour, tableImage.ToImage<Rgb, byte>());
+        //// highlight the cue ball
+        //Bitmap cueBallHighlighted = null;
+        //if (cueBallContour != null)
+        //{
+        //    cueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueBallContour }), tableImage.ToImage<Rgb, byte>());
+        //}
 
         return new ImageProcessingResults
         {
             OriginalImage = tableImage,
-            BlurredImage = blurredImage,
-            SharpenedImage = sharpenedImage,
-            BlurredAndSharpenedImage = blurredAndSharpenedImage,
-            ImageMask = tableMask,
-            ImageWithMaskApplied = tableWithMaskApplied,
+            TransformedImage = blurredImage,
+            CueballMask = test.Value.cueBallFiltered,
+            CueballImage = cueBallHighlighted,
+            TableMask = tableMask,
+            TableWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = allBallsHighlighted,
-            FilteredBallsHighlighted = cueBallHighlighted, //debug test
+            FilteredBallsHighlighted = filteredBallsHighlighted, //debug test
             TableHighlighted = tableHighlighted,
             CueBallHighlighted = cueBallHighlighted
         };
@@ -181,7 +170,7 @@ public class BallDetector
     /// </summary>
     /// <param name="tableImage">Image of the table to mask</param>
     /// <returns></returns>
-    private Bitmap GetTableMask(Bitmap tableImage)
+    private Bitmap GetMaskImage(Bitmap tableImage, Rgb LowerMaskRgb, Rgb UpperMaskRgb)
     {
         Emgu.CV.Mat imageMat = BitmapExtension.ToMat(tableImage);
         Emgu.CV.Mat hsv = new Emgu.CV.Mat();
@@ -232,6 +221,51 @@ public class BallDetector
         }
 
         return cueBallContour;
+    }
+
+    public (Bitmap, VectorOfPoint)? FindCueBall(Bitmap maskedTableImage, Rgb LowerWhiteMask, Rgb UpperWhiteMask)
+    {
+        //For the masked image, it should only show the filtered image already
+
+        //For the filtered image, we then do a masking based on the possible values of the cueball. 
+        Bitmap workingImage = maskedTableImage;
+        Bitmap tableMask = GetMaskImage(workingImage, LowerWhiteMask, UpperWhiteMask);
+        Bitmap tableWithMaskApplied = ApplyMask(workingImage, tableMask);
+        VectorOfVectorOfPoint allContoursFound = GetAllContours(tableWithMaskApplied);
+        VectorOfVectorOfPoint filteredContoursFound;
+        filteredContoursFound = FilterContours(allContoursFound);
+        double MaxArea = 0;
+        VectorOfPoint Cueball = new VectorOfPoint();
+        for (int i = 0; i < filteredContoursFound.Size; i++)
+        {
+            double area = CvInvoke.ContourArea(filteredContoursFound[i]);
+            if (MaxArea < area)
+            {
+                MaxArea = area;
+                Cueball = filteredContoursFound[i];
+            }
+
+        }
+        //Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, workingImage.ToImage<Rgb, byte>());
+
+        //We will mask the maskedTableImage and find every single contour that only has the white color. 
+
+        //And then filter that as well. 
+        return ( tableWithMaskApplied, Cueball);
+        // detect the cue ball
+        //VectorOfPoint cueBallContour = null;
+        //if (filteredContoursFound.Size > 0)
+        //{
+        //    cueBallContour = FindCueBall(filteredContoursFound, tableWithMaskApplied);
+        //}
+
+        // highlight the cue ball
+        //Bitmap cueBallHighlighted = null;
+        //if (cueBallContour != null)
+        //{
+        //    cueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueBallContour }), maskedTableImage.ToImage<Rgb, byte>());
+        //}
+
     }
 
     private double CalculateAverageBrightness(Bitmap image, Rectangle boundingRect)
@@ -417,14 +451,11 @@ public class BallDetector
 
         return output.ToBitmap();
     }
-
-
-
-
-
-
-
-
+    private static Bitmap DrawCueball(VectorOfPoint cueballCtr, Image<Rgb, byte> img)
+    {
+        CvInvoke.DrawContours(img, new VectorOfVectorOfPoint(cueballCtr), -1, new MCvScalar(200, 0, 250), 2);
+        return img.ToBitmap();
+    }
 
     /// <summary>
     /// Draw the contours, but try and draw them as circles, with some error
