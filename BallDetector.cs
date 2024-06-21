@@ -85,7 +85,9 @@ public class BallDetector
 
         Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
         Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
+
         Bitmap onlyBalls = OnlyBalls(workingImage, filteredContoursFound);
+
         // detect the cue ball
         (Bitmap cueBallFiltered, VectorOfPoint cueBallContour)? test = null;
         if (filteredContoursFound.Size > 0)
@@ -115,6 +117,13 @@ public class BallDetector
             //CueBallHighlighted = cueBallHighlighted
         };
     }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <param name="Image"></param>
+    /// <param name="FilteredContours"></param>
+    /// <returns></returns>
     private static Bitmap OnlyBalls(Bitmap Image, VectorOfVectorOfPoint FilteredContours)
     {
         Mat result = new Mat(Image.Size, DepthType.Cv8U, 3);
@@ -126,6 +135,7 @@ public class BallDetector
         //whatever is inside the filteredcontours, we only show those in the image. 
         return test;
     }
+
     private static Bitmap SharpenImage(Bitmap image)
     {
         // Define the kernel
@@ -263,8 +273,8 @@ public class BallDetector
                 MaxArea = area;
                 Cueball = filteredContoursFound[i];
             }
-
         }
+
         //Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, workingImage.ToImage<Rgb, byte>());
 
         //We will mask the maskedTableImage and find every single contour that only has the white color. 
@@ -423,31 +433,6 @@ public class BallDetector
         return allContours[maxIndex]; //table
     }
 
-    /// <summary>
-    /// Find the left, right, top, and bottom points of a given contour
-    /// </summary>
-    /// <param name="contour"></param>
-    /// <returns></returns>
-    public static (Point leftMost, Point rightMost, Point topMost, Point bottomMost) GetContourEdges(VectorOfPoint contour)
-    {
-        Point leftMost = contour[0];
-        Point rightMost = contour[0];
-        Point topMost = contour[0];
-        Point bottomMost = contour[0];
-
-        for (int i = 1; i < contour.Size; i++)
-        {
-            Point point = contour[i];
-
-            if (point.X < leftMost.X) leftMost = point;
-            if (point.X > rightMost.X) rightMost = point;
-            if (point.Y < topMost.Y) topMost = point;
-            if (point.Y > bottomMost.Y) bottomMost = point;
-        }
-
-        return (leftMost, rightMost, topMost, bottomMost);
-    }
-
 
     /// <summary>
     /// Draw the contours as they are exactly
@@ -470,6 +455,7 @@ public class BallDetector
 
         return output.ToBitmap();
     }
+
     private static Bitmap DrawCueball(VectorOfPoint cueballCtr, Image<Rgb, byte> img)
     {
         CvInvoke.DrawContours(img, new VectorOfVectorOfPoint(cueballCtr), -1, new MCvScalar(200, 0, 250), 2);
