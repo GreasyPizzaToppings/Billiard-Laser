@@ -90,31 +90,24 @@ public class BallDetector
 
         // detect the cue ball
         (Bitmap cueBallFiltered, VectorOfPoint cueBallContour)? test = null;
+        Bitmap cueBallHighlighted = null;
         if (filteredContoursFound.Size > 0)
         {
-            test = FindCueBall(onlyBalls, filteredContoursFound);
+            test = FindCueBall(onlyBalls);
+            if (test != null) cueBallHighlighted = DrawCueball(test.Value.cueBallContour, tableImage.ToImage<Rgb, byte>());
         }
-        Bitmap cueBallHighlighted = DrawCueball(test.Value.cueBallContour, tableImage.ToImage<Rgb, byte>());
-
-        // highlight the cue ball
-        //Bitmap cueBallHighlighted = null;
-        //if (cueBallContour != null)
-        //{
-        //    cueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueBallContour }), tableImage.ToImage<Rgb, byte>());
-        //}
-
+         
         return new ImageProcessingResults
         {
             OriginalImage = tableImage,
             TransformedImage = transformedImage,
-            CueballMask = test.Value.cueBallFiltered,
+            CueballMask = test != null? test.Value.cueBallFiltered : null,  //test.Value.cueBallFiltered,
             CueballImage = cueBallHighlighted,
             TableMask = tableMask,
             TableWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = allBallsHighlighted,
             FilteredBallsHighlighted = filteredBallsHighlighted,
             TableHighlighted = tableHighlighted,
-            //CueBallHighlighted = cueBallHighlighted
         };
     }
 
@@ -249,7 +242,7 @@ public class BallDetector
     /// </summary>
     /// <param name="maskedTableImage"></param>
     /// <returns></returns>
-    public (Bitmap, VectorOfPoint)? FindCueBall(Bitmap maskedTableImage, VectorOfVectorOfPoint identifiedBalls)
+    public (Bitmap, VectorOfPoint)? FindCueBall(Bitmap maskedTableImage)
     {
         //For the masked image, it should only show the filtered image already
 
@@ -261,40 +254,21 @@ public class BallDetector
         Emgu.CV.CvInvoke.Threshold(BitmapToMat(tableMask,tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
         Bitmap tableWithMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
         VectorOfVectorOfPoint allContoursFound = GetAllContours(tableWithMaskApplied);
-        VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound);
+        //VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //maybe not needed to filter?
 
         double MaxArea = 0;
         VectorOfPoint Cueball = new VectorOfPoint();
-        for (int i = 0; i < filteredContoursFound.Size; i++)
+        for (int i = 0; i < allContoursFound.Size; i++)
         {
-            double area = CvInvoke.ContourArea(filteredContoursFound[i]);
+            double area = CvInvoke.ContourArea(allContoursFound[i]);
             if (MaxArea < area)
             {
                 MaxArea = area;
-                Cueball = filteredContoursFound[i];
+                Cueball = allContoursFound[i];
             }
         }
 
-        //Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, workingImage.ToImage<Rgb, byte>());
-
-        //We will mask the maskedTableImage and find every single contour that only has the white color. 
-
-        //And then filter that as well. 
-        return ( tableMask, Cueball);
-        // detect the cue ball
-        //VectorOfPoint cueBallContour = null;
-        //if (filteredContoursFound.Size > 0)
-        //{
-        //    cueBallContour = FindCueBall(filteredContoursFound, tableWithMaskApplied);
-        //}
-
-        // highlight the cue ball
-        //Bitmap cueBallHighlighted = null;
-        //if (cueBallContour != null)
-        //{
-        //    cueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueBallContour }), maskedTableImage.ToImage<Rgb, byte>());
-        //}
-
+        return (tableMask, Cueball);
     }
 
     private double CalculateAverageBrightness(Bitmap image, Rectangle boundingRect)
@@ -458,6 +432,8 @@ public class BallDetector
 
     private static Bitmap DrawCueball(VectorOfPoint cueballCtr, Image<Rgb, byte> img)
     {
+        if (cueballCtr.Size == 0) return img.ToBitmap();
+
         CvInvoke.DrawContours(img, new VectorOfVectorOfPoint(cueballCtr), -1, new MCvScalar(200, 0, 250), 2);
         return img.ToBitmap();
     }
