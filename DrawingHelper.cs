@@ -2,6 +2,7 @@
 
 public static class DrawingHelper
 {
+    
     public static Bitmap DrawBallOnImage(Ball ball, Bitmap image)
     {
         using (var graphics = Graphics.FromImage(image))
@@ -16,7 +17,7 @@ public static class DrawingHelper
         }
         return image;
     }
-
+    
     public static Bitmap DrawPoint(PointF point, Bitmap image)
     {
         using (var graphics = Graphics.FromImage(image))

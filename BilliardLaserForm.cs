@@ -136,8 +136,23 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException(); //need to implement cueball finder in BallDetector
+            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
+            Bitmap cueballHighlighted = ballDetector.FindCueBall(rawImage).Draw(rawImage);
+
+            if (cueballHighlighted != null) pictureBoxImage.Image = cueballHighlighted;
+            else MessageBox.Show("Cueball not found!");
+
+            UpdateDebugForm(rawImage);
         }
+
+        private void findFindAllBalls_Click(object sender, EventArgs e)
+        {
+            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
+            pictureBoxImage.Image = ballDetector.FindAllBalls(rawImage);
+
+            UpdateDebugForm(rawImage);
+        }
+
         private async void btnDetectBalls_Click(object sender, EventArgs e)
         {
             detectingBalls = true;
@@ -176,14 +191,6 @@ namespace billiard_laser
                 btnDetectBalls.Enabled = true;
                 currentInputType = InputType.Video;
             }
-        }
-
-        private void findFindAllBalls_Click(object sender, EventArgs e)
-        {
-            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            pictureBoxImage.Image = ballDetector.FindAllBalls(rawImage);
-
-            UpdateDebugForm(rawImage);
         }
 
         /// <summary>

@@ -82,37 +82,25 @@ public class BallDetector
             filteredContoursFound = FilterContours(allContoursFound);
         }
 
-
-        Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
-        Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
-
         Bitmap onlyBalls = OnlyBalls(workingImage, filteredContoursFound);
+        Ball cueball = FindCueBall(onlyBalls);
 
-        // detect the cue ball
-        (Bitmap cueBallFiltered, VectorOfPoint cueBallContour)? test = null;
-        Bitmap cueBallHighlighted = null;
-        if (filteredContoursFound.Size > 0)
-        {
-            test = FindCueBall(onlyBalls);
-            if (test != null) cueBallHighlighted = DrawCueball(test.Value.cueBallContour, tableImage.ToImage<Rgb, byte>());
-        }
-         
         return new ImageProcessingResults
         {
             OriginalImage = tableImage,
             TransformedImage = transformedImage,
-            CueballMask = test != null? test.Value.cueBallFiltered : null,  //test.Value.cueBallFiltered,
-            CueballImage = cueBallHighlighted,
+            CueballMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask),
+            CueballImage = cueball.Draw(tableImage),
             TableMask = tableMask,
             TableWithMaskApplied = tableWithMaskApplied,
-            AllBallsHighlighted = allBallsHighlighted,
-            FilteredBallsHighlighted = filteredBallsHighlighted,
+            AllBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()),
+            FilteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()),
             TableHighlighted = tableHighlighted,
         };
     }
 
     /// <summary>
-    /// 
+    /// Everything but the balls removed from the original image
     /// </summary>
     /// <param name="Image"></param>
     /// <param name="FilteredContours"></param>
@@ -208,52 +196,22 @@ public class BallDetector
     }
 
     /// <summary>
-    /// Find the cue ball by finding the brightest contour
-    /// </summary>
-    /// <param name="filteredContours"></param>
-    /// <param name="tableImage"></param>
-    /// <returns></returns>
-    public VectorOfPoint FindCueBall(VectorOfVectorOfPoint filteredContours, Bitmap maskedTableImage)
-    {
-        VectorOfPoint cueBallContour = null;
-        double maxBrightness = -1;
-
-        for (int i = 0; i < filteredContours.Size; i++)
-        {
-            using (VectorOfPoint contour = filteredContours[i])
-            {
-                //double area = CvInvoke.ContourArea(contour);
-                Rectangle boundingRect = CvInvoke.BoundingRectangle(contour);
-                double brightness = CalculateAverageBrightness(maskedTableImage, boundingRect);
-
-                if (brightness > maxBrightness)
-                {
-                    maxBrightness = brightness;
-                    cueBallContour = contour;
-                }
-            }
-        }
-
-        return cueBallContour;
-    }
-
-    /// <summary>
-    /// 
+    /// Mask the masked table image to find the cue ball by biggest area
     /// </summary>
     /// <param name="maskedTableImage"></param>
     /// <returns></returns>
-    public (Bitmap, VectorOfPoint)? FindCueBall(Bitmap maskedTableImage)
+    public Ball FindCueBall(Bitmap maskedTableImage)
     {
         //For the masked image, it should only show the filtered image already
 
         //For the filtered image, we then do a masking based on the possible values of the cueball. 
         Bitmap workingImage = maskedTableImage;
-        Bitmap tableMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
+        Bitmap cueballMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
         Mat maskInv = new Mat();
         Mat tableMat = new Mat();
-        Emgu.CV.CvInvoke.Threshold(BitmapToMat(tableMask,tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
-        Bitmap tableWithMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
-        VectorOfVectorOfPoint allContoursFound = GetAllContours(tableWithMaskApplied);
+        CvInvoke.Threshold(BitmapToMat(cueballMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
+        Bitmap cueballMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
+        VectorOfVectorOfPoint allContoursFound = GetAllContours(cueballMaskApplied);
         //VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //maybe not needed to filter?
 
         double MaxArea = 0;
@@ -268,30 +226,7 @@ public class BallDetector
             }
         }
 
-        return (tableMask, Cueball);
-    }
-
-    private double CalculateAverageBrightness(Bitmap image, Rectangle boundingRect)
-    {
-        double totalBrightness = 0;
-        int count = 0;
-
-        for (int x = boundingRect.Left; x < boundingRect.Right; x++)
-        {
-            for (int y = boundingRect.Top; y < boundingRect.Bottom; y++)
-            {
-                // make sure the point is within the image bounds
-                if (x >= 0 && x < image.Width && y >= 0 && y < image.Height)
-                {
-                    Color pixelColor = image.GetPixel(x, y);
-                    double brightness = pixelColor.GetBrightness();
-                    totalBrightness += brightness;
-                    count++;
-                }
-            }
-        }
-
-        return totalBrightness / count;
+        return new Ball(Cueball);
     }
 
     /// <summary>
@@ -436,42 +371,6 @@ public class BallDetector
 
         CvInvoke.DrawContours(img, new VectorOfVectorOfPoint(cueballCtr), -1, new MCvScalar(200, 0, 250), 2);
         return img.ToBitmap();
-    }
-
-    /// <summary>
-    /// Draw the contours, but try and draw them as circles, with some error
-    /// </summary>
-    /// <param name="ctrs"></param>
-    /// <param name="img"></param>
-    /// <returns></returns>
-    private static Bitmap DrawContoursAsCircles(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
-    {
-        Image<Rgb, byte> output = img.Copy();
-
-        for (int i = 0; i < ctrs.Size; i++)
-        {
-            using (VectorOfPoint contour = ctrs[i])
-            {
-                // Calculate the moments of the contour to get the centroid
-                var moments = CvInvoke.Moments(contour);
-
-                if (moments.M00 != 0)
-                {
-                    // Calculate centroid
-                    int centerX = (int)(moments.M10 / moments.M00);
-                    int centerY = (int)(moments.M01 / moments.M00);
-                    Point center = new Point(centerX, centerY);
-
-                    // Calculate the radius as the mean distance from the centroid to the contour points
-                    double meanRadius = Math.Sqrt(CvInvoke.ContourArea(contour) / Math.PI);
-
-                    // Draw the circle on the image
-                    CvInvoke.Circle(output, center, (int)meanRadius, new MCvScalar(244, 0, 250), 3);
-                }
-            }
-        }
-
-        return output.ToBitmap();
     }
 
     //TODO: improve and use, or remove if cant think of anything
