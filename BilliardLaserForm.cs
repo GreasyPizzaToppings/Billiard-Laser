@@ -62,25 +62,15 @@ namespace billiard_laser
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
 
-            //utility classes
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(cboCamera);
             shotDetector = new ShotDetector();
             ballDetector = new BallDetector();
 
-            //event handler methods
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
             listBoxProcessedFrames.DataSource = processedFrameIndices;
-        }
-
-        private void UpdateDebugForm(Bitmap rawImage)
-        {
-            if (debugForm != null && !debugForm.IsDisposed)
-            {
-                debugForm.ShowDebugImages(rawImage);
-            }
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
@@ -99,10 +89,7 @@ namespace billiard_laser
                 currentInputType = InputType.Camera;
             }
 
-            else
-            {
-                btnDetectBalls.Enabled = false;
-            }
+            else btnDetectBalls.Enabled = false;
         }
 
         private void btnLoadImage_Click(object sender, EventArgs e)
@@ -126,9 +113,53 @@ namespace billiard_laser
             }
         }
 
+        private void buttonShowDebugForm_Click(object sender, EventArgs e)
+        {
+            if (debugForm == null || debugForm.IsDisposed)
+            {
+                debugForm = new ImageProcessingDebugForm(ballDetector);
+
+                debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
+                debugForm.Show();
+
+                //init debug form with current (raw) selected rawFrame
+                if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
+                {
+                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    if (rawFrame != null) debugForm.ShowDebugImages(rawFrame.frame);
+                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
+                }
+            }
+
+            else debugForm.Focus();
+        }
+
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
             throw new NotImplementedException(); //need to implement cueball finder in BallDetector
+        }
+        private async void btnDetectBalls_Click(object sender, EventArgs e)
+        {
+            detectingBalls = true;
+            btnDetectBalls.Enabled = false;
+
+            if (currentInputType == InputType.Video)
+            {
+                // refresh the listbox
+                processedFrameIndices.Clear();
+
+                buttonResume.Enabled = false;
+                buttonNextFrame.Enabled = false;
+
+                DetectBallsInLoadedVideo();
+
+                detectingBalls = false;
+                buttonResume.Enabled = false;
+                shotDetector.ShotFinished -= ShotDetector_ShotFinished;
+                btnDetectBalls.Enabled = true;
+            }
+
+            //else its camera input, let it do its thing
         }
 
         private void btnLoadVideo_Click(object sender, EventArgs e)
@@ -201,7 +232,6 @@ namespace billiard_laser
             Application.DoEvents();
         }
 
-
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
             if (rawFrames.Count >= maxFrames) rawFrames.Dequeue();
@@ -226,33 +256,6 @@ namespace billiard_laser
             labelFrameRate.Text = $"FPS: {fps:F2}";
         }
 
-        private async void btnDetectBalls_Click(object sender, EventArgs e)
-        {
-            detectingBalls = true;
-            btnDetectBalls.Enabled = false;
-
-            if (currentInputType == InputType.Video)
-            {
-                // refresh the listbox
-                processedFrameIndices.Clear();
-
-                buttonResume.Enabled = false;
-                buttonNextFrame.Enabled = false;
-
-                DetectBallsInLoadedVideo();
-
-                detectingBalls = false;
-                buttonResume.Enabled = false;
-                shotDetector.ShotFinished -= ShotDetector_ShotFinished;
-                btnDetectBalls.Enabled = true;
-            }
-
-            //else its camera input, let it do its thing
-        }
-
-        private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
-
-
         //display a selected individual rawFrame of the video and send to debug form if its open
         private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -270,54 +273,6 @@ namespace billiard_laser
                     else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
                 }
             }
-        }
-
-        private void buttonShowDebugForm_Click(object sender, EventArgs e)
-        {
-            if (debugForm == null || debugForm.IsDisposed)
-            {
-                debugForm = new ImageProcessingDebugForm(ballDetector);
-
-                debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
-                debugForm.Show();
-
-                //init debug form with current (raw) selected rawFrame
-                if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
-                {
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null) debugForm.ShowDebugImages(rawFrame.frame);
-                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
-                }
-            }
-
-            else debugForm.Focus();
-        }
-
-        //sussy. dont put in form? also updates picturebox twice. 
-        private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
-        {
-            if (replayInProgress)
-                return;
-
-            replayInProgress = true;
-
-            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
-
-            foreach (VideoFrame frame in shot.ShotFrames)
-            {
-                listBoxProcessedFrames.SelectedIndex = frame.index;
-
-                // Draw the path of the selected shot on the current rawFrame
-                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
-
-                pictureBoxImage.Image = drawnImage;
-                pictureBoxImage.Refresh();
-
-                // Delay to control the replay speed (adjust the delay as needed)
-                await Task.Delay(delay);
-            }
-
-            replayInProgress = false;
         }
 
         private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
@@ -355,6 +310,37 @@ namespace billiard_laser
             }
         }
 
+        private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
+
+        //sussy. dont put in form? also updates picturebox twice. 
+        private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
+        {
+            if (replayInProgress)
+                return;
+
+            replayInProgress = true;
+
+            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
+
+            foreach (VideoFrame frame in shot.ShotFrames)
+            {
+                listBoxProcessedFrames.SelectedIndex = frame.index;
+
+                // Draw the path of the selected shot on the current rawFrame
+                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
+
+                pictureBoxImage.Image = drawnImage;
+                pictureBoxImage.Refresh();
+
+                // Delay to control the replay speed (adjust the delay as needed)
+                await Task.Delay(delay);
+            }
+
+            replayInProgress = false;
+        }
+
+        #region Media Contols
+
         //go back a rawFrame
         private void buttonLastFrame_Click(object sender, EventArgs e)
         {
@@ -365,15 +351,8 @@ namespace billiard_laser
                 buttonResume.Enabled = true;
             }
 
+            if (listBoxProcessedFrames.SelectedIndex > 0) listBoxProcessedFrames.SelectedIndex -= 1;
             buttonNextFrame.Enabled = true;
-
-            //show prev image in the picturebox
-            if (listBoxProcessedFrames.SelectedIndex > 0)
-            {
-                listBoxProcessedFrames.SelectedIndex -= 1;
-                var frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
-                pictureBoxImage.Image = frame.frame;
-            }
         }
 
         //go forward a rawFrame
@@ -384,15 +363,7 @@ namespace billiard_laser
             //stop the video from playing
             detectingBalls = false;
 
-            if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1))
-            {
-                listBoxProcessedFrames.SelectedIndex += 1;
-
-                //show that image in the picturebox
-                var frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
-                pictureBoxImage.Image = frame.frame;
-            }
-
+            if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1)) listBoxProcessedFrames.SelectedIndex += 1;
             buttonResume.Enabled = true;
         }
 
@@ -417,6 +388,8 @@ namespace billiard_laser
             buttonNextFrame.Enabled = true;
         }
 
+        #endregion
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
@@ -436,5 +409,7 @@ namespace billiard_laser
         {
             debugForm = null;
         }
+
+        private void UpdateDebugForm(Bitmap rawImage) => debugForm?.ShowDebugImages(rawImage);
     }
 }
