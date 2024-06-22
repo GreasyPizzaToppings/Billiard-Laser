@@ -148,7 +148,7 @@ namespace billiard_laser
         private void findFindAllBalls_Click(object sender, EventArgs e)
         {
             Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            pictureBoxImage.Image = ballDetector.FindAllBalls(rawImage);
+            pictureBoxImage.Image = ballDetector.GetAllBallsHighlighted(rawImage);
 
             UpdateDebugForm(rawImage);
         }
@@ -210,7 +210,7 @@ namespace billiard_laser
             {
                 stopwatch.Restart();
 
-                Bitmap highlightedBalls = ballDetector.FindAllBalls(rawFrame.frame);
+                Bitmap highlightedBalls = ballDetector.GetAllBallsHighlighted(rawFrame.frame);
                 VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
 
                 processedFrames.Enqueue(processedFrame);

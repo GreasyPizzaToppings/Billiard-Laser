@@ -48,9 +48,15 @@ public class Ball
         }
     }
 
-    public Point PrevCentre;
-
-
+    /// <summary>
+    /// how much the ball moved from its last position change
+    /// </summary>
+    public double Displacement {
+        get {
+            if (path == null || path.Count < 2) return 0;
+            return Math.Sqrt(Math.Pow(path[path.Count - 1].X - path[path.Count - 2].X, 2) + Math.Pow(path[path.Count - 1].Y - path[path.Count - 2].Y, 2));
+        }
+    }
 
     //Draw on the base image
     public Bitmap Draw(Bitmap baseImage)

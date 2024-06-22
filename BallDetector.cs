@@ -31,22 +31,23 @@ public class BallDetector
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
 
+
     /// <summary>
     /// Get the image with all balls highlighted
     /// </summary>
     /// <param name="tableImage">Image of the table</param>
     /// <returns></returns>
-    public Bitmap FindAllBalls(Bitmap tableImage)
+    public Bitmap GetAllBallsHighlighted(Bitmap tableImage)
     {
-        return FindAllBallsDebug(tableImage).FilteredBallsHighlighted;
+        return ProcessTableImage(tableImage).FilteredBallsHighlighted;
     }
 
     /// <summary>
-    /// Return all the stages of image processing involved with finding balls
+    /// Return all the balls and the stages of image processing
     /// </summary>
     /// <param name="tableImage">Image of the table</param>
     /// <returns></returns>
-    public ImageProcessingResults FindAllBallsDebug(Bitmap tableImage)
+    public ImageProcessingResults ProcessTableImage(Bitmap tableImage)
     {
         imageSize = tableImage.Size;
 
@@ -89,13 +90,16 @@ public class BallDetector
         {
             OriginalImage = tableImage,
             TransformedImage = transformedImage,
-            CueballMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask),
-            CueballImage = cueball.Draw(tableImage),
+            CueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask),
+            CueBallHighlighted = cueball.Draw(tableImage),
             TableMask = tableMask,
             TableWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()),
             FilteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()),
-            TableHighlighted = tableHighlighted,
+            TableBoundaryHighlighted = tableHighlighted,
+
+            CueBall = cueball
+            //Balls = 
         };
     }
 
@@ -363,14 +367,6 @@ public class BallDetector
         }
 
         return output.ToBitmap();
-    }
-
-    private static Bitmap DrawCueball(VectorOfPoint cueballCtr, Image<Rgb, byte> img)
-    {
-        if (cueballCtr.Size == 0) return img.ToBitmap();
-
-        CvInvoke.DrawContours(img, new VectorOfVectorOfPoint(cueballCtr), -1, new MCvScalar(200, 0, 250), 2);
-        return img.ToBitmap();
     }
 
     //TODO: improve and use, or remove if cant think of anything

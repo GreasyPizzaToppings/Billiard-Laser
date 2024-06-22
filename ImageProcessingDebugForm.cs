@@ -23,15 +23,15 @@ namespace billiard_laser
 
         public void ShowDebugImages(Bitmap rawImage)
         {
-            ImageProcessingResults images = ballDetector.FindAllBallsDebug(rawImage);
+            ImageProcessingResults images = ballDetector.ProcessTableImage(rawImage);
 
             originalImagePicBox.Image = images.OriginalImage;
             filteredContoursPicBox.Image = images.FilteredBallsHighlighted;
             allContoursPicBox.Image = images.AllBallsHighlighted;
             invMaskPicBox.Image = images.TableMask;
             appliedMaskPicBox.Image = images.TableWithMaskApplied;
-            cueBallMaskPicBox.Image = images.CueballMask;
-            cueBallFoundPicBox.Image = images.CueballImage;
+            cueBallMaskPicBox.Image = images.CueBallMask;
+            cueBallFoundPicBox.Image = images.CueBallHighlighted;
             transformedImagePicBox.Image = images.TransformedImage;
         }
 

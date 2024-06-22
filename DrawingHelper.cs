@@ -3,21 +3,6 @@
 public static class DrawingHelper
 {
     
-    public static Bitmap DrawBallOnImage(Ball ball, Bitmap image)
-    {
-        using (var graphics = Graphics.FromImage(image))
-        using (var pen = new Pen(Color.LightBlue, 3f))
-        {
-            var rect = new Rectangle(
-                (int)(ball.Centre.X - ball.Radius),
-                (int)(ball.Centre.Y - ball.Radius),
-                (int)(2 * ball.Radius),
-                (int)(2 * ball.Radius));
-            graphics.DrawEllipse(pen, rect);
-        }
-        return image;
-    }
-    
     public static Bitmap DrawPoint(PointF point, Bitmap image)
     {
         using (var graphics = Graphics.FromImage(image))

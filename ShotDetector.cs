@@ -15,17 +15,15 @@
 
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
-
         currentShot.AddFrameToShot(frame);
         currentShot.AddPointToPath(cueBall.Centre);
-
 
         Boolean ballNotMoving = false;
         if (isCueBallMoving && currentShot != null && currentShot.ShotFrameCount >= 25 && currentShot.FrameDistances.TakeLast(25).Sum() < 2) {
             ballNotMoving = true;
         }
-        
-        double distanceTravelled = Shot.CalculateDistance(cueBall.Centre, cueBall.PrevCentre);
+
+        double distanceTravelled = cueBall.Displacement;
         Boolean ballMoving = distanceTravelled > 1;
 
         Console.WriteLine("Distance travelled in 1 frame: " + distanceTravelled);
@@ -51,7 +49,6 @@
                 if (currentShot.DistanceTravelled > 1)
                 {
                     OnShotFinished(currentShot);
-                    
                 }
 
                 // The shot is invalid (false shot), discard it
