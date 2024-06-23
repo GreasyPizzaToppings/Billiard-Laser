@@ -137,7 +137,7 @@ namespace billiard_laser
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
             Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            Bitmap cueballHighlighted = ballDetector.FindCueBall(rawImage).Draw(rawImage);
+            Bitmap cueballHighlighted = ballDetector.ProcessTableImage(rawImage).CueBallHighlighted;
 
             if (cueballHighlighted != null) pictureBoxImage.Image = cueballHighlighted;
             else MessageBox.Show("Cueball not found!");
@@ -148,7 +148,10 @@ namespace billiard_laser
         private void findFindAllBalls_Click(object sender, EventArgs e)
         {
             Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            pictureBoxImage.Image = ballDetector.GetAllBallsHighlighted(rawImage);
+            Bitmap ballsHighlighted = ballDetector.ProcessTableImage(rawImage).AllBallsHighlighted;
+
+            if (ballsHighlighted != null) pictureBoxImage.Image = ballsHighlighted;
+            else MessageBox.Show("Cueball not found!");
 
             UpdateDebugForm(rawImage);
         }
@@ -210,7 +213,7 @@ namespace billiard_laser
             {
                 stopwatch.Restart();
 
-                Bitmap highlightedBalls = ballDetector.GetAllBallsHighlighted(rawFrame.frame);
+                Bitmap highlightedBalls = ballDetector.ProcessTableImage(rawFrame.frame).AllBallsHighlighted;
                 VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
 
                 processedFrames.Enqueue(processedFrame);

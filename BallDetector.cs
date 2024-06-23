@@ -31,17 +31,7 @@ public class BallDetector
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
 
-
-    /// <summary>
-    /// Get the image with all balls highlighted
-    /// </summary>
-    /// <param name="tableImage">Image of the table</param>
-    /// <returns></returns>
-    public Bitmap GetAllBallsHighlighted(Bitmap tableImage)
-    {
-        return ProcessTableImage(tableImage).FilteredBallsHighlighted;
-    }
-
+    
     /// <summary>
     /// Return all the balls and the stages of image processing
     /// </summary>
@@ -52,7 +42,7 @@ public class BallDetector
         imageSize = tableImage.Size;
 
         Bitmap workingImage = tableImage;
-        Bitmap transformedImage = null, tableHighlighted = null; //optional images
+        Bitmap transformedImage = null;
 
         if (EnableSharpening)
         {
@@ -70,21 +60,11 @@ public class BallDetector
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
         VectorOfVectorOfPoint allContoursFound = GetAllContours(tableWithMaskApplied);
-        VectorOfVectorOfPoint filteredContoursFound;
+        VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound) : null;
+        VectorOfVectorOfPoint filteredContoursFound = tableContour != null ? FilterContours(allContoursFound, tableContour) : FilterContours(allContoursFound);
 
-        if (EnableTableBoundary)
-        {
-            VectorOfPoint tableContour = GetTableContour(allContoursFound);
-            filteredContoursFound = FilterContours(allContoursFound, tableContour);
-            tableHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { tableContour }), tableImage.ToImage<Rgb, byte>());
-        }
-        else
-        {
-            filteredContoursFound = FilterContours(allContoursFound);
-        }
-
-        Bitmap onlyBalls = OnlyBalls(workingImage, filteredContoursFound);
-        Ball cueball = FindCueBall(onlyBalls);
+        Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
+        List<Ball> balls = filteredContoursFound.ToArrayOfArray().Select(contour => new Ball(new VectorOfPoint(contour))).ToList();
 
         return new ImageProcessingResults
         {
@@ -96,12 +76,47 @@ public class BallDetector
             TableWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()),
             FilteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()),
-            TableBoundaryHighlighted = tableHighlighted,
+            TableBoundaryHighlighted = tableContour != null? DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { tableContour }), tableImage.ToImage<Rgb, byte>()) : null,
 
-            CueBall = cueball
-            //Balls = 
+            CueBall = cueball,
+            Balls = balls
         };
     }
+
+    /// <summary>
+    /// Apple cueball mask to the masked table image. The cue ball is the biggest area contour
+    /// </summary>
+    /// <param name="maskedTableImage"></param>
+    /// <returns></returns>
+    private Ball FindCueBall(Bitmap maskedTableImage)
+    {
+        //For the masked image, it should only show the filtered image already
+
+        //For the filtered image, we then do a masking based on the possible values of the cueball. 
+        Bitmap workingImage = maskedTableImage;
+        Bitmap cueballMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
+        Mat maskInv = new Mat();
+        Mat tableMat = new Mat();
+        CvInvoke.Threshold(BitmapToMat(cueballMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
+        Bitmap cueballMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
+        VectorOfVectorOfPoint allContoursFound = GetAllContours(cueballMaskApplied);
+        //VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //maybe not needed to filter?
+
+        double MaxArea = 0;
+        VectorOfPoint Cueball = new VectorOfPoint();
+        for (int i = 0; i < allContoursFound.Size; i++)
+        {
+            double area = CvInvoke.ContourArea(allContoursFound[i]);
+            if (MaxArea < area)
+            {
+                MaxArea = area;
+                Cueball = allContoursFound[i];
+            }
+        }
+
+        return new Ball(Cueball);
+    }
+
 
     /// <summary>
     /// Everything but the balls removed from the original image
@@ -176,7 +191,7 @@ public class BallDetector
     /// </summary>
     /// <param name="tableImage">Image of the table to mask</param>
     /// <returns></returns>
-    private Bitmap GetMaskImage(Bitmap tableImage, Rgb LowerMaskRgb, Rgb UpperMaskRgb)
+    private static Bitmap GetMaskImage(Bitmap tableImage, Rgb LowerMaskRgb, Rgb UpperMaskRgb)
     {
         Mat imageMat = BitmapExtension.ToMat(tableImage);
         Mat hsv = new Mat();
@@ -199,39 +214,6 @@ public class BallDetector
         return maskInv.ToBitmap();
     }
 
-    /// <summary>
-    /// Mask the masked table image to find the cue ball by biggest area
-    /// </summary>
-    /// <param name="maskedTableImage"></param>
-    /// <returns></returns>
-    public Ball FindCueBall(Bitmap maskedTableImage)
-    {
-        //For the masked image, it should only show the filtered image already
-
-        //For the filtered image, we then do a masking based on the possible values of the cueball. 
-        Bitmap workingImage = maskedTableImage;
-        Bitmap cueballMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
-        Mat maskInv = new Mat();
-        Mat tableMat = new Mat();
-        CvInvoke.Threshold(BitmapToMat(cueballMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
-        Bitmap cueballMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
-        VectorOfVectorOfPoint allContoursFound = GetAllContours(cueballMaskApplied);
-        //VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //maybe not needed to filter?
-
-        double MaxArea = 0;
-        VectorOfPoint Cueball = new VectorOfPoint();
-        for (int i = 0; i < allContoursFound.Size; i++)
-        {
-            double area = CvInvoke.ContourArea(allContoursFound[i]);
-            if (MaxArea < area)
-            {
-                MaxArea = area;
-                Cueball = allContoursFound[i];
-            }
-        }
-
-        return new Ball(Cueball);
-    }
 
     /// <summary>
     /// Find what Emgu thinks are edges
@@ -250,13 +232,13 @@ public class BallDetector
 
 
     /// <summary>
-    /// remove contours that are unlikely to be a ball
+    /// Remove the contours unlikely to be a ball. Return as balls instead of contours
     /// </summary>
     /// <param name="contours"></param>
     /// <param name="min_s"></param>
     /// <param name="max_s"></param>
     /// <returns></returns>
-    private VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
+    private static VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
     {
         Console.WriteLine("---");
 
@@ -302,7 +284,7 @@ public class BallDetector
     /// <param name="innerContour">The contour that is being checked if it is inside the outer contour.</param>
     /// <param name="outerContour">The contour that is being checked to contain the inner contour.</param>
     /// <returns>True if the inner contour is completely inside the outer contour, false otherwise.</returns>
-    public static bool IsContourInside(VectorOfPoint innerContour, VectorOfPoint outerContour)
+    private static bool IsContourInside(VectorOfPoint innerContour, VectorOfPoint outerContour)
     {
         for (int i = 0; i < innerContour.Size; i++)
         {
@@ -318,7 +300,7 @@ public class BallDetector
     /// </summary>
     /// <param name="contours"></param>
     /// <returns>VectorOfPoint contour with points if found, empty VectorOfPoint if not found</returns>
-    public VectorOfPoint GetTableContour(VectorOfVectorOfPoint allContours)
+    private VectorOfPoint GetTableContour(VectorOfVectorOfPoint allContours)
     {
         double imageArea = this.imageSize.Width * this.imageSize.Height;
         double maxArea = 0;
@@ -410,7 +392,7 @@ public class BallDetector
         return nearestColor;
     }
 
-    public static Bitmap GetDominantColorOfImage(Bitmap image)
+    private static Bitmap GetDominantColorOfImage(Bitmap image)
     {
         int w = image.Width;
         int h = image.Height;
