@@ -65,8 +65,19 @@ public class Ball
         if (contour == null || contour.ToArray().Length <= 0) return baseImage;
 
         Image<Rgb, byte> output = baseImage.ToImage<Rgb, byte>();
-        CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(200, 0, 250), 3);
+        try
+        {
+            using (var vvp = new VectorOfVectorOfPoint(contour))
+            {
+                CvInvoke.DrawContours(output, vvp, -1, new MCvScalar(200, 0, 250), 3);
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("error drawing contours: " + ex.Message);
+            return baseImage;
+        }
+
         return output.ToBitmap();
     }
-    
 }

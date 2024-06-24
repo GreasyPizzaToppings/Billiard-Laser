@@ -35,7 +35,7 @@ namespace billiard_laser
         private BindingList<int> processedFrameIndices = new BindingList<int>();
         private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
         private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
-        private const int maxFrames = 2000;
+        private const int maxFrames = 1000;
 
         //flags
         private bool detectingBalls = false;
@@ -163,9 +163,6 @@ namespace billiard_laser
 
             if (currentInputType == InputType.Video)
             {
-                // refresh the listbox
-                processedFrameIndices.Clear();
-
                 buttonResume.Enabled = false;
                 buttonNextFrame.Enabled = false;
 
@@ -217,6 +214,11 @@ namespace billiard_laser
                 VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
 
                 processedFrames.Enqueue(processedFrame);
+
+                if (processedFrames.Count > maxFrames) {
+                    processedFrames.Dequeue();
+                }
+
                 processedFrameIndices.Add(processedFrame.index);
 
                 if (processedFrameIndices.Count > maxFrames)
