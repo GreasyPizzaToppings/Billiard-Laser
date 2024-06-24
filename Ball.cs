@@ -21,8 +21,10 @@ public class Ball
         this.path = path;
     }
 
-    public Point Centre { 
-        get {
+    public Point Centre
+    {
+        get
+        {
             //todo BUG!!
             if (contour == null || contour.ToArray().Length <= 0) return new Point(0, 0); //invalid contour
 
@@ -30,7 +32,7 @@ public class Ball
             int centrex = (int)points.Average(point => point.X);
             int centrey = (int)points.Average(point => point.Y);
             return new Point(centrex, centrey);
-        } 
+        }
     }
 
     public double Radius
@@ -60,24 +62,6 @@ public class Ball
             return Math.Sqrt(Math.Pow(path[path.Count - 1].X - path[path.Count - 2].X, 2) + Math.Pow(path[path.Count - 1].Y - path[path.Count - 2].Y, 2));
         }
     }
-
-    public Point Centre { 
-        get {
-            if (contour == null || contour.ToArray().Length <= 0) return new Point(0, 0); //invalid contour
-
-        Image<Rgb, byte> output = baseImage.ToImage<Rgb, byte>();
-        try
-        {
-            using (var vvp = new VectorOfVectorOfPoint(contour))
-            {
-                CvInvoke.DrawContours(output, vvp, -1, new MCvScalar(200, 0, 250), 3);
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("error drawing contours: " + ex.Message);
-            return baseImage;
-        }
 
     //Draw on the base image
     public Bitmap Draw(Bitmap baseImage)
