@@ -35,7 +35,7 @@ namespace billiard_laser
         private BindingList<int> processedFrameIndices = new BindingList<int>();
         private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
         private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
-        private const int maxFrames = 2000;
+        private const int maxFrames = 1000;
 
         //flags
         private bool detectingBalls = false;
@@ -62,25 +62,15 @@ namespace billiard_laser
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
 
-            //utility classes
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(cboCamera);
             shotDetector = new ShotDetector();
             ballDetector = new BallDetector();
 
-            //event handler methods
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
             listBoxProcessedFrames.DataSource = processedFrameIndices;
-        }
-
-        private void UpdateDebugForm(Bitmap rawImage)
-        {
-            if (debugForm != null && !debugForm.IsDisposed)
-            {
-                debugForm.ShowDebugImages(rawImage);
-            }
         }
 
         private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
@@ -99,10 +89,7 @@ namespace billiard_laser
                 currentInputType = InputType.Camera;
             }
 
-            else
-            {
-                btnDetectBalls.Enabled = false;
-            }
+            else btnDetectBalls.Enabled = false;
         }
 
         private void btnLoadImage_Click(object sender, EventArgs e)
@@ -122,152 +109,6 @@ namespace billiard_laser
                     {
                         MessageBox.Show("error loading image: " + ex.Message);
                     }
-                }
-            }
-        }
-
-        private void btnFindCueball_Click(object sender, EventArgs e)
-        {
-            throw new NotImplementedException(); //need to implement cueball finder in BallDetector
-        }
-
-        private void btnLoadVideo_Click(object sender, EventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            openFileDialog.Filter = "Video Files (*.mp4;*.avi;*.mkv)|*.mp4;*.avi;*.mkv";
-            openFileDialog.Title = "Select a Video File";
-
-            if (openFileDialog.ShowDialog() == DialogResult.OK)
-            {
-                rawFrames.Clear();
-                processedFrames.Clear();
-                VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
-                btnDetectBalls.Enabled = true;
-                currentInputType = InputType.Video;
-            }
-        }
-
-        private void findFindAllBalls_Click(object sender, EventArgs e)
-        {
-            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            pictureBoxImage.Image = ballDetector.FindAllBalls(rawImage);
-
-            UpdateDebugForm(rawImage);
-        }
-
-        /// <summary>
-        /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
-        /// </summary>
-        /// <param name="rawFrame"></param>
-        private void ProcessFrame(VideoFrame rawFrame)
-        {
-            // use the UI thread to process rawFrame
-            if (InvokeRequired)
-            {
-                Invoke(new Action(() => ProcessFrame(rawFrame)));
-                return;
-            }
-
-            if (detectingBalls)
-            {
-                stopwatch.Restart();
-
-                Bitmap highlightedBalls = ballDetector.FindAllBalls(rawFrame.frame);
-                VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
-
-                processedFrames.Enqueue(processedFrame);
-                processedFrameIndices.Add(processedFrame.index);
-
-                if (processedFrameIndices.Count > maxFrames)
-                {
-                    processedFrameIndices.RemoveAt(0);
-                    processedFrames.Dequeue();
-                }
-
-                //calls selectedIndexChanged(). updates list box and picturebox . sussy
-                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-
-                stopwatch.Stop();
-                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
-                UpdateFpsLabel(totalProcessingTime, rawFrame.index);
-            }
-
-            else
-            {
-                pictureBoxImage.Image = rawFrame.frame;
-            }
-
-            Application.DoEvents();
-        }
-
-
-        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
-        {
-            if (rawFrames.Count >= maxFrames) rawFrames.Dequeue();
-            rawFrames.Enqueue(frame);
-
-            ProcessFrame(frame);
-        }
-
-        /// <summary>
-        /// For each rawFrame in the video, perform ball and/or shot tracking
-        /// </summary>
-        /// <returns></returns>
-        private void DetectBallsInLoadedVideo()
-        {
-            totalProcessingTime = 0;
-            foreach (VideoFrame rawFrame in rawFrames) ProcessFrame(rawFrame);
-        }
-
-        private void UpdateFpsLabel(double totalTime, int index)
-        {
-            var fps = index / totalTime;
-            labelFrameRate.Text = $"FPS: {fps:F2}";
-        }
-
-        private async void btnDetectBalls_Click(object sender, EventArgs e)
-        {
-            detectingBalls = true;
-            btnDetectBalls.Enabled = false;
-
-            if (currentInputType == InputType.Video)
-            {
-                // refresh the listbox
-                processedFrameIndices.Clear();
-
-                buttonResume.Enabled = false;
-                buttonNextFrame.Enabled = false;
-
-                DetectBallsInLoadedVideo();
-
-                detectingBalls = false;
-                buttonResume.Enabled = false;
-                shotDetector.ShotFinished -= ShotDetector_ShotFinished;
-                btnDetectBalls.Enabled = true;
-            }
-
-            //else its camera input, let it do its thing
-        }
-
-        private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
-
-
-        //display a selected individual rawFrame of the video and send to debug form if its open
-        private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
-            {
-                // find the rawFrame in the queue based on the index
-                var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
-
-                if (processedFrame != null)
-                {
-                    pictureBoxImage.Image = processedFrame.frame;
-
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null) UpdateDebugForm(rawFrame.frame);
-                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
                 }
             }
         }
@@ -293,31 +134,163 @@ namespace billiard_laser
             else debugForm.Focus();
         }
 
-        //sussy. dont put in form? also updates picturebox twice. 
-        private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
+        private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            if (replayInProgress)
-                return;
+            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
+            Bitmap cueballHighlighted = ballDetector.ProcessTableImage(rawImage).CueBallHighlighted;
 
-            replayInProgress = true;
+            if (cueballHighlighted != null) pictureBoxImage.Image = cueballHighlighted;
+            else MessageBox.Show("Cueball not found!");
 
-            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
+            UpdateDebugForm(rawImage);
+        }
 
-            foreach (VideoFrame frame in shot.ShotFrames)
+        private void findFindAllBalls_Click(object sender, EventArgs e)
+        {
+            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
+            Bitmap ballsHighlighted = ballDetector.ProcessTableImage(rawImage).AllBallsHighlighted;
+
+            if (ballsHighlighted != null) pictureBoxImage.Image = ballsHighlighted;
+            else MessageBox.Show("Cueball not found!");
+
+            UpdateDebugForm(rawImage);
+        }
+
+        private async void btnDetectBalls_Click(object sender, EventArgs e)
+        {
+            detectingBalls = true;
+            btnDetectBalls.Enabled = false;
+
+            if (currentInputType == InputType.Video)
             {
-                listBoxProcessedFrames.SelectedIndex = frame.index;
+                buttonResume.Enabled = false;
+                buttonNextFrame.Enabled = false;
 
-                // Draw the path of the selected shot on the current rawFrame
-                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
+                DetectBallsInLoadedVideo();
 
-                pictureBoxImage.Image = drawnImage;
-                pictureBoxImage.Refresh();
-
-                // Delay to control the replay speed (adjust the delay as needed)
-                await Task.Delay(delay);
+                detectingBalls = false;
+                buttonResume.Enabled = false;
+                shotDetector.ShotFinished -= ShotDetector_ShotFinished;
+                btnDetectBalls.Enabled = true;
             }
 
-            replayInProgress = false;
+            //else its camera input, let it do its thing
+        }
+
+        private void btnLoadVideo_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "Video Files (*.mp4;*.avi;*.mkv)|*.mp4;*.avi;*.mkv";
+            openFileDialog.Title = "Select a Video File";
+
+            if (openFileDialog.ShowDialog() == DialogResult.OK)
+            {
+                rawFrames.Clear();
+                processedFrames.Clear();
+                VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
+                btnDetectBalls.Enabled = true;
+                currentInputType = InputType.Video;
+            }
+        }
+
+        /// <summary>
+        /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
+        /// </summary>
+        /// <param name="rawFrame"></param>
+        private void ProcessFrame(VideoFrame rawFrame)
+        {
+            // use the UI thread to process rawFrame
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => ProcessFrame(rawFrame)));
+                return;
+            }
+
+            if (detectingBalls)
+            {
+                stopwatch.Restart();
+
+                var results = ballDetector.ProcessTableImage(rawFrame.frame);
+
+                Bitmap highlightedBalls = results.CueBallHighlighted;
+                Ball cueBall = results.CueBall;
+                VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
+
+                shotDetector.ProcessFrame(cueBall, processedFrame);
+
+ 
+                processedFrames.Enqueue(processedFrame);
+
+                if (processedFrames.Count > maxFrames) {
+                    processedFrames.Dequeue();
+                }
+
+                processedFrameIndices.Add(processedFrame.index);
+
+                if (processedFrameIndices.Count > maxFrames)
+                {
+                    processedFrameIndices.RemoveAt(0);
+                    processedFrames.Dequeue();
+                }
+
+                //calls selectedIndexChanged(). updates list box and picturebox . sussy
+                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+
+                stopwatch.Stop();
+                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+
+                UpdateFpsLabel(totalProcessingTime, rawFrame.index);
+            }
+
+            else
+            {
+                pictureBoxImage.Image = rawFrame.frame;
+            }
+
+            Application.DoEvents();
+        }
+
+        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
+        {
+            if (rawFrames.Count >= maxFrames) rawFrames.Dequeue();
+            rawFrames.Enqueue(frame);
+
+            ProcessFrame(frame);
+        }
+
+        /// <summary>
+        /// For each rawFrame in the video, perform ball and/or shot tracking
+        /// </summary>
+        /// <returns></returns>
+        private void DetectBallsInLoadedVideo()
+        {
+            totalProcessingTime = 0;
+            foreach (VideoFrame rawFrame in rawFrames) ProcessFrame(rawFrame);
+        }
+
+        private void UpdateFpsLabel(double totalTime, int index)
+        {
+            var fps = index / totalTime;
+            labelFrameRate.Text = $"FPS: {fps:F2}";
+        }
+
+        //display a selected individual rawFrame of the video and send to debug form if its open
+        private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
+            {
+                // find the rawFrame in the queue based on the index
+                var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
+
+                if (processedFrame != null)
+                {
+                    pictureBoxImage.Image = processedFrame.frame;
+
+                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    if (rawFrame != null) UpdateDebugForm(rawFrame.frame);
+                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
+                }
+            }
         }
 
         private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
@@ -355,6 +328,37 @@ namespace billiard_laser
             }
         }
 
+        private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
+
+        //sussy. dont put in form? also updates picturebox twice. 
+        private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
+        {
+            if (replayInProgress)
+                return;
+
+            replayInProgress = true;
+
+            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
+
+            foreach (VideoFrame frame in shot.ShotFrames)
+            {
+                listBoxProcessedFrames.SelectedIndex = frame.index;
+
+                // Draw the path of the selected shot on the current rawFrame
+                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
+
+                pictureBoxImage.Image = drawnImage;
+                pictureBoxImage.Refresh();
+
+                // Delay to control the replay speed (adjust the delay as needed)
+                await Task.Delay(delay);
+            }
+
+            replayInProgress = false;
+        }
+
+        #region Media Contols
+
         //go back a rawFrame
         private void buttonLastFrame_Click(object sender, EventArgs e)
         {
@@ -365,15 +369,8 @@ namespace billiard_laser
                 buttonResume.Enabled = true;
             }
 
+            if (listBoxProcessedFrames.SelectedIndex > 0) listBoxProcessedFrames.SelectedIndex -= 1;
             buttonNextFrame.Enabled = true;
-
-            //show prev image in the picturebox
-            if (listBoxProcessedFrames.SelectedIndex > 0)
-            {
-                listBoxProcessedFrames.SelectedIndex -= 1;
-                var frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
-                pictureBoxImage.Image = frame.frame;
-            }
         }
 
         //go forward a rawFrame
@@ -384,15 +381,7 @@ namespace billiard_laser
             //stop the video from playing
             detectingBalls = false;
 
-            if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1))
-            {
-                listBoxProcessedFrames.SelectedIndex += 1;
-
-                //show that image in the picturebox
-                var frame = (VideoFrame)listBoxProcessedFrames.SelectedItem;
-                pictureBoxImage.Image = frame.frame;
-            }
-
+            if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1)) listBoxProcessedFrames.SelectedIndex += 1;
             buttonResume.Enabled = true;
         }
 
@@ -417,6 +406,8 @@ namespace billiard_laser
             buttonNextFrame.Enabled = true;
         }
 
+        #endregion
+
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
             cameraController.StopCameraCapture();
@@ -436,5 +427,7 @@ namespace billiard_laser
         {
             debugForm = null;
         }
+
+        private void UpdateDebugForm(Bitmap rawImage) => debugForm?.ShowDebugImages(rawImage);
     }
 }
