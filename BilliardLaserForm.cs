@@ -212,7 +212,7 @@ namespace billiard_laser
 
                 var results = ballDetector.ProcessTableImage(rawFrame.frame);
 
-                Bitmap highlightedBalls = results.FilteredBallsHighlighted;
+                Bitmap highlightedBalls = results.CueBallHighlighted;
                 Ball cueBall = results.CueBall;
                 VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
 
