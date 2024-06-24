@@ -23,6 +23,9 @@ public class Ball
 
     public Point Centre { 
         get {
+            //todo BUG!!
+            if (contour == null || contour.ToArray().Length <= 0) return new Point(0, 0); //invalid contour
+
             var points = contour.ToArray().ToList();
             int centrex = (int)points.Average(point => point.X);
             int centrey = (int)points.Average(point => point.Y);
