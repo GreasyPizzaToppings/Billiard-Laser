@@ -92,9 +92,18 @@ public class BallDetector
     {
         //For the masked image, it should only show the filtered image already
 
+        //For the filtered image, we then do a masking based on the possible values of the cueball. 
+        Bitmap workingImage = maskedTableImage;
+        Bitmap cueballMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
+        Mat maskInv = new Mat();
+        Mat tableMat = new Mat();
+        CvInvoke.Threshold(BitmapToMat(cueballMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
+        Bitmap cueballMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
+        VectorOfVectorOfPoint allContoursFound = GetAllContours(cueballMaskApplied);
+        //VectorOfVectorOfPoint filteredContoursFound = FilterContours(allContoursFound); //maybe not needed to filter?
 
         double MaxArea = 0;
-        VectorOfPoint Cueball = new VectorOfPoint(0);
+        VectorOfPoint Cueball = new VectorOfPoint();
         for (int i = 0; i < allContoursFound.Size; i++)
         {
             double area = CvInvoke.ContourArea(allContoursFound[i]);
