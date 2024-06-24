@@ -15,6 +15,8 @@
 
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
+        //if cueball has no points in contour, skip
+        if (cueBall.contour == null || cueBall.contour.ToArray().Length <= 0) return;
 
         currentShot.AddFrameToShot(frame);
         currentShot.AddPointToPath(cueBall.Centre);

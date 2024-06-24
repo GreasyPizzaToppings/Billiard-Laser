@@ -79,23 +79,34 @@ public class BallDetector
 
         if (EnableTableBoundary)
         {
-            VectorOfPoint tableContour = GetTableContour(allContoursFound);
-            filteredContoursFound = FilterContours(allContoursFound, tableContour);
-            tableHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { tableContour }), tableImage.ToImage<Rgb, byte>());
-        }
-        else
-        {
-            filteredContoursFound = FilterContours(allContoursFound);
-        }
+            OriginalImage = tableImage,
+            TransformedImage = transformedImage,
+            CueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask),
+            CueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueball.contour }), tableImage.ToImage<Rgb, byte>()),
+            TableMask = tableMask,
+            TableWithMaskApplied = tableWithMaskApplied,
+            AllBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()),
+            FilteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()),
+            TableBoundaryHighlighted = tableContour != null? DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { tableContour }), tableImage.ToImage<Rgb, byte>()) : null,
+
+            CueBall = cueball,
+            Balls = balls
+        };
+    }
+
+    /// <summary>
+    /// Apple cueball mask to the masked table image. The cue ball is the biggest area contour
+    /// </summary>
+    /// <param name="maskedTableImage"></param>
+    /// <returns></returns>
+    private Ball FindCueBall(Bitmap maskedTableImage)
+    {
+        //For the masked image, it should only show the filtered image already
 
 
-        Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
-        Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
-
-
-        // detect the cue ball
-        VectorOfPoint cueBallContour = null;
-        if (filteredContoursFound.Size > 0)
+        double MaxArea = 0;
+        VectorOfPoint Cueball = new VectorOfPoint(0);
+        for (int i = 0; i < allContoursFound.Size; i++)
         {
             cueBallContour = FindCueBall(filteredContoursFound, tableWithMaskApplied);
         }

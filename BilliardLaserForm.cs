@@ -172,8 +172,13 @@ namespace billiard_laser
             {
                 stopwatch.Restart();
 
-                Bitmap highlightedBalls = ballDetector.FindAllBalls(rawFrame.frame);
+                var results = ballDetector.ProcessTableImage(rawFrame.frame);
+
+                Bitmap highlightedBalls = results.CueBallHighlighted;
                 VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
+                Ball cueBall = results.CueBall;
+
+                shotDetector.ProcessFrame(cueBall, processedFrame);
 
                 processedFrames.Enqueue(processedFrame);
                 processedFrameIndices.Add(processedFrame.index);
