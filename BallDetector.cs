@@ -71,13 +71,12 @@ public class BallDetector
             OriginalImage = tableImage,
             TransformedImage = transformedImage,
             CueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask),
-            CueBallHighlighted = DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { cueball.contour }), tableImage.ToImage<Rgb, byte>()),
+            CueBallHighlighted = cueball.Draw(tableImage),
             TableMask = tableMask,
             TableWithMaskApplied = tableWithMaskApplied,
             AllBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()),
             FilteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()),
-            TableBoundaryHighlighted = tableContour != null? DrawContours(new VectorOfVectorOfPoint(new VectorOfPoint[] { tableContour }), tableImage.ToImage<Rgb, byte>()) : null,
-
+            
             CueBall = cueball,
             Balls = balls
         };
