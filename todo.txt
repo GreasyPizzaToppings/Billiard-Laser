@@ -1,5 +1,10 @@
+bugs:
+- sudden spike in memory and segfault crash
+- cueball contour length negative overflow. nondeterministic. 
+- cueball null or image null. maybe related to video format (clipchamp helps?). nondeterministic.
+
+
 better way to add frames to raw and processed queues
-better way to have int list of indices of processed/raw frames
 
 UI redesign. main form, make cleaner. hide/show shot tracking stats
 
@@ -8,7 +13,6 @@ better media controls
 put more video processing code into VideoProcessor
 
 way to make it faster at higher res / increase performance
-
 
 update fps label when replaying shots too. and for camera input
 

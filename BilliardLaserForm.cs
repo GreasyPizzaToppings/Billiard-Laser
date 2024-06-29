@@ -6,6 +6,7 @@ using AForge.Video.DirectShow;
 using AForge.Video;
 using System.Windows.Media;
 using System.ComponentModel;
+using OpenCvSharp;
 
 namespace billiard_laser
 {
@@ -137,12 +138,19 @@ namespace billiard_laser
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
             Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            Bitmap cueballHighlighted = ballDetector.ProcessTableImage(rawImage).CueBallHighlighted;
+            Mat rawImageMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(rawImage);
+
+            // resize to same output resolution as video
+            Mat resizedImageMat = new Mat();
+            Cv2.Resize(rawImageMat, resizedImageMat, outputVideoResolution);
+
+            Bitmap resizedImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(resizedImageMat);
+            Bitmap cueballHighlighted = ballDetector.ProcessTableImage(resizedImage).CueBallHighlighted;
 
             if (cueballHighlighted != null) pictureBoxImage.Image = cueballHighlighted;
             else MessageBox.Show("Cueball not found!");
 
-            UpdateDebugForm(rawImage);
+            UpdateDebugForm(resizedImage);
         }
 
         private void findFindAllBalls_Click(object sender, EventArgs e)
@@ -211,12 +219,9 @@ namespace billiard_laser
                 stopwatch.Restart();
 
                 var results = ballDetector.ProcessTableImage(rawFrame.frame);
+                VideoFrame processedFrame = new VideoFrame(results.CueBallHighlighted, rawFrame.index);
 
-                Bitmap highlightedBalls = results.CueBallHighlighted;
-                VideoFrame processedFrame = new VideoFrame(highlightedBalls, rawFrame.index);
-                Ball cueBall = results.CueBall;
-
-                shotDetector.ProcessFrame(cueBall, processedFrame);
+                shotDetector.ProcessFrame(results.CueBall, processedFrame);
  
                 processedFrames.Enqueue(processedFrame);
 
@@ -339,12 +344,12 @@ namespace billiard_laser
 
             int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
 
-            foreach (VideoFrame frame in shot.ShotFrames)
+            foreach (VideoFrame frame in shot.frames)
             {
                 listBoxProcessedFrames.SelectedIndex = frame.index;
 
-                // Draw the path of the selected shot on the current rawFrame
-                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.Path, new Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
+                // Draw the cueBallPath of the selected shot on the current rawFrame
+                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
 
                 pictureBoxImage.Image = drawnImage;
                 pictureBoxImage.Refresh();

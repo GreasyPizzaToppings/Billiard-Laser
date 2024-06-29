@@ -15,22 +15,26 @@
 
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
-        //if cueball has no points in contour, skip
-        if (cueBall.contour == null || cueBall.contour.ToArray().Length <= 0) return;
-
-        currentShot.AddFrameToShot(frame);
-        currentShot.AddPointToPath(cueBall.Centre);
-
-        Boolean ballNotMoving = false;
-        if (isCueBallMoving && currentShot != null && currentShot.ShotFrameCount >= 25 && currentShot.FrameDistances.TakeLast(25).Sum() < 2) {
-            ballNotMoving = true;
+        //invalid cue ball
+        if (cueBall == null || cueBall.contour == null || cueBall.contour.ToArray().Length <= 0) {
+            return;
         }
 
-        double distanceTravelled = cueBall.Displacement;
-        Boolean ballMoving = distanceTravelled > 1;
+        currentShot.frames.Add(frame);
+        currentShot.cueBallPath.Add(cueBall.Centre);
 
-        Console.WriteLine("Distance travelled in 1 frame: " + distanceTravelled);
-        Console.WriteLine("Distance in Last 25: " + currentShot.FrameDistances.TakeLast(25).Sum());
+        Boolean ballNotMoving = false;
+
+        if (isCueBallMoving && currentShot != null && currentShot.frames.Count >= 25 && currentShot.FrameDistances.TakeLast(10).Sum() < 5) {
+            ballNotMoving = true;
+        }
+        
+        // criteria for ball moving:
+        // 1. ball has moved more than 10 pixel in the last frame
+        Boolean ballMoving = currentShot.Displacement > 10;
+
+        Console.WriteLine("Distance travelled in 1 frame: " + currentShot.Displacement);
+        Console.WriteLine("Distance in Last 10: " + currentShot.FrameDistances.TakeLast(10).Sum());
 
         if (ballMoving)
         {
@@ -39,8 +43,8 @@
             {
                 isCueBallMoving = true;
                 currentShot = new Shot();
-                currentShot.AddFrameToShot(frame);
-                currentShot.AddPointToPath(cueBall.Centre);
+                currentShot.frames.Add(frame);
+                currentShot.cueBallPath.Add(cueBall.Centre);
             }
         }
 
@@ -49,7 +53,7 @@
             // ball marked as not moving already
             if (isCueBallMoving)
             {
-                if (currentShot.DistanceTravelled > 1)
+                if (currentShot.DistanceTravelled > 10)
                 {
                     OnShotFinished(currentShot);
                 }

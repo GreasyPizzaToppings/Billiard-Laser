@@ -1,25 +1,18 @@
-﻿using static VideoProcessor;
-
+﻿/// <summary>
+/// A shot is what happens from when the cueball starts moving to when it stops
+/// </summary>
 public class Shot
 {
-    private List<PointF> path = new List<PointF>();
-    public List<PointF> Path
-    {
-        get { return path; }
-        set { path = value; }
-    }
-
-    private List<VideoFrame> frames = new List<VideoFrame>();
-    public List<VideoFrame> ShotFrames => frames;
-    public int ShotFrameCount => ShotFrames.Count;
+    public List<PointF> cueBallPath = new List<PointF>();
+    public List<VideoFrame> frames = new List<VideoFrame>();
 
     /// <summary>
     /// distance travelled per frame
     /// </summary>
-    public List<double> FrameDistances => Path.Count > 1 ? Path.Zip(Path.Skip(1), CalculateDistance).ToList() : new List<double>();
+    public List<double> FrameDistances => cueBallPath.Count > 1 ? cueBallPath.Zip(cueBallPath.Skip(1), CalculateDistance).ToList() : new List<double>();
 
     /// <summary>
-    /// sum total of distance travelled over the frames of its path
+    /// sum total of distance travelled over the frames of its cueBallPath
     /// </summary>
     public List<double> DistanceTravelledOverTime => FrameDistances.Aggregate(new List<double>(), (cumulativeDistances, distance) =>
     {
@@ -27,7 +20,8 @@ public class Shot
         return cumulativeDistances;
     });
 
-    public double AverageSpeed => ShotFrameCount > 0 ? DistanceTravelled / ShotFrameCount : 0;
+    public double AverageSpeed => frames.Count > 0 ? DistanceTravelled / frames.Count : 0;
+    
     public double DistanceTravelled =>  FrameDistances.Sum();
 
     public double MaxSpeed => FrameDistances.Max();
@@ -37,38 +31,42 @@ public class Shot
         .Prepend(0.0) // Add an initial acceleration of 0.0
         .ToList();
 
+    /// <summary>
+    /// how much the ball moved from its last position change
+    /// </summary>
+    public double Displacement
+    {
+        get
+        {
+            if (cueBallPath == null || cueBallPath.Count < 2) return 0;
+            return Math.Sqrt(Math.Pow(cueBallPath[cueBallPath.Count - 1].X - cueBallPath[cueBallPath.Count - 2].X, 2) + Math.Pow(cueBallPath[cueBallPath.Count - 1].Y - cueBallPath[cueBallPath.Count - 2].Y, 2));
+        }
+    }
+
     public double MaxAcceleration => AccelerationOverTime.Max();
 
     public double AverageAcceleration => AccelerationOverTime.Average();
 
-    public Shot(List<PointF> path) { Path = path; }
+    public Shot(List<PointF> path) { this.cueBallPath = path; }
     
     public Shot() { }
 
-    public void AddPointToPath(PointF point)
-    {
-        path ??= new List<PointF>();
-        path.Add(point);
-    }
-
-    public void AddFrameToShot(VideoFrame frame) { frames.Add(frame); }
-
-    public static double CalculateDistance(PointF point1, PointF point2)
-    {
-        double dx = point2.X - point1.X;
-        double dy = point2.Y - point1.Y;
-        return Math.Sqrt(dx * dx + dy * dy);
-    }
-
     /// <summary>
-    /// The String of a Shot is represented by the start and end frame numbers
+    /// The string of a Shot is represented by the start and end frame numbers
     /// </summary>
     /// <returns></returns>
     public override string ToString()
     {
-        VideoFrame startFrame = ShotFrames.First();
-        VideoFrame endFrame = ShotFrames.Last();
+        VideoFrame startFrame = frames.First();
+        VideoFrame endFrame = frames.Last();
 
         return $"{startFrame} - {endFrame}";
+    }
+
+    private static double CalculateDistance(PointF point1, PointF point2)
+    {
+        double dx = point2.X - point1.X;
+        double dy = point2.Y - point1.Y;
+        return Math.Sqrt(dx * dx + dy * dy);
     }
 }
