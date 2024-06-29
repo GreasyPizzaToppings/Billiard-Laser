@@ -343,7 +343,6 @@ public class BallDetector
             using (VectorOfPoint contour = ctrs[i])
             {
                 CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 2);
-
             }
         }
 
