@@ -3,6 +3,11 @@ bugs:
 - cueball contour length negative overflow. nondeterministic. 
 - cueball null or image null. maybe related to video format (clipchamp helps?). nondeterministic.
 
+manage disposing for:
+- ball
+- ball detector
+- imageprocessingresults
+
 
 better way to add frames to raw and processed queues
 

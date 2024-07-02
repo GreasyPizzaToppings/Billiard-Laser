@@ -67,12 +67,12 @@ public class BallDetector
         Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
 
         //debugging
-        if (cueball.contour.ToArray().Length <= 0) {
-            MessageBox.Show("in cueballdetector BEFORE drawing calls: empty cueball contour!!");
+        if (cueball.Contour.ToArray().Length <= 0) {
+            MessageBox.Show("in cueballdetector BEFORE drawing calls: empty cueball Contour!!");
         }
-        else Console.WriteLine("in cueballdetector before drawing: cueball contour length: " + cueball.contour.ToArray().Length);
+        else Console.WriteLine("in cueballdetector before drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
 
-        List<Ball> balls = filteredContoursFound.ToArrayOfArray().Select(contour => new Ball(new VectorOfPoint(contour))).ToList();
+        List<Ball> balls = filteredContoursFound.ToArrayOfArray().Select(Contour => new Ball(new VectorOfPoint(Contour))).ToList();
 
         Bitmap cueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask);
         Bitmap cueBallHighlighted = cueball.Draw(tableImage);
@@ -81,11 +81,11 @@ public class BallDetector
 
 
         //debugging
-        if (cueball.contour.ToArray().Length <= 0)
+        if (cueball.Contour.ToArray().Length <= 0)
         {
-            MessageBox.Show("in cueballdetector AFTER drawing calls: empty cueball contour!!");
+            MessageBox.Show("in cueballdetector AFTER drawing calls: empty cueball Contour!!");
         }
-        else Console.WriteLine("in cueballdetector after drawing: cueball contour length: " + cueball.contour.ToArray().Length);
+        else Console.WriteLine("in cueballdetector after drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
 
 
         return new ImageProcessingResults
@@ -105,7 +105,7 @@ public class BallDetector
     }
 
     /// <summary>
-    /// Apple cueball mask to the masked table image. The cue ball is the biggest area contour
+    /// Apple cueball mask to the masked table image. The cue ball is the biggest area Contour
     /// </summary>
     /// <param name="maskedTableImage"></param>
     /// <returns></returns>
@@ -265,17 +265,17 @@ public class BallDetector
 
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
 
-        //show table contour if enabled
+        //show table Contour if enabled
         if (tableContour != null) filteredContours.Push(tableContour);
 
         for (int i = 0; i < contours.Size; i++)
         {
-            VectorOfPoint contour = contours[i];
+            VectorOfPoint Contour = contours[i];
             
-            //filter out contours that are not inside the table contour
-            if (tableContour != null && !IsContourInside(contour, tableContour)) continue;
+            //filter out contours that are not inside the table Contour
+            if (tableContour != null && !IsContourInside(Contour, tableContour)) continue;
 
-            RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
+            RotatedRect rotRect = CvInvoke.MinAreaRect(Contour);
             float w = rotRect.Size.Width;
             float h = rotRect.Size.Height;
 
@@ -283,11 +283,11 @@ public class BallDetector
             if ((h > w * 4) || (w > h * 4)) continue;
 
             //filter out balls with very small area or too big areas
-            double area = CvInvoke.ContourArea(contour);
+            double area = CvInvoke.ContourArea(Contour);
             if ((area < (min_s * min_s)) || (area > (max_s * max_s)))
                 continue;
 
-            filteredContours.Push(contour);
+            filteredContours.Push(Contour);
 
             //Console.WriteLine($"Accepted Contour Info: \nWidth: {w}\nHeight: {h}\nArea: {area}\n");
         }
@@ -299,11 +299,11 @@ public class BallDetector
 
 
     /// <summary>
-    /// Check if a contour is completely inside another contour.
+    /// Check if a Contour is completely inside another Contour.
     /// </summary>
-    /// <param name="innerContour">The contour that is being checked if it is inside the outer contour.</param>
-    /// <param name="outerContour">The contour that is being checked to contain the inner contour.</param>
-    /// <returns>True if the inner contour is completely inside the outer contour, false otherwise.</returns>
+    /// <param name="innerContour">The Contour that is being checked if it is inside the outer Contour.</param>
+    /// <param name="outerContour">The Contour that is being checked to contain the inner Contour.</param>
+    /// <returns>True if the inner Contour is completely inside the outer Contour, false otherwise.</returns>
     private static bool IsContourInside(VectorOfPoint innerContour, VectorOfPoint outerContour)
     {
         for (int i = 0; i < innerContour.Size; i++)
@@ -316,21 +316,21 @@ public class BallDetector
     }
 
     /// <summary>
-    /// Given all contours found in the image, find the table contour
+    /// Given all contours found in the image, find the table Contour
     /// </summary>
     /// <param name="contours"></param>
-    /// <returns>VectorOfPoint contour with points if found, empty VectorOfPoint if not found</returns>
+    /// <returns>VectorOfPoint Contour with points if found, empty VectorOfPoint if not found</returns>
     private VectorOfPoint GetTableContour(VectorOfVectorOfPoint allContours)
     {
         double imageArea = this.imageSize.Width * this.imageSize.Height;
         double maxArea = 0;
         int maxIndex = -1;
 
-        //find the biggest contour that isnt the whole frame or close to it. 90% and under seems to work
+        //find the biggest Contour that isnt the whole frame or close to it. 90% and under seems to work
         for (int i = 0; i < allContours.Size; i++)
         {
-            VectorOfPoint contour = allContours[i];
-            double area = CvInvoke.ContourArea(contour);
+            VectorOfPoint Contour = allContours[i];
+            double area = CvInvoke.ContourArea(Contour);
 
             if (area < (imageArea * 0.90) && area > maxArea)
             {
@@ -341,7 +341,7 @@ public class BallDetector
 
         if (maxIndex == -1)
         {
-            Console.WriteLine("No valid table contour found.");
+            Console.WriteLine("No valid table Contour found.");
             return new VectorOfPoint();
         }
 
@@ -361,8 +361,8 @@ public class BallDetector
 
         for (int i = 0; i < ctrs.Size; i++)
         {
-            VectorOfPoint contour = ctrs[i]; //removed using statement (testing)
-            CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 2);
+            VectorOfPoint Contour = ctrs[i]; //removed using statement (testing)
+            CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(Contour), -1, new MCvScalar(244, 0, 250), 2);
         }
 
         return output.ToBitmap();

@@ -223,7 +223,7 @@ namespace billiard_laser
                 VideoFrame processedFrame = new VideoFrame(results.CueBallHighlighted, rawFrame.index);
 
                 //debugging
-                if (results.CueBall.contour.ToArray().Length <= 0)
+                if (results.CueBall.Contour.ToArray().Length <= 0)
                 {
                     MessageBox.Show("after cueballdetector: empty cueball contour!!");
                 }
@@ -231,7 +231,7 @@ namespace billiard_laser
                 //memory corruption: cueball cannot be viewed
                 //arithmetic overflow: cueball and contour can be viewed
                 Console.WriteLine($"\nBEFORE Shot Detector: Frame {processedFrame.index}\n" +
-                $"Cueball contour length: {results.CueBall.contour.ToArray().Length}\n");
+                $"Cueball contour length: {results.CueBall.Contour.ToArray().Length}\n");
 
                 shotDetector.ProcessFrame(results.CueBall, processedFrame);
 

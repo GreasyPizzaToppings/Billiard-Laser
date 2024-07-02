@@ -16,10 +16,10 @@
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
         Console.WriteLine($"\nShot Detector: Frame {frame.index}\n" +
-            $"Cueball contour length: {cueBall.contour.ToArray().Length}\n");
+            $"Cueball contour length: {cueBall.Contour.ToArray().Length}\n");
 
         //invalid cue ball
-        if (cueBall == null || cueBall.contour == null || cueBall.contour.ToArray().Length <= 0) {
+        if (cueBall == null || cueBall.Contour == null || cueBall.Contour.ToArray().Length <= 0) {
             return;
         }
 
