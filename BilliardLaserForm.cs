@@ -208,7 +208,8 @@ namespace billiard_laser
         /// <param name="rawFrame"></param>
         private void ProcessFrame(VideoFrame rawFrame)
         {
-            // use the UI thread to process rawFrame
+            VideoFrame workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index);
+
             if (InvokeRequired)
             {
                 Invoke(new Action(() => ProcessFrame(rawFrame)));
@@ -219,54 +220,58 @@ namespace billiard_laser
             {
                 stopwatch.Restart();
 
-                var results = ballDetector.ProcessTableImage(rawFrame.frame);
-                VideoFrame processedFrame = new VideoFrame(results.CueBallHighlighted, rawFrame.index);
-
-                //debugging
-                if (results.CueBall.Contour.ToArray().Length <= 0)
+                ImageProcessingResults results = null;
+                try
                 {
-                    MessageBox.Show("after cueballdetector: empty cueball contour!!");
+                    results = ballDetector.ProcessTableImage(workingFrame.frame);
+
+                    // Create a copy of the processed image to store in the queue
+                    Bitmap processedImage = new Bitmap(results.CueBallHighlighted);
+                    VideoFrame processedFrame = new VideoFrame(processedImage, workingFrame.index);
+
+                    Console.WriteLine($"\nBEFORE Shot Detector: Frame {processedFrame.index}\n" +
+                                      $"Cueball contour length: {results.CueBall.Contour.ToArray().Length}\n");
+
+                    shotDetector.ProcessFrame(results.CueBall, processedFrame);
+
+                    processedFrames.Enqueue(processedFrame);
+
+                    if (processedFrames.Count > maxFrames)
+                    {
+                        var oldFrame = processedFrames.Dequeue();
+                        oldFrame.frame.Dispose(); // Dispose of the old frame's image
+                    }
+
+                    processedFrameIndices.Add(processedFrame.index);
+
+                    if (processedFrameIndices.Count > maxFrames)
+                    {
+                        processedFrameIndices.RemoveAt(0);
+                    }
+
+                    listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+
+                    stopwatch.Stop();
+                    totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+
+                    UpdateFpsLabel(totalProcessingTime, workingFrame.index);
+
+                    // Display the processed image
+                    pictureBoxImage.Image = new Bitmap(processedFrame.frame);
                 }
-
-                //memory corruption: cueball cannot be viewed
-                //arithmetic overflow: cueball and contour can be viewed
-                Console.WriteLine($"\nBEFORE Shot Detector: Frame {processedFrame.index}\n" +
-                $"Cueball contour length: {results.CueBall.Contour.ToArray().Length}\n");
-
-                shotDetector.ProcessFrame(results.CueBall, processedFrame);
-
-                processedFrames.Enqueue(processedFrame);
-
-                if (processedFrames.Count > maxFrames)
+                finally
                 {
-                    processedFrames.Dequeue();
+                    results?.Dispose();
+                    Application.DoEvents();
                 }
-
-                processedFrameIndices.Add(processedFrame.index);
-
-                if (processedFrameIndices.Count > maxFrames)
-                {
-                    processedFrameIndices.RemoveAt(0);
-                    processedFrames.Dequeue();
-                }
-
-                //calls selectedIndexChanged(). updates list box and picturebox . sussy
-                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-
-                stopwatch.Stop();
-                totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
-                UpdateFpsLabel(totalProcessingTime, rawFrame.index);
             }
-
             else
             {
-                pictureBoxImage.Image = rawFrame.frame;
+                pictureBoxImage.Image = new Bitmap(workingFrame.frame);
+                Application.DoEvents();
             }
-
-            Application.DoEvents();
-
         }
+
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
@@ -297,16 +302,21 @@ namespace billiard_laser
         {
             if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
             {
-                // find the rawFrame in the queue based on the index
                 var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
 
                 if (processedFrame != null)
                 {
-                    pictureBoxImage.Image = processedFrame.frame;
+                    pictureBoxImage.Image = new Bitmap(processedFrame.frame);
 
                     var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null) UpdateDebugForm(rawFrame.frame);
-                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
+                    if (rawFrame != null)
+                    {
+                        UpdateDebugForm(new Bitmap(rawFrame.frame));
+                    }
+                    else
+                    {
+                        Console.WriteLine("Raw frame was null. Not sending to debug form!");
+                    }
                 }
             }
         }
@@ -356,20 +366,23 @@ namespace billiard_laser
 
             replayInProgress = true;
 
-            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS)); //calculate delay between frames based on given fps
+            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS));
 
             foreach (VideoFrame frame in shot.frames)
             {
-                listBoxProcessedFrames.SelectedIndex = frame.index;
+                listBoxProcessedFrames.SelectedIndex = frame.index; //sussy
 
-                // Draw the cueBallPath of the selected shot on the current rawFrame
-                Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frame.frame.Size, frame.frame);
+                // Create a copy of the frame to draw on
+                using (Bitmap frameToDrawOn = new Bitmap(frame.frame))
+                {
+                    // Draw the cueBallPath of the selected shot on the current frame
+                    Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
 
-                pictureBoxImage.Image = drawnImage;
-                pictureBoxImage.Refresh();
+                    pictureBoxImage.Image = drawnImage;
+                    pictureBoxImage.Refresh();
 
-                // Delay to control the replay speed (adjust the delay as needed)
-                await Task.Delay(delay);
+                    await Task.Delay(delay);
+                }
             }
 
             replayInProgress = false;
@@ -430,10 +443,21 @@ namespace billiard_laser
         {
             cameraController.StopCameraCapture();
 
-            // Clear the processed frames list box
             processedFrameIndices.Clear();
 
-            // Dispose of the picture box image
+            // Dispose of all frames in the queues
+            while (rawFrames.Count > 0)
+            {
+                var frame = rawFrames.Dequeue();
+                frame.frame.Dispose();
+            }
+
+            while (processedFrames.Count > 0)
+            {
+                var frame = processedFrames.Dequeue();
+                frame.frame.Dispose();
+            }
+
             if (pictureBoxImage.Image != null)
             {
                 pictureBoxImage.Image.Dispose();

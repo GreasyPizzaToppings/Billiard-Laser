@@ -2,11 +2,17 @@ bugs:
 - sudden spike in memory and segfault crash
 - cueball contour length negative overflow. nondeterministic. 
 - cueball null or image null. maybe related to video format (clipchamp helps?). nondeterministic.
+- load video 1 and play, fine. load video 2. plays video 1, and memory usage only goes up!. need to clear out old video
+- fps decrease when keep replaying same video. shouldnt.
+- frames in the shot are being disposed of after a while.
 
 manage disposing for:
 - ball
 - ball detector
 - imageprocessingresults
+
+
+use multithreading: have ui thread only do ui stuff. have other threads do image processing for speed and efficiency. have to make classes thread safe
 
 
 better way to add frames to raw and processed queues

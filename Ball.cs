@@ -4,12 +4,12 @@ using Emgu.CV.Util;
 using System;
 using System.Drawing;
 using System.Linq;
-using System.Threading;
 
 public class Ball : IDisposable
 {
     private VectorOfPoint _contour;
-    private readonly object _lock = new object();
+    private readonly object _lock = new();
+    private bool _disposed = false; // To detect redundant calls
 
     public VectorOfPoint Contour
     {
@@ -91,12 +91,29 @@ public class Ball : IDisposable
         }
     }
 
+    // Protected implementation of Dispose pattern.
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!_disposed)
+        {
+            if (disposing)
+            {
+                // Dispose managed state (managed objects).
+                _contour?.Dispose();
+            }
+
+            _disposed = true;
+        }
+    }
+
     public void Dispose()
     {
-        lock (_lock)
-        {
-            _contour?.Dispose();
-            _contour = null;
-        }
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~Ball()
+    {
+        Dispose(false);
     }
 }
