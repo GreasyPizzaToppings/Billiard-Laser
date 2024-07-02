@@ -59,10 +59,8 @@ public class Ball
         Image<Rgb, byte> output = baseImage.ToImage<Rgb, byte>();
         try
         {
-            using (VectorOfVectorOfPoint vvp = new VectorOfVectorOfPoint(contourCopy))
-            {
-                CvInvoke.DrawContours(output, vvp, -1, new MCvScalar(200, 0, 250), 3);
-            }
+            VectorOfVectorOfPoint vvp = new VectorOfVectorOfPoint(contourCopy);
+            CvInvoke.DrawContours(output, vvp, -1, new MCvScalar(200, 0, 250), 3);
         }
         catch (Exception ex)
         {

@@ -7,6 +7,7 @@ using AForge.Video;
 using System.Windows.Media;
 using System.ComponentModel;
 using OpenCvSharp;
+using System.Windows.Controls;
 
 namespace billiard_laser
 {
@@ -221,11 +222,23 @@ namespace billiard_laser
                 var results = ballDetector.ProcessTableImage(rawFrame.frame);
                 VideoFrame processedFrame = new VideoFrame(results.CueBallHighlighted, rawFrame.index);
 
+                //debugging
+                if (results.CueBall.contour.ToArray().Length <= 0)
+                {
+                    MessageBox.Show("after cueballdetector: empty cueball contour!!");
+                }
+
+                //memory corruption: cueball cannot be viewed
+                //arithmetic overflow: cueball and contour can be viewed
+                Console.WriteLine($"\nBEFORE Shot Detector: Frame {processedFrame.index}\n" +
+                $"Cueball contour length: {results.CueBall.contour.ToArray().Length}\n");
+
                 shotDetector.ProcessFrame(results.CueBall, processedFrame);
- 
+
                 processedFrames.Enqueue(processedFrame);
 
-                if (processedFrames.Count > maxFrames) {
+                if (processedFrames.Count > maxFrames)
+                {
                     processedFrames.Dequeue();
                 }
 
@@ -252,6 +265,7 @@ namespace billiard_laser
             }
 
             Application.DoEvents();
+
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)

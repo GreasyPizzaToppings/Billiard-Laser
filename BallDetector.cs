@@ -7,6 +7,7 @@ using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using OpenCvSharp.Extensions;
+using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
 using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
 using CvInvoke = Emgu.CV.CvInvoke;
@@ -64,18 +65,39 @@ public class BallDetector
         VectorOfVectorOfPoint filteredContoursFound = tableContour != null ? FilterContours(allContoursFound, tableContour) : FilterContours(allContoursFound);
 
         Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
+
+        //debugging
+        if (cueball.contour.ToArray().Length <= 0) {
+            MessageBox.Show("in cueballdetector BEFORE drawing calls: empty cueball contour!!");
+        }
+        else Console.WriteLine("in cueballdetector before drawing: cueball contour length: " + cueball.contour.ToArray().Length);
+
         List<Ball> balls = filteredContoursFound.ToArrayOfArray().Select(contour => new Ball(new VectorOfPoint(contour))).ToList();
+
+        Bitmap cueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask);
+        Bitmap cueBallHighlighted = cueball.Draw(tableImage);
+        Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
+        Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
+
+
+        //debugging
+        if (cueball.contour.ToArray().Length <= 0)
+        {
+            MessageBox.Show("in cueballdetector AFTER drawing calls: empty cueball contour!!");
+        }
+        else Console.WriteLine("in cueballdetector after drawing: cueball contour length: " + cueball.contour.ToArray().Length);
+
 
         return new ImageProcessingResults
         {
             OriginalImage = tableImage,
             TransformedImage = transformedImage,
-            CueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask),
-            CueBallHighlighted = cueball.Draw(tableImage),
+            CueBallMask = cueBallMask,
+            CueBallHighlighted = cueBallHighlighted,
             TableMask = tableMask,
             TableWithMaskApplied = tableWithMaskApplied,
-            AllBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>()),
-            FilteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>()),
+            AllBallsHighlighted = allBallsHighlighted,
+            FilteredBallsHighlighted = filteredBallsHighlighted,
             
             CueBall = cueball,
             Balls = balls
@@ -239,7 +261,7 @@ public class BallDetector
     /// <returns></returns>
     private static VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
     {
-        Console.WriteLine("---");
+        //Console.WriteLine("---");
 
         VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
 
@@ -248,30 +270,29 @@ public class BallDetector
 
         for (int i = 0; i < contours.Size; i++)
         {
-            using (VectorOfPoint contour = contours[i])
-            {
-                //filter out contours that are not inside the table contour
-                if (tableContour != null && !IsContourInside(contour, tableContour)) continue;
+            VectorOfPoint contour = contours[i];
+            
+            //filter out contours that are not inside the table contour
+            if (tableContour != null && !IsContourInside(contour, tableContour)) continue;
 
-                RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
-                float w = rotRect.Size.Width;
-                float h = rotRect.Size.Height;
+            RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
+            float w = rotRect.Size.Width;
+            float h = rotRect.Size.Height;
 
-                //allows some ball-speed to be detected (elongated ball shape)
-                if ((h > w * 4) || (w > h * 4)) continue;
+            //allows some ball-speed to be detected (elongated ball shape)
+            if ((h > w * 4) || (w > h * 4)) continue;
 
-                //filter out balls with very small area or too big areas
-                double area = CvInvoke.ContourArea(contour);
-                if ((area < (min_s * min_s)) || (area > (max_s * max_s)))
-                    continue;
+            //filter out balls with very small area or too big areas
+            double area = CvInvoke.ContourArea(contour);
+            if ((area < (min_s * min_s)) || (area > (max_s * max_s)))
+                continue;
 
-                filteredContours.Push(contour);
+            filteredContours.Push(contour);
 
-                Console.WriteLine($"Accepted Contour Info: \nWidth: {w}\nHeight: {h}\nArea: {area}\n");
-            }
+            //Console.WriteLine($"Accepted Contour Info: \nWidth: {w}\nHeight: {h}\nArea: {area}\n");
         }
 
-        Console.WriteLine("---");
+        //Console.WriteLine("---");
 
         return filteredContours;
     }
@@ -340,10 +361,8 @@ public class BallDetector
 
         for (int i = 0; i < ctrs.Size; i++)
         {
-            using (VectorOfPoint contour = ctrs[i])
-            {
-                CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 2);
-            }
+            VectorOfPoint contour = ctrs[i]; //removed using statement (testing)
+            CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(contour), -1, new MCvScalar(244, 0, 250), 2);
         }
 
         return output.ToBitmap();
@@ -425,7 +444,7 @@ public class BallDetector
         for (int i = 0; i < n_colors; i++)
         {
             paletteImage.SetPixel(i, 0, Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
-            Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
+            //Console.WriteLine(Color.FromArgb(colorPaletteInt[i][0], colorPaletteInt[i][1], colorPaletteInt[i][2]));
         }
         return paletteImage;
     }

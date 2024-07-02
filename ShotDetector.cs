@@ -15,6 +15,9 @@
 
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
+        Console.WriteLine($"\nShot Detector: Frame {frame.index}\n" +
+            $"Cueball contour length: {cueBall.contour.ToArray().Length}\n");
+
         //invalid cue ball
         if (cueBall == null || cueBall.contour == null || cueBall.contour.ToArray().Length <= 0) {
             return;
@@ -33,8 +36,8 @@
         // 1. ball has moved more than 10 pixel in the last frame
         Boolean ballMoving = currentShot.Displacement > 10;
 
-        Console.WriteLine("Distance travelled in 1 frame: " + currentShot.Displacement);
-        Console.WriteLine("Distance in Last 10: " + currentShot.FrameDistances.TakeLast(10).Sum());
+        //Console.WriteLine("Distance travelled in 1 frame: " + currentShot.Displacement);
+        //Console.WriteLine("Distance in Last 10: " + currentShot.FrameDistances.TakeLast(10).Sum());
 
         if (ballMoving)
         {
@@ -61,7 +64,7 @@
                 // The shot is invalid (false shot), discard it
                 else
                 {
-                    Console.WriteLine("False shot detected, discarding...");
+                    //Console.WriteLine("False shot detected, discarding...");
                 }
 
                 currentShot = new Shot();
