@@ -6,7 +6,6 @@ bugs:
 - SHOT disposes of all frames after a while.
 - load video 1 and play, fine. load video 2. plays video 1, and memory usage only goes up!. need to clear out old video
 - fps decrease when keep replaying same video. shouldnt.
-- frames in the shot are being disposed of after a while. (rawframe being disposed). replay 2 shots overhead 5 times. first frame on both detected shots is corrupt.
 
 manage disposing for:
 - ball detector

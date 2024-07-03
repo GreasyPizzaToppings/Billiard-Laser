@@ -105,7 +105,7 @@ namespace billiard_laser
                 {
                     try
                     {
-                        pictureBoxImage.Image = new Bitmap(openfiledialog.FileName);
+                        UpdatePictureBoxImage(new Bitmap(openfiledialog.FileName));
                     }
                     catch (Exception ex)
                     {
@@ -148,8 +148,7 @@ namespace billiard_laser
                     var result = ballDetector.ProcessTableImage(resizedImage);
                     if (result.CueBallHighlighted != null)
                     {
-                        pictureBoxImage.Image?.Dispose();
-                        pictureBoxImage.Image = (Bitmap)result.CueBallHighlighted.Clone();
+                        UpdatePictureBoxImage((Bitmap)result.CueBallHighlighted.Clone());
                     }
                     else
                     {
@@ -172,8 +171,7 @@ namespace billiard_laser
                     var result = ballDetector.ProcessTableImage(resizedImage);
                     if (result.AllBallsHighlighted != null)
                     {
-                        pictureBoxImage.Image?.Dispose();
-                        pictureBoxImage.Image = (Bitmap)result.AllBallsHighlighted.Clone();
+                        UpdatePictureBoxImage((Bitmap)result.AllBallsHighlighted.Clone());
                     }
                     else
                     {
@@ -227,70 +225,76 @@ namespace billiard_laser
         /// <param name="rawFrame"></param>
         private void ProcessFrame(VideoFrame rawFrame)
         {
-            VideoFrame workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index);
-
             if (InvokeRequired)
             {
                 Invoke(new Action(() => ProcessFrame(rawFrame)));
                 return;
             }
 
-            if (detectingBalls)
+            using (var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index))
             {
-                stopwatch.Restart();
-
-                ImageProcessingResults results = null;
-                try
+                if (detectingBalls)
                 {
-                    results = ballDetector.ProcessTableImage(workingFrame.frame);
+                    stopwatch.Restart();
 
-                    // Create a copy of the processed image to store in the queue
-                    Bitmap processedImage = new Bitmap(results.CueBallHighlighted);
-                    VideoFrame processedFrame = new VideoFrame(processedImage, workingFrame.index);
-
-                    //Console.WriteLine($"\nBEFORE Shot Detector: Frame {processedFrame.index}\n" +
-                                     // $"Cueball contour length: {results.CueBall.Contour.ToArray().Length}\n");
-
-                    shotDetector.ProcessFrame(results.CueBall, processedFrame);
-
-                    processedFrames.Enqueue(processedFrame);
-
-                    if (processedFrames.Count > maxFrames)
+                    ImageProcessingResults results = null;
+                    try
                     {
-                        var oldFrame = processedFrames.Dequeue();
-                        oldFrame.frame.Dispose(); // Dispose of the old frame's image
+                        results = ballDetector.ProcessTableImage(workingFrame.frame);
+
+                        // Create a copy of the processed image to store in the queue
+                        using (var processedImage = new Bitmap(results.CueBallHighlighted))
+                        {
+                            var processedFrame = new VideoFrame(processedImage, workingFrame.index);
+
+                            shotDetector.ProcessFrame(results.CueBall, processedFrame);
+
+                            processedFrames.Enqueue(processedFrame);
+
+                            if (processedFrames.Count > maxFrames)
+                            {
+                                var oldFrame = processedFrames.Dequeue();
+                                oldFrame.Dispose(); // Dispose of the old frame
+                            }
+
+                            processedFrameIndices.Add(processedFrame.index);
+
+                            if (processedFrameIndices.Count > maxFrames)
+                            {
+                                processedFrameIndices.RemoveAt(0);
+                            }
+
+                            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+
+                            stopwatch.Stop();
+                            totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+
+                            UpdateFpsLabel(totalProcessingTime, workingFrame.index);
+                            UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
+                        }
                     }
-
-                    processedFrameIndices.Add(processedFrame.index);
-
-                    if (processedFrameIndices.Count > maxFrames)
+                    finally
                     {
-                        processedFrameIndices.RemoveAt(0);
+                        results?.Dispose();
                     }
-
-                    listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-
-                    stopwatch.Stop();
-                    totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
-                    UpdateFpsLabel(totalProcessingTime, workingFrame.index);
-
-                    // Display the processed image
-                    pictureBoxImage.Image = new Bitmap(processedFrame.frame);
                 }
-                finally
+                else
                 {
-                    results?.Dispose();
-                    Application.DoEvents();
+                    UpdatePictureBoxImage(new Bitmap(workingFrame.frame));
                 }
-            }
-            else
-            {
-                pictureBoxImage.Image = new Bitmap(workingFrame.frame);
+
                 Application.DoEvents();
             }
         }
 
+        // Helper method to update PictureBoxImage safely
+        private void UpdatePictureBoxImage(Bitmap newImage)
+        {
+            var oldImage = pictureBoxImage.Image;
+            pictureBoxImage.Image = newImage;
+            oldImage?.Dispose();
+            pictureBoxImage.Refresh();
+        }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
@@ -324,16 +328,8 @@ namespace billiard_laser
                 var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
                 if (processedFrame != null && processedFrame.frame != null)
                 {
-                    // Dispose of the old image
-                    if (pictureBoxImage.Image != null)
-                    {
-                        var oldImage = pictureBoxImage.Image;
-                        pictureBoxImage.Image = null;
-                        oldImage.Dispose();
-                    }
 
-                    // Set new image
-                    pictureBoxImage.Image = new Bitmap(processedFrame.frame);
+                    UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
 
                     var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
                     if (rawFrame != null && rawFrame.frame != null)
@@ -411,9 +407,7 @@ namespace billiard_laser
                     using (Bitmap frameToDrawOn = shot.GetFrameCopy(i).frame)
                     {
                         Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
-                        pictureBoxImage.Image?.Dispose();
-                        pictureBoxImage.Image = drawnImage;
-                        pictureBoxImage.Refresh();
+                        UpdatePictureBoxImage(drawnImage);
                         await Task.Delay(delay);
                     }
                 }
