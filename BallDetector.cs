@@ -68,9 +68,9 @@ public class BallDetector
 
         //debugging
         if (cueball.Contour.ToArray().Length <= 0) {
-            MessageBox.Show("in cueballdetector BEFORE drawing calls: empty cueball Contour!!");
+            //MessageBox.Show("in cueballdetector BEFORE drawing calls: empty cueball Contour!!");
         }
-        else Console.WriteLine("in cueballdetector before drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
+        //else Console.WriteLine("in cueballdetector before drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
 
         List<Ball> balls = filteredContoursFound.ToArrayOfArray().Select(Contour => new Ball(new VectorOfPoint(Contour))).ToList();
 
@@ -83,9 +83,9 @@ public class BallDetector
         //debugging
         if (cueball.Contour.ToArray().Length <= 0)
         {
-            MessageBox.Show("in cueballdetector AFTER drawing calls: empty cueball Contour!!");
+            //MessageBox.Show("in cueballdetector AFTER drawing calls: empty cueball Contour!!");
         }
-        else Console.WriteLine("in cueballdetector after drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
+        //else Console.WriteLine("in cueballdetector after drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
 
 
         return new ImageProcessingResults
@@ -361,7 +361,7 @@ public class BallDetector
 
         for (int i = 0; i < ctrs.Size; i++)
         {
-            VectorOfPoint Contour = ctrs[i]; //removed using statement (testing)
+            VectorOfPoint Contour = ctrs[i];
             CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(Contour), -1, new MCvScalar(244, 0, 250), 2);
         }
 

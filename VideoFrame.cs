@@ -1,4 +1,6 @@
-﻿/// <summary>
+﻿using Accord.IO;
+
+/// <summary>
 /// A container for a table image and its associated frame number
 /// </summary>
 public class VideoFrame : IDisposable
@@ -21,7 +23,7 @@ public class VideoFrame : IDisposable
 
     public VideoFrame(Bitmap frame, int index)
     {
-        this._frame = frame;
+        this._frame = new Bitmap(frame);
         this.index = index;
     }
 

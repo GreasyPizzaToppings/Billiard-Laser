@@ -1,4 +1,4 @@
-﻿public class ShotDetector
+﻿public class ShotDetector : IDisposable
 {
     public List<Shot> Shots { get; private set; }
     private Shot currentShot;
@@ -15,20 +15,20 @@
 
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
-        Console.WriteLine($"\nShot Detector: Frame {frame.index}\n" +
-            $"Cueball contour length: {cueBall.Contour.ToArray().Length}\n");
+        //Console.WriteLine($"\nShot Detector: Frame {frame.index}\n" +
+            //$"Cueball contour length: {cueBall.Contour.ToArray().Length}\n");
 
         //invalid cue ball
         if (cueBall == null || cueBall.Contour == null || cueBall.Contour.ToArray().Length <= 0) {
             return;
         }
 
-        currentShot.frames.Add(frame);
+        currentShot.AddFrame(frame);
         currentShot.cueBallPath.Add(cueBall.Centre);
 
         Boolean ballNotMoving = false;
 
-        if (isCueBallMoving && currentShot != null && currentShot.frames.Count >= 25 && currentShot.FrameDistances.TakeLast(10).Sum() < 5) {
+        if (isCueBallMoving && currentShot != null && currentShot.FrameCount >= 25 && currentShot.FrameDistances.TakeLast(10).Sum() < 5) {
             ballNotMoving = true;
         }
         
@@ -46,7 +46,7 @@
             {
                 isCueBallMoving = true;
                 currentShot = new Shot();
-                currentShot.frames.Add(frame);
+                currentShot.AddFrame(frame);
                 currentShot.cueBallPath.Add(cueBall.Centre);
             }
         }
@@ -77,5 +77,14 @@
     {
         Shots.Add(shot);
         ShotFinished?.Invoke(this, shot);
+    }
+
+    public void Dispose()
+    {
+        foreach (var shot in Shots)
+        {
+            shot.Dispose();
+        }
+        currentShot?.Dispose();
     }
 }

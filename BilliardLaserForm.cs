@@ -229,8 +229,8 @@ namespace billiard_laser
                     Bitmap processedImage = new Bitmap(results.CueBallHighlighted);
                     VideoFrame processedFrame = new VideoFrame(processedImage, workingFrame.index);
 
-                    Console.WriteLine($"\nBEFORE Shot Detector: Frame {processedFrame.index}\n" +
-                                      $"Cueball contour length: {results.CueBall.Contour.ToArray().Length}\n");
+                    //Console.WriteLine($"\nBEFORE Shot Detector: Frame {processedFrame.index}\n" +
+                                     // $"Cueball contour length: {results.CueBall.Contour.ToArray().Length}\n");
 
                     shotDetector.ProcessFrame(results.CueBall, processedFrame);
 
@@ -303,15 +303,33 @@ namespace billiard_laser
             if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
             {
                 var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
-
-                if (processedFrame != null)
+                if (processedFrame != null && processedFrame.frame != null)
                 {
+                    // Dispose of the old image
+                    if (pictureBoxImage.Image != null)
+                    {
+                        var oldImage = pictureBoxImage.Image;
+                        pictureBoxImage.Image = null;
+                        oldImage.Dispose();
+                    }
+
+                    // Set new image
                     pictureBoxImage.Image = new Bitmap(processedFrame.frame);
 
                     var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null)
+                    if (rawFrame != null && rawFrame.frame != null)
                     {
-                        UpdateDebugForm(new Bitmap(rawFrame.frame));
+                        try
+                        {
+                            using (var tempBitmap = new Bitmap(rawFrame.frame))
+                            {
+                                UpdateDebugForm(tempBitmap);
+                            }
+                        }
+                        catch (ArgumentException)
+                        {
+                            Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
+                        }
                     }
                     else
                     {
@@ -358,34 +376,37 @@ namespace billiard_laser
 
         private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
 
-        //sussy. dont put in form? also updates picturebox twice. 
-        private async void ReplayShotWithBallPath(Shot shot, int replayFPS)
+        private async Task ReplayShotWithBallPath(Shot shot, int replayFPS)
         {
             if (replayInProgress)
                 return;
 
             replayInProgress = true;
 
-            int delay = (int)Math.Round(1000d / Math.Abs(replayFPS));
-
-            foreach (VideoFrame frame in shot.frames)
+            try
             {
-                listBoxProcessedFrames.SelectedIndex = frame.index; //sussy
+                int delay = (int)Math.Round(1000d / Math.Abs(replayFPS));
 
-                // Create a copy of the frame to draw on
-                using (Bitmap frameToDrawOn = new Bitmap(frame.frame))
+                for (int i = 0; i < shot.FrameCount; i++)
                 {
-                    // Draw the cueBallPath of the selected shot on the current frame
-                    Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
-
-                    pictureBoxImage.Image = drawnImage;
-                    pictureBoxImage.Refresh();
-
-                    await Task.Delay(delay);
+                    using (Bitmap frameToDrawOn = shot.GetFrameCopy(i).frame)
+                    {
+                        Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
+                        pictureBoxImage.Image?.Dispose();
+                        pictureBoxImage.Image = drawnImage;
+                        pictureBoxImage.Refresh();
+                        await Task.Delay(delay);
+                    }
                 }
             }
-
-            replayInProgress = false;
+            catch (Exception ex)
+            {
+                MessageBox.Show($"An error occurred during shot replay: {ex.Message}", "Replay Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+            finally
+            {
+                replayInProgress = false;
+            }
         }
 
         #region Media Contols

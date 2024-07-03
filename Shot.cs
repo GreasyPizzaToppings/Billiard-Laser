@@ -1,10 +1,16 @@
-﻿/// <summary>
+﻿using System.Windows.Controls;
+
+/// <summary>
 /// A shot is what happens from when the cueball starts moving to when it stops
 /// </summary>
-public class Shot
+public class Shot : IDisposable
 {
     public List<PointF> cueBallPath = new List<PointF>();
-    public List<VideoFrame> frames = new List<VideoFrame>();
+    private List<VideoFrame> _frames = new List<VideoFrame>();
+
+    public void AddFrame(VideoFrame frame) => _frames.Add(new VideoFrame(frame.frame, frame.index)); //create copy of frame to avoid disposing the original frame
+    public VideoFrame GetFrameCopy (int index) => new VideoFrame(_frames[index].frame, _frames[index].index);
+    public int FrameCount => _frames.Count;
 
     /// <summary>
     /// distance travelled per frame
@@ -20,7 +26,7 @@ public class Shot
         return cumulativeDistances;
     });
 
-    public double AverageSpeed => frames.Count > 0 ? DistanceTravelled / frames.Count : 0;
+    public double AverageSpeed => _frames.Count > 0 ? DistanceTravelled / _frames.Count : 0;
     
     public double DistanceTravelled =>  FrameDistances.Sum();
 
@@ -57,8 +63,8 @@ public class Shot
     /// <returns></returns>
     public override string ToString()
     {
-        VideoFrame startFrame = frames.First();
-        VideoFrame endFrame = frames.Last();
+        VideoFrame startFrame = _frames.First();
+        VideoFrame endFrame = _frames.Last();
 
         return $"{startFrame} - {endFrame}";
     }
@@ -68,5 +74,13 @@ public class Shot
         double dx = point2.X - point1.X;
         double dy = point2.Y - point1.Y;
         return Math.Sqrt(dx * dx + dy * dy);
+    }
+
+    public void Dispose()
+    {
+        foreach (var frame in _frames)
+        {
+            frame.Dispose();
+        }
     }
 }
