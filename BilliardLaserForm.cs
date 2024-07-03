@@ -297,9 +297,13 @@ namespace billiard_laser
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
-            if (rawFrames.Count >= maxFrames) rawFrames.Dequeue();
-            rawFrames.Enqueue(frame);
+            if (rawFrames.Count > maxFrames)
+            {
+                var oldFrame = rawFrames.Dequeue();
+                oldFrame.Dispose();
+            }
 
+            rawFrames.Enqueue(frame);
             ProcessFrame(frame);
         }
 

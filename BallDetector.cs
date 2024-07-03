@@ -32,7 +32,7 @@ public class BallDetector
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
 
-    
+
     /// <summary>
     /// Return all the balls and the stages of image processing
     /// </summary>
@@ -60,48 +60,43 @@ public class BallDetector
         Bitmap tableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
         Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
 
-        VectorOfVectorOfPoint allContoursFound = GetAllContours(tableWithMaskApplied);
-        VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound) : null;
-        VectorOfVectorOfPoint filteredContoursFound = tableContour != null ? FilterContours(allContoursFound, tableContour) : FilterContours(allContoursFound);
-
-        Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
-
-        //debugging
-        if (cueball.Contour.ToArray().Length <= 0) {
-            //MessageBox.Show("in cueballdetector BEFORE drawing calls: empty cueball Contour!!");
-        }
-        //else Console.WriteLine("in cueballdetector before drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
-
-        List<Ball> balls = filteredContoursFound.ToArrayOfArray().Select(Contour => new Ball(new VectorOfPoint(Contour))).ToList();
-
-        Bitmap cueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask);
-        Bitmap cueBallHighlighted = cueball.Draw(tableImage);
-        Bitmap allBallsHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
-        Bitmap filteredBallsHighlighted = DrawContours(filteredContoursFound, tableImage.ToImage<Rgb, byte>());
-
-
-        //debugging
-        if (cueball.Contour.ToArray().Length <= 0)
+        using (var allContoursFound = GetAllContours(tableWithMaskApplied))
         {
-            //MessageBox.Show("in cueballdetector AFTER drawing calls: empty cueball Contour!!");
+            VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound) : null;
+            using (var filteredContoursFound = tableContour != null ? FilterContours(allContoursFound, tableContour) : FilterContours(allContoursFound))
+            {
+                Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
+
+                List<Ball> balls = filteredContoursFound.ToArrayOfArray().Select(contour => new Ball(new VectorOfPoint(contour))).ToList();
+
+                Bitmap cueBallMask = GetMaskImage(tableWithMaskApplied, LowerCueBallMask, UpperCueBallMask);
+                Bitmap cueBallHighlighted = cueball.Draw(tableImage);
+                Bitmap allBallsHighlighted, filteredBallsHighlighted;
+
+                using (var img = tableImage.ToImage<Rgb, byte>())
+                {
+                    allBallsHighlighted = DrawContours(allContoursFound, img);
+                    filteredBallsHighlighted = DrawContours(filteredContoursFound, img);
+                }
+
+                tableContour?.Dispose();
+
+                return new ImageProcessingResults
+                {
+                    OriginalImage = tableImage,
+                    TransformedImage = transformedImage,
+                    CueBallMask = cueBallMask,
+                    CueBallHighlighted = cueBallHighlighted,
+                    TableMask = tableMask,
+                    TableWithMaskApplied = tableWithMaskApplied,
+                    AllBallsHighlighted = allBallsHighlighted,
+                    FilteredBallsHighlighted = filteredBallsHighlighted,
+
+                    CueBall = cueball,
+                    Balls = balls
+                };
+            }
         }
-        //else Console.WriteLine("in cueballdetector after drawing: cueball Contour length: " + cueball.Contour.ToArray().Length);
-
-
-        return new ImageProcessingResults
-        {
-            OriginalImage = tableImage,
-            TransformedImage = transformedImage,
-            CueBallMask = cueBallMask,
-            CueBallHighlighted = cueBallHighlighted,
-            TableMask = tableMask,
-            TableWithMaskApplied = tableWithMaskApplied,
-            AllBallsHighlighted = allBallsHighlighted,
-            FilteredBallsHighlighted = filteredBallsHighlighted,
-            
-            CueBall = cueball,
-            Balls = balls
-        };
     }
 
     /// <summary>
@@ -111,27 +106,34 @@ public class BallDetector
     /// <returns></returns>
     private Ball FindCueBall(Bitmap maskedTableImage)
     {
-        //For the masked image, it should only show the filtered image already
+        Bitmap workingImage = maskedTableImage;
+        Bitmap cueballMask = GetMaskImage(workingImage, LowerCueBallMask, UpperCueBallMask);
 
         using (var maskInv = new Mat())
         using (var tableMat = new Mat())
         {
-            CvInvoke.Threshold(BitmapToMat(cueBallMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
-            Bitmap cueBallMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
+            CvInvoke.Threshold(BitmapToMat(cueballMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
+            Bitmap cueballMaskApplied = ApplyMask(workingImage, maskInv.ToBitmap());
 
-        double MaxArea = 0;
-        VectorOfPoint Cueball = new VectorOfPoint();
-        for (int i = 0; i < allContoursFound.Size; i++)
-        {
-            double area = CvInvoke.ContourArea(allContoursFound[i]);
-            if (MaxArea < area)
+            using (var allContoursFound = GetAllContours(cueballMaskApplied))
             {
-                MaxArea = area;
-                Cueball = allContoursFound[i];
+                double MaxArea = 0;
+                using (var Cueball = new VectorOfPoint())
+                {
+                    for (int i = 0; i < allContoursFound.Size; i++)
+                    {
+                        double area = CvInvoke.ContourArea(allContoursFound[i]);
+                        if (MaxArea < area)
+                        {
+                            MaxArea = area;
+                            Cueball.Clear();
+                            Cueball.Push(allContoursFound[i]);
+                        }
+                    }
+                    return new Ball(Cueball);
+                }
             }
         }
-
-        return new Ball(Cueball);
     }
 
 
@@ -185,23 +187,25 @@ public class BallDetector
 
     private static Bitmap BlurImage(Bitmap inputImage)
     {
-        Mat transformed = new Mat();
-        BitmapToMat(inputImage, transformed);
-        Mat blurredImage = new Mat();
-        CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
-
-        return blurredImage.ToBitmap();
+        using (Mat transformed = new Mat())
+        using (var blurredImage = new Mat())
+        {
+            BitmapToMat(inputImage, transformed);
+            CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
+            return blurredImage.ToBitmap();
+        }
     }
 
     private static Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
     {
-        Mat maskedObjects = new Mat();
-        Mat inputMat = new Mat();
-        Mat outputMat = new Mat();
-        Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
-        return maskedObjects.ToBitmap();
+        using (Mat maskedObjects = new Mat())
+        using (Mat inputMat = new Mat())
+        using (Mat outputMat = new Mat())
+        {
+            Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
+            return maskedObjects.ToBitmap();
+        }
     }
-
 
     /// <summary>
     /// get the mask image for the table to remove the cloth
@@ -210,25 +214,24 @@ public class BallDetector
     /// <returns></returns>
     private static Bitmap GetMaskImage(Bitmap tableImage, Rgb LowerMaskRgb, Rgb UpperMaskRgb)
     {
-        Mat imageMat = BitmapExtension.ToMat(tableImage);
-        Mat hsv = new Mat();
-        Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
-        Mat mask = new Mat();
+        using (Mat imageMat = BitmapExtension.ToMat(tableImage))
+        using (Mat hsv = new Mat())
+        using (Mat mask = new Mat())
+        using (Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1)))
+        using (Mat maskClosing = new Mat())
+        using (Mat maskInv = new Mat())
+        {
+            Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
 
-        //mask based on a range of hues (cloth colour)
-        ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
-        ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
-        Emgu.CV.CvInvoke.InRange(hsv, LowerMaskValue, UpperMaskValue, mask);
+            ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
+            ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
+            Emgu.CV.CvInvoke.InRange(hsv, LowerMaskValue, UpperMaskValue, mask);
 
-        // Filter mask
-        Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1));
-        Mat maskClosing = new Mat();
-        Emgu.CV.CvInvoke.MorphologyEx(mask, maskClosing, MorphOp.Close, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar());
+            Emgu.CV.CvInvoke.MorphologyEx(mask, maskClosing, MorphOp.Close, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar());
 
-        // Apply threshold
-        Mat maskInv = new Mat();
-        Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
-        return maskInv.ToBitmap();
+            Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
+            return maskInv.ToBitmap();
+        }
     }
 
 
@@ -240,16 +243,18 @@ public class BallDetector
     private static VectorOfVectorOfPoint GetAllContours(Bitmap tableMask)
     {
         VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-        Mat hierarchy = new Mat();
-        Mat outputMat = new Mat();
-        CvInvoke.CvtColor(BitmapExtension.ToMat(tableMask), outputMat, ColorConversion.Bgr2Gray);
-        Emgu.CV.CvInvoke.FindContours(outputMat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
-        return contours;
+        using (Mat hierarchy = new Mat())
+        using (Mat outputMat = new Mat())
+        {
+            CvInvoke.CvtColor(BitmapExtension.ToMat(tableMask), outputMat, ColorConversion.Bgr2Gray);
+            Emgu.CV.CvInvoke.FindContours(outputMat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
+            return contours;
+        }
     }
 
 
     /// <summary>
-    /// Remove the contours unlikely to be a ball. Return as balls instead of contours
+    /// Remove the contours unlikely to be a ball
     /// </summary>
     /// <param name="contours"></param>
     /// <param name="min_s"></param>
@@ -257,40 +262,48 @@ public class BallDetector
     /// <returns></returns>
     private static VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
     {
-        //Console.WriteLine("---");
-
-        VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
-
-        //show table Contour if enabled
-        if (tableContour != null) filteredContours.Push(tableContour);
-
-        for (int i = 0; i < contours.Size; i++)
+        using (VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint())
         {
-            VectorOfPoint Contour = contours[i];
-            
-            //filter out contours that are not inside the table Contour
-            if (tableContour != null && !IsContourInside(Contour, tableContour)) continue;
+            // Show table contour if enabled
+            if (tableContour != null)
+            {
+                using (VectorOfPoint tableCopy = new VectorOfPoint(tableContour.ToArray()))
+                {
+                    filteredContours.Push(tableCopy);
+                }
+            }
 
-            RotatedRect rotRect = CvInvoke.MinAreaRect(Contour);
-            float w = rotRect.Size.Width;
-            float h = rotRect.Size.Height;
+            for (int i = 0; i < contours.Size; i++)
+            {
+                using (VectorOfPoint contour = contours[i])
+                {
+                    // Filter out contours that are not inside the table contour
+                    if (tableContour != null && !IsContourInside(contour, tableContour))
+                        continue;
 
-            //allows some ball-speed to be detected (elongated ball shape)
-            if ((h > w * 4) || (w > h * 4)) continue;
+                    RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
+                    float w = rotRect.Size.Width;
+                    float h = rotRect.Size.Height;
 
-            //filter out balls with very small area or too big areas
-            double area = CvInvoke.ContourArea(Contour);
-            if ((area < (min_s * min_s)) || (area > (max_s * max_s)))
-                continue;
+                    // Allows some ball-speed to be detected (elongated ball shape)
+                    if ((h > w * 4) || (w > h * 4))
+                        continue;
 
-            filteredContours.Push(Contour);
+                    // Filter out balls with very small area or too big areas
+                    double area = CvInvoke.ContourArea(contour);
+                    if ((area < (min_s * min_s)) || (area > (max_s * max_s)))
+                        continue;
 
-            //Console.WriteLine($"Accepted Contour Info: \nWidth: {w}\nHeight: {h}\nArea: {area}\n");
+                    using (VectorOfPoint contourCopy = new VectorOfPoint(contour.ToArray()))
+                    {
+                        filteredContours.Push(contourCopy);
+                    }
+                }
+            }
+
+            // Create a copy of the filtered contours to return
+            return new VectorOfVectorOfPoint(filteredContours.ToArrayOfArray());
         }
-
-        //Console.WriteLine("---");
-
-        return filteredContours;
     }
 
 

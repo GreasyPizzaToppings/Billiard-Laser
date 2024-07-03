@@ -1,11 +1,7 @@
 bugs:
-- sudden spike in memory and segfault crash (solved?)
-- cueball contour length negative overflow. nondeterministic. (solved?)
-- cueball null or image null. maybe related to video format (clipchamp helps?). (solved?)
-
-- SHOT disposes of all frames after a while.
 - load video 1 and play, fine. load video 2. plays video 1, and memory usage only goes up!. need to clear out old video
 - fps decrease when keep replaying same video. shouldnt.
+- raw frames sometimes get disposed of. happens when replaying video several times
 
 manage disposing for:
 - ball detector
