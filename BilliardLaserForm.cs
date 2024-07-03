@@ -293,7 +293,6 @@ namespace billiard_laser
             var oldImage = pictureBoxImage.Image;
             pictureBoxImage.Image = newImage;
             oldImage?.Dispose();
-            pictureBoxImage.Refresh();
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
