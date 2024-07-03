@@ -138,31 +138,50 @@ namespace billiard_laser
 
         private void btnFindCueball_Click(object sender, EventArgs e)
         {
-            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            Mat rawImageMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(rawImage);
-
-            // resize to same output resolution as video
-            Mat resizedImageMat = new Mat();
-            Cv2.Resize(rawImageMat, resizedImageMat, outputVideoResolution);
-
-            Bitmap resizedImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(resizedImageMat);
-            Bitmap cueballHighlighted = ballDetector.ProcessTableImage(resizedImage).CueBallHighlighted;
-
-            if (cueballHighlighted != null) pictureBoxImage.Image = cueballHighlighted;
-            else MessageBox.Show("Cueball not found!");
-
-            UpdateDebugForm(resizedImage);
+            using (Bitmap rawImage = new Bitmap(pictureBoxImage.Image))
+            using (Mat rawImageMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(rawImage))
+            using (Mat resizedImageMat = new Mat())
+            {
+                Cv2.Resize(rawImageMat, resizedImageMat, outputVideoResolution);
+                using (Bitmap resizedImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(resizedImageMat))
+                {
+                    var result = ballDetector.ProcessTableImage(resizedImage);
+                    if (result.CueBallHighlighted != null)
+                    {
+                        pictureBoxImage.Image?.Dispose();
+                        pictureBoxImage.Image = (Bitmap)result.CueBallHighlighted.Clone();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Cueball not found!");
+                    }
+                    UpdateDebugForm(resizedImage);
+                }
+            }
         }
 
         private void findFindAllBalls_Click(object sender, EventArgs e)
         {
-            Bitmap rawImage = (Bitmap)pictureBoxImage.Image;
-            Bitmap ballsHighlighted = ballDetector.ProcessTableImage(rawImage).AllBallsHighlighted;
-
-            if (ballsHighlighted != null) pictureBoxImage.Image = ballsHighlighted;
-            else MessageBox.Show("Cueball not found!");
-
-            UpdateDebugForm(rawImage);
+            using (Bitmap rawImage = new Bitmap(pictureBoxImage.Image))
+            using (Mat rawImageMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(rawImage))
+            using (Mat resizedImageMat = new Mat())
+            {
+                Cv2.Resize(rawImageMat, resizedImageMat, outputVideoResolution);
+                using (Bitmap resizedImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(resizedImageMat))
+                {
+                    var result = ballDetector.ProcessTableImage(resizedImage);
+                    if (result.AllBallsHighlighted != null)
+                    {
+                        pictureBoxImage.Image?.Dispose();
+                        pictureBoxImage.Image = (Bitmap)result.AllBallsHighlighted.Clone();
+                    }
+                    else
+                    {
+                        MessageBox.Show("No balls found!");
+                    }
+                    UpdateDebugForm(resizedImage);
+                }
+            }
         }
 
         private async void btnDetectBalls_Click(object sender, EventArgs e)
