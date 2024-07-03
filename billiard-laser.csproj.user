@@ -5,13 +5,7 @@
     <Compile Update="BilliardLaserForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="DoubleRangeSelector.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Update="ImageProcessingDebugForm.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="mReevesLaserturret\MyLaserTurret\MyLaserTurret\Form1.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

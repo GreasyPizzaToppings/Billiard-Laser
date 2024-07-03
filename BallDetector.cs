@@ -1,13 +1,9 @@
-﻿using Accord;
-using Accord.MachineLearning;
-using Accord.Math;
-using AForge.Imaging.Filters;
+﻿using AForge.Imaging.Filters;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using OpenCvSharp.Extensions;
-using System.Diagnostics.Eventing.Reader;
 using System.Drawing.Imaging;
 using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
 using CvInvoke = Emgu.CV.CvInvoke;

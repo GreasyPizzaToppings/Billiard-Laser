@@ -1,10 +1,4 @@
-using Accord;
 using System.Diagnostics;
-using static VideoProcessor;
-using System.IO.Ports;
-using AForge.Video.DirectShow;
-using AForge.Video;
-using System.Windows.Media;
 using System.ComponentModel;
 using OpenCvSharp;
 using System.Windows.Controls;
