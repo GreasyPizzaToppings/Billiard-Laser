@@ -71,9 +71,12 @@ public class Ball : IDisposable
     {
         lock (_lock)
         {
-            if (_contour == null || _contour.Size <= 0) return baseImage;
+            // Always create a new Bitmap to return
+            Bitmap resultImage = new Bitmap(baseImage);
 
-            using (Image<Rgb, byte> output = baseImage.ToImage<Rgb, byte>())
+            if (_contour == null || _contour.Size <= 0) return resultImage;
+
+            using (Image<Rgb, byte> output = resultImage.ToImage<Rgb, byte>())
             using (VectorOfPoint contourCopy = new VectorOfPoint(_contour.ToArray()))
             using (VectorOfVectorOfPoint vvp = new VectorOfVectorOfPoint(contourCopy))
             {
@@ -85,7 +88,7 @@ public class Ball : IDisposable
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error drawing contours: " + ex.Message);
-                    return baseImage;
+                    return resultImage;
                 }
             }
         }
