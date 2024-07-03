@@ -2,10 +2,11 @@
 
 namespace billiard_laser
 {
-    public partial class ImageProcessingDebugForm : Form
+    public partial class ImageProcessingDebugForm : Form, IDisposable
     {
         private bool initialisingControls = true;
         private BallDetector ballDetector;
+        private bool disposed = false;
 
         public event EventHandler DebugFormClosed;
 
@@ -23,16 +24,24 @@ namespace billiard_laser
 
         public void ShowDebugImages(Bitmap rawImage)
         {
-            ImageProcessingResults images = ballDetector.ProcessTableImage(rawImage);
+            using (ImageProcessingResults images = ballDetector.ProcessTableImage(rawImage))
+            {
+                SetImage(originalImagePicBox, images.OriginalImage);
+                SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
+                SetImage(allContoursPicBox, images.AllBallsHighlighted);
+                SetImage(invMaskPicBox, images.TableMask);
+                SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
+                SetImage(cueBallMaskPicBox, images.CueBallMask);
+                SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
+                SetImage(transformedImagePicBox, images.TransformedImage);
+            }
+        }
 
-            originalImagePicBox.Image = images.OriginalImage;
-            filteredContoursPicBox.Image = images.FilteredBallsHighlighted;
-            allContoursPicBox.Image = images.AllBallsHighlighted;
-            invMaskPicBox.Image = images.TableMask;
-            appliedMaskPicBox.Image = images.TableWithMaskApplied;
-            cueBallMaskPicBox.Image = images.CueBallMask;
-            cueBallFoundPicBox.Image = images.CueBallHighlighted;
-            transformedImagePicBox.Image = images.TransformedImage;
+        private void SetImage(PictureBox pictureBox, Image newImage)
+        {
+            var oldImage = pictureBox.Image;
+            pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
+            oldImage?.Dispose();
         }
 
         private void InitCheckBoxes()
@@ -180,12 +189,6 @@ namespace billiard_laser
         }
         #endregion
 
-        private void ImageProcessingDebugForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            DebugFormClosed?.Invoke(this, EventArgs.Empty);
-            this.Dispose();
-        }
-
         private void checkBoxEnableSharpen_CheckedChanged(object sender, EventArgs e)
         {
             SetBallDetectorSettings();
@@ -199,6 +202,22 @@ namespace billiard_laser
         private void checkBoxEnableTableBoundary_CheckedChanged(object sender, EventArgs e)
         {
             SetBallDetectorSettings();
+        }
+
+        private void ImageProcessingDebugForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            originalImagePicBox.Image?.Dispose();
+            filteredContoursPicBox.Image?.Dispose();
+            allContoursPicBox.Image?.Dispose();
+            invMaskPicBox.Image?.Dispose();
+            appliedMaskPicBox.Image?.Dispose();
+            cueBallMaskPicBox.Image?.Dispose();
+            cueBallFoundPicBox.Image?.Dispose();
+            transformedImagePicBox.Image?.Dispose();
+
+            ballDetector = null;
+
+            DebugFormClosed?.Invoke(this, EventArgs.Empty);
         }
     }
 }
