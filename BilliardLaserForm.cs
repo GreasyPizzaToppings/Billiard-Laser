@@ -219,12 +219,12 @@ namespace billiard_laser
         /// <param name="rawFrame"></param>
         private void ProcessFrame(VideoFrame rawFrame)
         {
+            //Prevents checking for corrupted data i presume?
             if (InvokeRequired)
             {
                 Invoke(new Action(() => ProcessFrame(rawFrame)));
                 return;
             }
-
             using (var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index))
             {
                 if (detectingBalls)
