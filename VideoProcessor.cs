@@ -34,5 +34,12 @@ public class VideoProcessor
             index++;
         }
     }
-
+    public static void DequeueVideoFrames(Queue<VideoFrame> rawFramesQueue)
+    {
+        foreach (var rawFrame in rawFramesQueue)
+        {
+            rawFrame.Dispose();
+        }
+        if (rawFramesQueue.Count > 0)rawFramesQueue.Dequeue();
+    }
 }

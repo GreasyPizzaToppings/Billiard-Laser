@@ -207,6 +207,8 @@ namespace billiard_laser
             {
                 rawFrames.Clear();
                 processedFrames.Clear();
+                processedFrameIndices.Clear();
+                VideoProcessor.DequeueVideoFrames(rawFrames);
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
                 btnDetectBalls.Enabled = true;
                 currentInputType = InputType.Video;
