@@ -222,10 +222,11 @@ namespace billiard_laser
                 VideoFrame processedFrame = new VideoFrame(results.CueBallHighlighted, rawFrame.index);
 
                 shotDetector.ProcessFrame(results.CueBall, processedFrame);
- 
+
                 processedFrames.Enqueue(processedFrame);
 
-                if (processedFrames.Count > maxFrames) {
+                if (processedFrames.Count > maxFrames)
+                {
                     processedFrames.Dequeue();
                 }
 
