@@ -362,14 +362,15 @@ public class BallDetector
     /// <returns></returns>
     private static Bitmap DrawContours(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
     {
-        Image<Rgb, byte> output = img.Copy();
-
-        for (int i = 0; i < ctrs.Size; i++)
+        using (Image<Rgb, byte> output = img.Copy())
         {
-            VectorOfPoint Contour = ctrs[i];
-            CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(Contour), -1, new MCvScalar(244, 0, 250), 2);
-        }
+            for (int i = 0; i < ctrs.Size; i++)
+            {
+                VectorOfPoint Contour = ctrs[i];
+                CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(Contour), -1, new MCvScalar(244, 0, 250), 2);
+            }
 
-        return output.ToBitmap();
+            return output.ToBitmap();
+        }
     }
 }
