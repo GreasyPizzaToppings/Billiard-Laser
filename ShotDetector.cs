@@ -43,6 +43,7 @@
             if (!isCueBallMoving)
             {
                 isCueBallMoving = true;
+                currentShot.Dispose();
                 currentShot = new Shot();
                 currentShot.AddFrame(frame);
                 currentShot.cueBallPath.Add(cueBall.Centre);
