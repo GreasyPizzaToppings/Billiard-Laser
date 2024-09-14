@@ -1,6 +1,5 @@
-﻿public class ShotDetector : IDisposable
+﻿public class ShotDetector
 {
-    public List<Shot> Shots { get; private set; }
     private Shot currentShot;
     private bool isCueBallMoving;
 
@@ -10,7 +9,6 @@
     {
         isCueBallMoving = false;
         currentShot = new Shot();
-        Shots = new List<Shot>();
     }
 
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
@@ -75,16 +73,6 @@
 
     protected virtual void OnShotFinished(Shot shot)
     {
-        Shots.Add(shot);
         ShotFinished?.Invoke(this, shot);
-    }
-
-    public void Dispose()
-    {
-        foreach (var shot in Shots)
-        {
-            shot.Dispose();
-        }
-        currentShot?.Dispose();
     }
 }
