@@ -205,15 +205,23 @@ namespace billiard_laser
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                rawFrames.Clear();
-                processedFrames.Clear();
-                processedFrameIndices.Clear();
+                ClearFrameQueues();
+
                 VideoProcessor.DequeueVideoFrames(rawFrames);
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
+
                 btnDetectBalls.Enabled = true;
                 currentInputType = InputType.Video;
             }
         }
+
+        private void ClearFrameQueues()
+        {
+            while (rawFrames.Count > 0) rawFrames.Dequeue().Dispose();
+            while (processedFrames.Count > 0) processedFrames.Dequeue().Dispose();
+            processedFrameIndices.Clear();
+        }
+
 
         /// <summary>
         /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
@@ -247,21 +255,23 @@ namespace billiard_laser
                             shotDetector.ProcessFrame(results.CueBall, processedFrame);
 
                             processedFrames.Enqueue(processedFrame);
+                            processedFrameIndices.Add(processedFrame.index);
+
                             if (processedFrames.Count > maxFrames) {
                                 processedFrames.Dequeue().Dispose();
+                                processedFrameIndices.RemoveAt(0);
                             }
 
-                            processedFrameIndices.Add(processedFrame.index);
-                            if (processedFrameIndices.Count > maxFrames) processedFrameIndices.RemoveAt(0);
+                            //scroll
+                            listBoxProcessedFrames.TopIndex = listBoxProcessedFrames.Items.Count - 1;
 
-                            //update picturebox by changing listbox index
-                            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+                            // Update the PictureBox directly without changing the ListBox index
+                            UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
 
                             stopwatch.Stop();
                             totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
 
                             UpdateFpsLabel(totalProcessingTime, workingFrame.index);
-                            UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
                         }
                     }
                     finally
@@ -495,7 +505,11 @@ namespace billiard_laser
 
         private void DebugForm_DebugFormClosed(object sender, EventArgs e)
         {
-            debugForm = null;
+            if (debugForm != null)
+            {
+                debugForm.Dispose();
+                debugForm = null;
+            }
         }
 
         private void UpdateDebugForm(Bitmap rawImage) => debugForm?.ShowDebugImages(rawImage);
