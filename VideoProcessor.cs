@@ -8,9 +8,9 @@ public class VideoProcessor
     /// </summary>
     /// <param name="videoPath"></param>
     /// <param name="outputResolution"></param>
-    /// <param name="rawFramesQueue"></param>
+    /// <param name="framesQueue"></param>
     /// <param name="maxFrames"></param>
-    public static void EnqueueVideoFrames(string videoPath, OpenCvSharp.Size outputResolution, Queue<VideoFrame> rawFramesQueue, int maxFrames)
+    public static void EnqueueVideoFrames(string videoPath, OpenCvSharp.Size outputResolution, Queue<VideoFrame> framesQueue, int maxFrames)
     {
         var capture = new VideoCapture(videoPath);
         int index = 0;
@@ -33,20 +33,21 @@ public class VideoProcessor
 
             
 
-            if (rawFramesQueue.Count >= maxFrames)
+            if (framesQueue.Count >= maxFrames)
             {
-                rawFramesQueue.Dequeue();
+                framesQueue.Dequeue();
             }
-            rawFramesQueue.Enqueue(frame);
+            framesQueue.Enqueue(frame);
             index++;
         }
     }
-    public static void DequeueVideoFrames(Queue<VideoFrame> rawFramesQueue)
+
+    public static void DequeueVideoFrames(Queue<VideoFrame> framesQueue)
     {
-        foreach (var rawFrame in rawFramesQueue)
+        foreach (var rawFrame in framesQueue)
         {
             rawFrame.Dispose();
         }
-        if (rawFramesQueue.Count > 0)rawFramesQueue.Dequeue();
+        if (framesQueue.Count > 0) framesQueue.Dequeue();
     }
 }

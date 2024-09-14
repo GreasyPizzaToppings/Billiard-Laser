@@ -217,8 +217,8 @@ namespace billiard_laser
 
         private void ClearFrameQueues()
         {
-            while (rawFrames.Count > 0) rawFrames.Dequeue().Dispose();
-            while (processedFrames.Count > 0) processedFrames.Dequeue().Dispose();
+            VideoProcessor.DequeueVideoFrames(rawFrames);
+            VideoProcessor.DequeueVideoFrames(processedFrames);
             processedFrameIndices.Clear();
         }
 
