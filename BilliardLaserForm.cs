@@ -221,12 +221,13 @@ namespace billiard_laser
         /// <param name="rawFrame"></param>
         private void ProcessFrame(VideoFrame rawFrame)
         {
-            //Prevents checking for corrupted data i presume?
+            
             if (InvokeRequired)
             {
                 Invoke(new Action(() => ProcessFrame(rawFrame)));
                 return;
             }
+            
             using (var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index))
             {
                 if (detectingBalls)
@@ -246,20 +247,14 @@ namespace billiard_laser
                             shotDetector.ProcessFrame(results.CueBall, processedFrame);
 
                             processedFrames.Enqueue(processedFrame);
-
-                            if (processedFrames.Count > maxFrames)
-                            {
-                                var oldFrame = processedFrames.Dequeue();
-                                oldFrame.Dispose(); // Dispose of the old frame
+                            if (processedFrames.Count > maxFrames) {
+                                processedFrames.Dequeue().Dispose();
                             }
 
                             processedFrameIndices.Add(processedFrame.index);
+                            if (processedFrameIndices.Count > maxFrames) processedFrameIndices.RemoveAt(0);
 
-                            if (processedFrameIndices.Count > maxFrames)
-                            {
-                                processedFrameIndices.RemoveAt(0);
-                            }
-
+                            //update picturebox by changing listbox index
                             listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
 
                             stopwatch.Stop();
