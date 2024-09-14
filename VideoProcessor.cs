@@ -3,12 +3,19 @@ using OpenCvSharp.Extensions;
 
 public class VideoProcessor
 {
+    /// <summary>
+    /// Load the first maxFrames frames into the queue or until the video ends
+    /// </summary>
+    /// <param name="videoPath"></param>
+    /// <param name="outputResolution"></param>
+    /// <param name="rawFramesQueue"></param>
+    /// <param name="maxFrames"></param>
     public static void EnqueueVideoFrames(string videoPath, OpenCvSharp.Size outputResolution, Queue<VideoFrame> rawFramesQueue, int maxFrames)
     {
         var capture = new VideoCapture(videoPath);
         int index = 0;
 
-        while (capture.IsOpened())
+        while (capture.IsOpened() && index < maxFrames)
         {
             Mat image = new Mat();
 
