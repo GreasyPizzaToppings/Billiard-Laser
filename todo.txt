@@ -1,18 +1,18 @@
-bugs:
-- load video 1 and play, fine. load video 2. plays video 1, and memory usage only goes up!. need to clear out old video
-- fps decrease when keep replaying same video. shouldnt.
-- raw frames sometimes get disposed of. happens when replaying video several times
+1 cueball detection
+2 shot detection
 
-manage disposing for:
-- ball detector
+
+
+
+
+bugs:
+- raw frames sometimes get disposed of. happens when replaying video several times
 
 
 use multithreading: have ui thread only do ui stuff. have other threads do image processing for speed and efficiency. have to make classes thread safe
 
 
-better way to add frames to raw and processed queues
-
-UI redesign. main form, make cleaner. hide/show shot tracking stats
+UI redesign. auto resize. hide/show shot tracking stats
 
 better media controls
 
@@ -21,6 +21,8 @@ put more video processing code into VideoProcessor
 way to make it faster at higher res / increase performance
 
 update fps label when replaying shots too. and for camera input
+
+
 
 
 **debug form:

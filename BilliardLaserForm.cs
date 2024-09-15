@@ -148,7 +148,6 @@ namespace billiard_laser
                     {
                         MessageBox.Show("Cueball not found!");
                     }
-                    UpdateDebugForm(resizedImage);
                 }
             }
         }
@@ -171,7 +170,6 @@ namespace billiard_laser
                     {
                         MessageBox.Show("No balls found!");
                     }
-                    UpdateDebugForm(resizedImage);
                 }
             }
         }
@@ -265,6 +263,7 @@ namespace billiard_laser
 
                             // Update the PictureBox directly without changing the ListBox index
                             UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
+                            
 
                             stopwatch.Stop();
                             totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
@@ -292,6 +291,8 @@ namespace billiard_laser
             var oldImage = pictureBoxImage.Image;
             pictureBoxImage.Image = newImage;
             oldImage?.Dispose();
+
+            UpdateDebugForm(newImage);
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
