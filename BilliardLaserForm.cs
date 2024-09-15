@@ -18,20 +18,20 @@ namespace billiard_laser
 
         //selection of output resolutions
         private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(355, 200);
-        private static OpenCvSharp.Size p250 = new OpenCvSharp.Size(444, 250);
+        private static OpenCvSharp.Size p270 = new OpenCvSharp.Size(480, 270);
         private static OpenCvSharp.Size p360 = new OpenCvSharp.Size(640, 360);
         private static OpenCvSharp.Size p480 = new OpenCvSharp.Size(854, 480);
         private static OpenCvSharp.Size p720 = new OpenCvSharp.Size(1280, 720);
         private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
         //testing output
-        private OpenCvSharp.Size outputVideoResolution = p360;
+        private OpenCvSharp.Size outputVideoResolution = p270;
 
         //frames
         private BindingList<int> processedFrameIndices = new BindingList<int>();
         private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
         private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
-        private const int maxFrames = 1000;
+        private const int maxFrames = 500; //testing
 
         //flags
         private bool detectingBalls = false;
@@ -115,13 +115,13 @@ namespace billiard_laser
             {
                 debugForm = new ImageProcessingDebugForm(ballDetector);
 
-                debugForm.DebugFormClosed += DebugForm_DebugFormClosed; //subscribe to event handler letting us know when it closes
+                debugForm.DebugFormClosed += DebugForm_DebugFormClosed;
                 debugForm.Show();
 
                 //init debug form with current (raw) selected rawFrame
                 if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
                 {
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex); //bug: sometimes last frame disposed
                     if (rawFrame != null) debugForm.ShowDebugImages(rawFrame.frame);
                     else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
                 }
@@ -206,8 +206,6 @@ namespace billiard_laser
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 ClearFrameQueues();
-
-                VideoProcessor.DequeueVideoFrames(rawFrames);
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
 
                 btnDetectBalls.Enabled = true;
