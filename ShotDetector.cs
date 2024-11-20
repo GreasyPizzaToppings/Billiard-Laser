@@ -7,6 +7,18 @@
 
     public ShotDetector()
     {
+        ResetState();
+    }
+
+    public void ResetState()
+    {
+        // Dispose of any existing shot
+        if (currentShot != null)
+        {
+            currentShot.Dispose();
+        }
+
+        // Reset to initial state
         isCueBallMoving = false;
         currentShot = new Shot();
     }

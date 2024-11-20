@@ -31,7 +31,7 @@ namespace billiard_laser
         private BindingList<int> processedFrameIndices = new BindingList<int>();
         private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
         private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
-        private const int maxFrames = 500; //testing
+        private const int maxFrames = 1000; //testing
 
         //flags
         private bool detectingBalls = false;
@@ -174,8 +174,57 @@ namespace billiard_laser
             }
         }
 
+        /// <summary>
+        /// clear the pictureboxes for graphs of shot data and their labels
+        /// </summary>
+        private void ClearShotInfo() {
+            // Clear picture boxes for graphs
+            if (pictureBoxSpeedOverTime.Image != null)
+            {
+                pictureBoxSpeedOverTime.Image.Dispose();
+                pictureBoxSpeedOverTime.Image = null;
+            }
+            if (pictureBoxDistanceOverTime.Image != null)
+            {
+                pictureBoxDistanceOverTime.Image.Dispose();
+                pictureBoxDistanceOverTime.Image = null;
+                }
+            if (pictureBoxAccelerationOverTime.Image != null)
+            {
+                pictureBoxAccelerationOverTime.Image.Dispose();
+                pictureBoxAccelerationOverTime.Image = null;
+            }
+
+            // Clear labels
+            labelMaxSpeed.Text = "Max: -";
+            labelAvgSpeed.Text = "Avg: -";
+            labelDistanceTravelled.Text = "Total: -";
+            labelMaxAcceleration.Text = "Max: -";
+            labelAverageAcceleration.Text = "Avg: -";
+            labelFrameRate.Text = "FPS: -";
+        }
+
+        /// <summary>
+        /// clear the shot data and the listbox they are referenced in
+        /// </summary>
+        private void ClearShotData()
+        {
+            // Dispose each Shot object before clearing the list
+            foreach (Shot shot in listBoxShots.Items) shot.Dispose();
+            listBoxShots.Items.Clear();
+        }
+
         private async void btnDetectBalls_Click(object sender, EventArgs e)
         {
+            //clear previous processed frames
+            processedFrameIndices.Clear();
+            VideoProcessor.DequeueVideoFrames(processedFrames);
+
+            //clear previous shots
+            ClearShotData();
+            ClearShotInfo();
+            shotDetector.ResetState();
+
             detectingBalls = true;
             btnDetectBalls.Enabled = false;
 
@@ -188,7 +237,6 @@ namespace billiard_laser
 
                 detectingBalls = false;
                 buttonResume.Enabled = false;
-                shotDetector.ShotFinished -= ShotDetector_ShotFinished;
                 btnDetectBalls.Enabled = true;
             }
 
