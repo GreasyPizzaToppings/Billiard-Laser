@@ -1,0 +1,21 @@
+decent mask
+
+44,107,0
+64,255,255
+
+
+todo:
+1: clean up ui, remove unused buttons (yagni)
+bonus: fix pause/play button
+2: figure out what images u want on debug form 
+3: implement real shot detection (1 ball start moving - all balls stop)
+4: implement ball replacement helper (to actually achieve mvp)
+5: improve cueball tracker/path tracer
+
+ideas:
+cueball tracker: implement some logic to prevent snapping away from moving cueball. find best contour closest to expected path
+
+cueball tracker: on a completed shot, if path isnt smooth, go back in time and find a different contour at the jump point to find a better fit
+
+
+
