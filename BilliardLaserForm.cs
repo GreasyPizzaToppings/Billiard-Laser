@@ -177,7 +177,7 @@ namespace billiard_laser
         /// <summary>
         /// clear the pictureboxes for graphs of shot data and their labels
         /// </summary>
-        private void ClearShotInfo() {
+        private void ClearShotGraphs() {
             // Clear picture boxes for graphs
             if (pictureBoxSpeedOverTime.Image != null)
             {
@@ -205,25 +205,27 @@ namespace billiard_laser
         }
 
         /// <summary>
-        /// clear the shot data and the listbox they are referenced in
+        /// dispose of the shot data and the listbox they are referenced in
         /// </summary>
-        private void ClearShotData()
+        private void DisposeShots()
         {
             // Dispose each Shot object before clearing the list
             foreach (Shot shot in listBoxShots.Items) shot.Dispose();
             listBoxShots.Items.Clear();
         }
 
+        //clear all shot data and everything associated with it
+        private void ResetShotState() {
+            DisposeShots();
+            ClearShotGraphs();
+            shotDetector.ResetState();
+        }
+
         private async void btnDetectBalls_Click(object sender, EventArgs e)
         {
-            //clear previous processed frames
-            processedFrameIndices.Clear();
-            VideoProcessor.DequeueVideoFrames(processedFrames);
-
-            //clear previous shots
-            ClearShotData();
-            ClearShotInfo();
-            shotDetector.ResetState();
+            //reset state
+            ResetFrameQueuesState(clearRawFrames: false);
+            ResetShotState();
 
             detectingBalls = true;
             btnDetectBalls.Enabled = false;
@@ -251,7 +253,12 @@ namespace billiard_laser
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                ClearFrameQueues();
+                btnDetectBalls.Enabled = false;
+
+                //reset previous state
+                ResetFrameQueuesState();
+                ResetShotState();
+
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
 
                 btnDetectBalls.Enabled = true;
@@ -259,10 +266,15 @@ namespace billiard_laser
             }
         }
 
-        private void ClearFrameQueues()
+        private void ResetFrameQueuesState(bool clearRawFrames = true)
         {
+            if (clearRawFrames) {
             VideoProcessor.DequeueVideoFrames(rawFrames);
+                rawFrames.Clear();
+            }
+            
             VideoProcessor.DequeueVideoFrames(processedFrames);
+            processedFrames.Clear();
             processedFrameIndices.Clear();
         }
 
