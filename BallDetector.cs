@@ -21,8 +21,8 @@ public class BallDetector
     public Boolean EnableTableBoundary = false;
 
     //Default cloth mask
-    public Rgb LowerClothMask = new Rgb(40, 80, 40);
-    public Rgb UpperClothMask = new Rgb(70, 255, 255);
+    public Rgb LowerClothMask = new Rgb(44, 107, 0); //todo: allow user to set default min/max masks
+    public Rgb UpperClothMask = new Rgb(64, 255, 255);
 
     //Default cueball mask
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
