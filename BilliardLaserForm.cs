@@ -69,13 +69,6 @@ namespace billiard_laser
             listBoxProcessedFrames.DataSource = processedFrameIndices;
         }
 
-        private void btnLaserOn_Click(object sender, EventArgs e) => arduinoController.LaserOn();
-        private void btnLaserOff_Click(object sender, EventArgs e) => arduinoController.LaserOff();
-        private void btnUp_Click(object sender, EventArgs e) => arduinoController.MoveUp();
-        private void btnLeft_Click(object sender, EventArgs e) => arduinoController.MoveLeft();
-        private void btnRight_Click(object sender, EventArgs e) => arduinoController.MoveRight();
-        private void btnDown_Click(object sender, EventArgs e) => arduinoController.MoveDown();
-
         private void btnGetCameraInput_Click(object sender, EventArgs e)
         {
             if (cameraController.StartCameraCapture())
@@ -86,27 +79,6 @@ namespace billiard_laser
             }
 
             else btnDetectBalls.Enabled = false;
-        }
-
-        private void btnLoadImage_Click(object sender, EventArgs e)
-        {
-            using (OpenFileDialog openfiledialog = new OpenFileDialog())
-            {
-                openfiledialog.Filter = "image files (*.jpg; *.jpeg; *.png; *.gif; *.bmp)|*.jpg; *.jpeg; *.png; *.gif; *.bmp|all files (*.*)|*.*";
-                openfiledialog.RestoreDirectory = true;
-
-                if (openfiledialog.ShowDialog() == DialogResult.OK)
-                {
-                    try
-                    {
-                        UpdatePictureBoxImage(new Bitmap(openfiledialog.FileName));
-                    }
-                    catch (Exception ex)
-                    {
-                        MessageBox.Show("error loading image: " + ex.Message);
-                    }
-                }
-            }
         }
 
         private void buttonShowDebugForm_Click(object sender, EventArgs e)
@@ -130,54 +102,11 @@ namespace billiard_laser
             else debugForm.Focus();
         }
 
-        private void btnFindCueball_Click(object sender, EventArgs e)
-        {
-            using (Bitmap rawImage = new Bitmap(pictureBoxImage.Image))
-            using (Mat rawImageMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(rawImage))
-            using (Mat resizedImageMat = new Mat())
-            {
-                Cv2.Resize(rawImageMat, resizedImageMat, outputVideoResolution);
-                using (Bitmap resizedImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(resizedImageMat))
-                {
-                    var result = ballDetector.ProcessTableImage(resizedImage);
-                    if (result.CueBallHighlighted != null)
-                    {
-                        UpdatePictureBoxImage((Bitmap)result.CueBallHighlighted.Clone());
-                    }
-                    else
-                    {
-                        MessageBox.Show("Cueball not found!");
-                    }
-                }
-            }
-        }
-
-        private void findFindAllBalls_Click(object sender, EventArgs e)
-        {
-            using (Bitmap rawImage = new Bitmap(pictureBoxImage.Image))
-            using (Mat rawImageMat = OpenCvSharp.Extensions.BitmapConverter.ToMat(rawImage))
-            using (Mat resizedImageMat = new Mat())
-            {
-                Cv2.Resize(rawImageMat, resizedImageMat, outputVideoResolution);
-                using (Bitmap resizedImage = OpenCvSharp.Extensions.BitmapConverter.ToBitmap(resizedImageMat))
-                {
-                    var result = ballDetector.ProcessTableImage(resizedImage);
-                    if (result.AllBallsHighlighted != null)
-                    {
-                        UpdatePictureBoxImage((Bitmap)result.AllBallsHighlighted.Clone());
-                    }
-                    else
-                    {
-                        MessageBox.Show("No balls found!");
-                    }
-                }
-            }
-        }
-
         /// <summary>
         /// clear the pictureboxes for graphs of shot data and their labels
         /// </summary>
-        private void ClearShotGraphs() {
+        private void ClearShotGraphs()
+        {
             // Clear picture boxes for graphs
             if (pictureBoxSpeedOverTime.Image != null)
             {
@@ -188,7 +117,7 @@ namespace billiard_laser
             {
                 pictureBoxDistanceOverTime.Image.Dispose();
                 pictureBoxDistanceOverTime.Image = null;
-                }
+            }
             if (pictureBoxAccelerationOverTime.Image != null)
             {
                 pictureBoxAccelerationOverTime.Image.Dispose();
@@ -215,7 +144,8 @@ namespace billiard_laser
         }
 
         //clear all shot data and everything associated with it
-        private void ResetShotState() {
+        private void ResetShotState()
+        {
             DisposeShots();
             ClearShotGraphs();
             shotDetector.ResetState();
@@ -268,16 +198,16 @@ namespace billiard_laser
 
         private void ResetFrameQueuesState(bool clearRawFrames = true)
         {
-            if (clearRawFrames) {
-            VideoProcessor.DequeueVideoFrames(rawFrames);
+            if (clearRawFrames)
+            {
+                VideoProcessor.DequeueVideoFrames(rawFrames);
                 rawFrames.Clear();
             }
-            
+
             VideoProcessor.DequeueVideoFrames(processedFrames);
             processedFrames.Clear();
             processedFrameIndices.Clear();
         }
-
 
         /// <summary>
         /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
@@ -285,13 +215,13 @@ namespace billiard_laser
         /// <param name="rawFrame"></param>
         private void ProcessFrame(VideoFrame rawFrame)
         {
-            
+
             if (InvokeRequired)
             {
                 Invoke(new Action(() => ProcessFrame(rawFrame)));
                 return;
             }
-            
+
             using (var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index))
             {
                 if (detectingBalls)
@@ -313,7 +243,8 @@ namespace billiard_laser
                             processedFrames.Enqueue(processedFrame);
                             processedFrameIndices.Add(processedFrame.index);
 
-                            if (processedFrames.Count > maxFrames) {
+                            if (processedFrames.Count > maxFrames)
+                            {
                                 processedFrames.Dequeue().Dispose();
                                 processedFrameIndices.RemoveAt(0);
                             }
@@ -323,7 +254,7 @@ namespace billiard_laser
 
                             // Update the PictureBox directly without changing the ListBox index
                             UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
-                            
+
 
                             stopwatch.Stop();
                             totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
@@ -572,5 +503,6 @@ namespace billiard_laser
         }
 
         private void UpdateDebugForm(Bitmap rawImage) => debugForm?.ShowDebugImages(rawImage);
+
     }
 }
