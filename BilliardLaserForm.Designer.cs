@@ -31,19 +31,6 @@ namespace billiard_laser
         {
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(BilliardLaserForm));
             pictureBoxImage = new PictureBox();
-            labelShotInfo = new Label();
-            pictureBoxAccelerationOverTime = new PictureBox();
-            pictureBoxDistanceOverTime = new PictureBox();
-            groupBoxShotInfo = new GroupBox();
-            labelAverageAcceleration = new Label();
-            labelSpeed = new Label();
-            labelMaxAcceleration = new Label();
-            labelDistanceTravelled = new Label();
-            labelAvgSpeed = new Label();
-            labelMaxSpeed = new Label();
-            Acceleration = new Label();
-            labelDistance = new Label();
-            pictureBoxSpeedOverTime = new PictureBox();
             tableLayoutPanelVideoControls = new TableLayoutPanel();
             panelMediaControls = new Panel();
             labelMediaControls = new Label();
@@ -66,10 +53,6 @@ namespace billiard_laser
             labelFrameRate = new Label();
             btnDetectBalls = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxAccelerationOverTime).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxDistanceOverTime).BeginInit();
-            groupBoxShotInfo.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxSpeedOverTime).BeginInit();
             tableLayoutPanelVideoControls.SuspendLayout();
             panelMediaControls.SuspendLayout();
             panelListBoxes.SuspendLayout();
@@ -81,153 +64,13 @@ namespace billiard_laser
             pictureBoxImage.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             pictureBoxImage.BackColor = SystemColors.ControlLight;
             pictureBoxImage.Image = (Image)resources.GetObject("pictureBoxImage.Image");
-            pictureBoxImage.Location = new Point(209, 10);
-            pictureBoxImage.Margin = new Padding(3, 2, 3, 2);
+            pictureBoxImage.Location = new Point(208, 0);
+            pictureBoxImage.Margin = new Padding(5);
             pictureBoxImage.Name = "pictureBoxImage";
-            pictureBoxImage.Size = new Size(656, 670);
+            pictureBoxImage.Size = new Size(837, 558);
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxImage.TabIndex = 15;
             pictureBoxImage.TabStop = false;
-            // 
-            // labelShotInfo
-            // 
-            labelShotInfo.AutoSize = true;
-            labelShotInfo.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            labelShotInfo.Location = new Point(37, 9);
-            labelShotInfo.Name = "labelShotInfo";
-            labelShotInfo.Size = new Size(92, 28);
-            labelShotInfo.TabIndex = 31;
-            labelShotInfo.Text = "Shot Info";
-            // 
-            // pictureBoxAccelerationOverTime
-            // 
-            pictureBoxAccelerationOverTime.Location = new Point(11, 206);
-            pictureBoxAccelerationOverTime.Margin = new Padding(3, 2, 3, 2);
-            pictureBoxAccelerationOverTime.Name = "pictureBoxAccelerationOverTime";
-            pictureBoxAccelerationOverTime.Size = new Size(150, 115);
-            pictureBoxAccelerationOverTime.TabIndex = 33;
-            pictureBoxAccelerationOverTime.TabStop = false;
-            // 
-            // pictureBoxDistanceOverTime
-            // 
-            pictureBoxDistanceOverTime.Location = new Point(11, 353);
-            pictureBoxDistanceOverTime.Margin = new Padding(3, 2, 3, 2);
-            pictureBoxDistanceOverTime.Name = "pictureBoxDistanceOverTime";
-            pictureBoxDistanceOverTime.Size = new Size(150, 115);
-            pictureBoxDistanceOverTime.TabIndex = 34;
-            pictureBoxDistanceOverTime.TabStop = false;
-            // 
-            // groupBoxShotInfo
-            // 
-            groupBoxShotInfo.Controls.Add(labelShotInfo);
-            groupBoxShotInfo.Controls.Add(labelAverageAcceleration);
-            groupBoxShotInfo.Controls.Add(labelSpeed);
-            groupBoxShotInfo.Controls.Add(labelMaxAcceleration);
-            groupBoxShotInfo.Controls.Add(labelDistanceTravelled);
-            groupBoxShotInfo.Controls.Add(labelAvgSpeed);
-            groupBoxShotInfo.Controls.Add(labelMaxSpeed);
-            groupBoxShotInfo.Controls.Add(Acceleration);
-            groupBoxShotInfo.Controls.Add(labelDistance);
-            groupBoxShotInfo.Controls.Add(pictureBoxSpeedOverTime);
-            groupBoxShotInfo.Controls.Add(pictureBoxDistanceOverTime);
-            groupBoxShotInfo.Controls.Add(pictureBoxAccelerationOverTime);
-            groupBoxShotInfo.Dock = DockStyle.Right;
-            groupBoxShotInfo.Location = new Point(904, 0);
-            groupBoxShotInfo.Margin = new Padding(3, 2, 3, 2);
-            groupBoxShotInfo.Name = "groupBoxShotInfo";
-            groupBoxShotInfo.Padding = new Padding(3, 2, 3, 2);
-            groupBoxShotInfo.Size = new Size(234, 683);
-            groupBoxShotInfo.TabIndex = 35;
-            groupBoxShotInfo.TabStop = false;
-            // 
-            // labelAverageAcceleration
-            // 
-            labelAverageAcceleration.AutoSize = true;
-            labelAverageAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelAverageAcceleration.Location = new Point(166, 227);
-            labelAverageAcceleration.Name = "labelAverageAcceleration";
-            labelAverageAcceleration.Size = new Size(36, 19);
-            labelAverageAcceleration.TabIndex = 43;
-            labelAverageAcceleration.Text = "Avg:";
-            // 
-            // labelSpeed
-            // 
-            labelSpeed.AutoSize = true;
-            labelSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelSpeed.Location = new Point(11, 40);
-            labelSpeed.Name = "labelSpeed";
-            labelSpeed.Size = new Size(46, 19);
-            labelSpeed.TabIndex = 36;
-            labelSpeed.Text = "Speed";
-            // 
-            // labelMaxAcceleration
-            // 
-            labelMaxAcceleration.AutoSize = true;
-            labelMaxAcceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaxAcceleration.Location = new Point(166, 206);
-            labelMaxAcceleration.Name = "labelMaxAcceleration";
-            labelMaxAcceleration.Size = new Size(38, 19);
-            labelMaxAcceleration.TabIndex = 42;
-            labelMaxAcceleration.Text = "Max:";
-            // 
-            // labelDistanceTravelled
-            // 
-            labelDistanceTravelled.AutoSize = true;
-            labelDistanceTravelled.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDistanceTravelled.Location = new Point(164, 353);
-            labelDistanceTravelled.Name = "labelDistanceTravelled";
-            labelDistanceTravelled.Size = new Size(41, 19);
-            labelDistanceTravelled.TabIndex = 41;
-            labelDistanceTravelled.Text = "Total:";
-            // 
-            // labelAvgSpeed
-            // 
-            labelAvgSpeed.AutoSize = true;
-            labelAvgSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelAvgSpeed.Location = new Point(164, 79);
-            labelAvgSpeed.Name = "labelAvgSpeed";
-            labelAvgSpeed.Size = new Size(36, 19);
-            labelAvgSpeed.TabIndex = 40;
-            labelAvgSpeed.Text = "Avg:";
-            // 
-            // labelMaxSpeed
-            // 
-            labelMaxSpeed.AutoSize = true;
-            labelMaxSpeed.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelMaxSpeed.Location = new Point(164, 61);
-            labelMaxSpeed.Name = "labelMaxSpeed";
-            labelMaxSpeed.Size = new Size(38, 19);
-            labelMaxSpeed.TabIndex = 39;
-            labelMaxSpeed.Text = "Max:";
-            // 
-            // Acceleration
-            // 
-            Acceleration.AutoSize = true;
-            Acceleration.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            Acceleration.Location = new Point(6, 185);
-            Acceleration.Name = "Acceleration";
-            Acceleration.Size = new Size(83, 19);
-            Acceleration.TabIndex = 38;
-            Acceleration.Text = "Acceleration";
-            // 
-            // labelDistance
-            // 
-            labelDistance.AutoSize = true;
-            labelDistance.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelDistance.Location = new Point(11, 332);
-            labelDistance.Name = "labelDistance";
-            labelDistance.Size = new Size(118, 19);
-            labelDistance.TabIndex = 37;
-            labelDistance.Text = "Distance Travelled";
-            // 
-            // pictureBoxSpeedOverTime
-            // 
-            pictureBoxSpeedOverTime.Location = new Point(11, 61);
-            pictureBoxSpeedOverTime.Margin = new Padding(3, 2, 3, 2);
-            pictureBoxSpeedOverTime.Name = "pictureBoxSpeedOverTime";
-            pictureBoxSpeedOverTime.Size = new Size(150, 115);
-            pictureBoxSpeedOverTime.TabIndex = 32;
-            pictureBoxSpeedOverTime.TabStop = false;
             // 
             // tableLayoutPanelVideoControls
             // 
@@ -243,7 +86,7 @@ namespace billiard_laser
             tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 229F));
             tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
-            tableLayoutPanelVideoControls.Size = new Size(203, 683);
+            tableLayoutPanelVideoControls.Size = new Size(203, 561);
             tableLayoutPanelVideoControls.TabIndex = 47;
             // 
             // panelMediaControls
@@ -254,7 +97,7 @@ namespace billiard_laser
             panelMediaControls.Controls.Add(buttonNextFrame);
             panelMediaControls.Controls.Add(buttonPause);
             panelMediaControls.Dock = DockStyle.Fill;
-            panelMediaControls.Location = new Point(3, 586);
+            panelMediaControls.Location = new Point(3, 464);
             panelMediaControls.Name = "panelMediaControls";
             panelMediaControls.Size = new Size(197, 94);
             panelMediaControls.TabIndex = 49;
@@ -325,7 +168,7 @@ namespace billiard_laser
             panelListBoxes.Location = new Point(3, 229);
             panelListBoxes.Margin = new Padding(3, 0, 3, 3);
             panelListBoxes.Name = "panelListBoxes";
-            panelListBoxes.Size = new Size(197, 351);
+            panelListBoxes.Size = new Size(197, 229);
             panelListBoxes.TabIndex = 44;
             // 
             // listBoxProcessedFrames
@@ -336,8 +179,9 @@ namespace billiard_laser
             listBoxProcessedFrames.Location = new Point(0, 0);
             listBoxProcessedFrames.Margin = new Padding(3, 0, 3, 0);
             listBoxProcessedFrames.Name = "listBoxProcessedFrames";
-            listBoxProcessedFrames.Size = new Size(87, 351);
+            listBoxProcessedFrames.Size = new Size(87, 229);
             listBoxProcessedFrames.TabIndex = 40;
+            listBoxProcessedFrames.SelectedIndexChanged += listBoxFrames_SelectedIndexChanged;
             // 
             // listBoxShots
             // 
@@ -347,8 +191,9 @@ namespace billiard_laser
             listBoxShots.Location = new Point(110, 0);
             listBoxShots.Margin = new Padding(3, 0, 3, 0);
             listBoxShots.Name = "listBoxShots";
-            listBoxShots.Size = new Size(87, 351);
+            listBoxShots.Size = new Size(87, 229);
             listBoxShots.TabIndex = 41;
+            listBoxShots.SelectedIndexChanged += listBoxShots_SelectedIndexChanged;
             // 
             // panelVideoControls
             // 
@@ -477,9 +322,8 @@ namespace billiard_laser
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1138, 683);
+            ClientSize = new Size(1052, 561);
             Controls.Add(tableLayoutPanelVideoControls);
-            Controls.Add(groupBoxShotInfo);
             Controls.Add(pictureBoxImage);
             Margin = new Padding(3, 2, 3, 2);
             Name = "BilliardLaserForm";
@@ -487,11 +331,6 @@ namespace billiard_laser
             FormClosing += Form1_FormClosing;
             Load += Form1_Load;
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxAccelerationOverTime).EndInit();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxDistanceOverTime).EndInit();
-            groupBoxShotInfo.ResumeLayout(false);
-            groupBoxShotInfo.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)pictureBoxSpeedOverTime).EndInit();
             tableLayoutPanelVideoControls.ResumeLayout(false);
             panelMediaControls.ResumeLayout(false);
             panelMediaControls.PerformLayout();
@@ -503,19 +342,6 @@ namespace billiard_laser
 
         #endregion
         private PictureBox pictureBoxImage;
-        private Label labelShotInfo;
-        private PictureBox pictureBoxAccelerationOverTime;
-        private PictureBox pictureBoxDistanceOverTime;
-        private GroupBox groupBoxShotInfo;
-        private Label labelSpeed;
-        private Label Acceleration;
-        private Label labelDistance;
-        private Label labelMaxSpeed;
-        private Label labelAvgSpeed;
-        private Label labelAverageAcceleration;
-        private Label labelMaxAcceleration;
-        private Label labelDistanceTravelled;
-        private PictureBox pictureBoxSpeedOverTime;
         private TableLayoutPanel tableLayoutPanelVideoControls;
         private GroupBox groupBoxVideoControls;
         private Panel panelVideoControls;

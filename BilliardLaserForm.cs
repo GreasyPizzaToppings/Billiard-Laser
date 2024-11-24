@@ -103,37 +103,6 @@ namespace billiard_laser
         }
 
         /// <summary>
-        /// clear the pictureboxes for graphs of shot data and their labels
-        /// </summary>
-        private void ClearShotGraphs()
-        {
-            // Clear picture boxes for graphs
-            if (pictureBoxSpeedOverTime.Image != null)
-            {
-                pictureBoxSpeedOverTime.Image.Dispose();
-                pictureBoxSpeedOverTime.Image = null;
-            }
-            if (pictureBoxDistanceOverTime.Image != null)
-            {
-                pictureBoxDistanceOverTime.Image.Dispose();
-                pictureBoxDistanceOverTime.Image = null;
-            }
-            if (pictureBoxAccelerationOverTime.Image != null)
-            {
-                pictureBoxAccelerationOverTime.Image.Dispose();
-                pictureBoxAccelerationOverTime.Image = null;
-            }
-
-            // Clear labels
-            labelMaxSpeed.Text = "Max: -";
-            labelAvgSpeed.Text = "Avg: -";
-            labelDistanceTravelled.Text = "Total: -";
-            labelMaxAcceleration.Text = "Max: -";
-            labelAverageAcceleration.Text = "Avg: -";
-            labelFrameRate.Text = "FPS: -";
-        }
-
-        /// <summary>
         /// dispose of the shot data and the listbox they are referenced in
         /// </summary>
         private void DisposeShots()
@@ -147,7 +116,6 @@ namespace billiard_laser
         private void ResetShotState()
         {
             DisposeShots();
-            ClearShotGraphs();
             shotDetector.ResetState();
         }
 
@@ -354,32 +322,6 @@ namespace billiard_laser
             {
                 Shot selectedShot = (Shot)listBoxShots.SelectedItem;
                 ReplayShotWithBallPath(selectedShot, 60);
-
-
-                // show graphs
-
-                //speed over time
-                Bitmap speedImage = new Bitmap(pictureBoxSpeedOverTime.Width, pictureBoxSpeedOverTime.Height);
-                pictureBoxSpeedOverTime.Image = DrawingHelper.DrawSpeedOverTimeGraph(speedImage, selectedShot);
-                pictureBoxSpeedOverTime.Refresh();
-
-                labelMaxSpeed.Text = $"Max: {Math.Round(selectedShot.MaxSpeed, 2)}";
-                labelAvgSpeed.Text = $"Avg: {Math.Round(selectedShot.AverageSpeed, 2)}";
-
-                //cumulative distance over time
-                Bitmap distanceImage = new Bitmap(pictureBoxDistanceOverTime.Width, pictureBoxDistanceOverTime.Height);
-                pictureBoxDistanceOverTime.Image = DrawingHelper.DrawDistanceTravelledGraph(distanceImage, selectedShot);
-                pictureBoxDistanceOverTime.Refresh();
-
-                labelDistanceTravelled.Text = $"Total: {Math.Round(selectedShot.DistanceTravelled, 2)}";
-
-                // acceleration over time
-                Bitmap image = new Bitmap(pictureBoxAccelerationOverTime.Width, pictureBoxAccelerationOverTime.Height);
-                pictureBoxAccelerationOverTime.Image = DrawingHelper.DrawAccelerationGraph(image, selectedShot);
-                pictureBoxAccelerationOverTime.Refresh();
-
-                labelMaxAcceleration.Text = $"Max: {Math.Round(selectedShot.MaxAcceleration, 2)}";
-                labelAverageAcceleration.Text = $"Avg: {Math.Round(selectedShot.AverageAcceleration, 2)}";
             }
         }
 
@@ -503,6 +445,5 @@ namespace billiard_laser
         }
 
         private void UpdateDebugForm(Bitmap rawImage) => debugForm?.ShowDebugImages(rawImage);
-
     }
 }
