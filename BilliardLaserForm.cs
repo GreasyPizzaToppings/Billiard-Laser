@@ -1,7 +1,5 @@
 ﻿using System.Diagnostics;
 using System.ComponentModel;
-using OpenCvSharp;
-using System.Windows.Controls;
 
 namespace billiard_laser
 {
@@ -31,22 +29,36 @@ namespace billiard_laser
         private BindingList<int> processedFrameIndices = new BindingList<int>();
         private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
         private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
-        private VideoFrame lastProcessedFrame = null; //used for paused state
         private const int maxFrames = 1000; //testing
 
         //flags
-        private bool detectingBalls = false;
         private bool replayInProgress = false;
         private bool isPaused = false;
+        private bool loadedVideoStarted = false;
 
         private InputType currentInputType;
-        
+
         //fps
         private Stopwatch stopwatch = new Stopwatch();
+        private Stopwatch debugStopwatch = new Stopwatch();
         private double totalProcessingTime = 0;
 
         private const string PAUSE_ICON = "⏸";
         private const string PLAY_ICON = "⏵";
+
+        public bool DetectingBalls
+        {
+            get => checkBoxDetectBalls.Checked;
+            set
+            {
+                if (InvokeRequired)
+                {
+                    Invoke(new Action(() => DetectingBalls = value));
+                    return;
+                }
+                checkBoxDetectBalls.Checked = value;
+            }
+        }
 
         public enum InputType
         {
@@ -74,90 +86,44 @@ namespace billiard_laser
             listBoxProcessedFrames.DataSource = processedFrameIndices;
         }
 
-        private void btnGetCameraInput_Click(object sender, EventArgs e)
+        private void btnLoadCameraInput_Click(object sender, EventArgs e)
         {
             if (cameraController.StartCameraCapture())
             {
+                //set media controls
+                btnPlayPause.Enabled = true;
+                btnPlayPause.Text = PAUSE_ICON;
+                btnNextFrame.Enabled = false;
+                btnLastFrame.Enabled = false;
+
                 totalProcessingTime = 0;
-                btnDetectBalls.Enabled = true;
                 currentInputType = InputType.Camera;
             }
-
-            else btnDetectBalls.Enabled = false;
         }
 
-        private void buttonShowDebugForm_Click(object sender, EventArgs e)
+        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
-            if (debugForm == null || debugForm.IsDisposed)
+            if (isPaused)
             {
-                debugForm = new ImageProcessingDebugForm(ballDetector);
-
-                debugForm.DebugFormClosed += DebugForm_DebugFormClosed;
-                debugForm.Show();
-
-                //init debug form with current (raw) selected rawFrame
-                if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
-                {
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex); //bug: sometimes last frame disposed
-                    if (rawFrame != null) debugForm.ShowDebugImages(rawFrame.frame);
-                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
-                }
+                frame.Dispose();
+                return;
             }
 
-            else debugForm.Focus();
+            if (rawFrames.Count > maxFrames)
+            {
+                var oldFrame = rawFrames.Dequeue();
+                oldFrame.Dispose();
+            }
+
+            rawFrames.Enqueue(frame);
+            ProcessFrame(frame);
         }
 
         /// <summary>
-        /// dispose of the shot data and the listbox they are referenced in
+        /// load a video's frames into memory but do not play it
         /// </summary>
-        private void DisposeShots()
-        {
-            // Dispose each Shot object before clearing the list
-            foreach (Shot shot in listBoxShots.Items) shot.Dispose();
-            listBoxShots.Items.Clear();
-        }
-
-        //clear all shot data and everything associated with it
-        private void ResetShotState()
-        {
-            DisposeShots();
-            shotDetector.ResetState();
-        }
-
-        private async void btnDetectBalls_Click(object sender, EventArgs e)
-        {
-            //reset state
-            ResetFrameQueuesState(clearRawFrames: false);
-            ResetShotState();
-
-            detectingBalls = true;
-            btnDetectBalls.Enabled = false;
-
-            //set media controls
-            btnPlayPause.Enabled = true;
-            btnPlayPause.Text = PAUSE_ICON;
-            btnNextFrame.Enabled = false;
-            btnLastFrame.Enabled = false;
-
-
-            if (currentInputType == InputType.Video)
-            {
-                btnNextFrame.Enabled = false;
-
-                await ProcessFramesInLoadedVideo();
-
-                detectingBalls = false;
-                isPaused = false;
-
-                btnDetectBalls.Enabled = true;
-                btnLastFrame.Enabled = true;
-                btnNextFrame.Enabled = true;
-                btnPlayPause.Enabled = false;
-            }
-
-            //else its camera input, let it do its thing
-        }
-
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void btnLoadVideo_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
@@ -166,11 +132,7 @@ namespace billiard_laser
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                btnDetectBalls.Enabled = false;
-
-                //reset state of playpause button
-                btnPlayPause.Enabled = false;
-                btnPlayPause.Text = PLAY_ICON;
+                loadedVideoStarted = false;
 
                 //reset previous state
                 ResetFrameQueuesState();
@@ -179,8 +141,69 @@ namespace billiard_laser
                 //actually loading video here
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
 
-                btnDetectBalls.Enabled = true;
                 currentInputType = InputType.Video;
+
+                //reset state of playpause button
+                btnPlayPause.Enabled = true;
+                btnPlayPause.Text = PLAY_ICON;
+                btnNextFrame.Enabled = false;
+                btnLastFrame.Enabled = false;
+            }
+        }
+
+        /// <summary>
+        /// For each frame in the video, perform ball and/or shot tracking
+        /// Pauses processing when isPaused is true
+        /// </summary>
+        private async Task ProcessFramesInLoadedVideo()
+        {
+            totalProcessingTime = 0;
+
+            foreach (VideoFrame rawFrame in rawFrames)
+            {
+                while (isPaused)
+                {
+                    await Task.Delay(100); // Wait 100ms before checking pause state again
+                }
+
+                ProcessFrame(rawFrame);
+            }
+        }
+
+        //display a selected processed frame of the video and send to debug form if its open
+        private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
+            {
+                var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
+                if (processedFrame != null && processedFrame.frame != null)
+                {
+
+                    UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
+
+                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    if (rawFrame != null && rawFrame.frame != null)
+                    {
+                        try
+                        {
+                            using (var tempBitmap = new Bitmap(rawFrame.frame))
+                            {
+                                debugStopwatch.Restart();
+                                UpdateDebugForm(tempBitmap);
+                                debugStopwatch.Stop();
+                                totalProcessingTime += debugStopwatch.Elapsed.TotalSeconds;
+                            }
+                        }
+                        catch (ArgumentException)
+                        {
+                            Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
+                        }
+                    }
+                    else
+                    {
+                        Console.WriteLine("Raw frame was null. Not sending to debug form!");
+                    }
+                }
             }
         }
 
@@ -209,69 +232,87 @@ namespace billiard_laser
                 return;
             }
 
-            // If paused, don't process new frames
-            if (isPaused)
+            if (rawFrame?.frame == null)
             {
+                Console.WriteLine("Received null frame or frame data");
                 return;
             }
 
-            using (var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index))
-            {
-                if (detectingBalls)
-                {
-                    stopwatch.Restart();
+            stopwatch.Restart();
 
-                    ImageProcessingResults results = null;
+            VideoFrame processedFrame = null;
+            ImageProcessingResults results = null;
+
+            try
+            {
+                using var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index);
+
+                if (DetectingBalls)
+                {
                     try
                     {
                         results = ballDetector.ProcessTableImage(workingFrame.frame);
-
-                        // Create a copy of the processed image to store in the queue
-                        using (var processedImage = new Bitmap(results.CueBallHighlighted))
-                        {
-                            var processedFrame = new VideoFrame(processedImage, workingFrame.index);
-
-                            shotDetector.ProcessFrame(results.CueBall, processedFrame);
-
-                            processedFrames.Enqueue(processedFrame);
-                            processedFrameIndices.Add(processedFrame.index);
-
-                            if (processedFrames.Count > maxFrames)
-                            {
-                                processedFrames.Dequeue().Dispose();
-                                processedFrameIndices.RemoveAt(0);
-                            }
-
-                            //scroll
-                            listBoxProcessedFrames.TopIndex = listBoxProcessedFrames.Items.Count - 1;
-
-                            // Store the last processed frame before updating the display
-                            if (lastProcessedFrame != null)
-                            {
-                                lastProcessedFrame.Dispose();
-                            }
-                            lastProcessedFrame = new VideoFrame(new Bitmap(processedFrame.frame), processedFrame.index);
-
-                            // Update the PictureBox
-                            UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
-
-                            stopwatch.Stop();
-                            totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-
-                            UpdateFpsLabel(totalProcessingTime, workingFrame.index);
-                        }
+                        processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
+                        shotDetector.ProcessFrame(results.CueBall, processedFrame);
                     }
-                    finally
+                    catch (Exception ex)
                     {
-                        results?.Dispose();
+                        Console.WriteLine($"Error during ball detection: {ex.Message}");
+                        processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
                     }
                 }
-                else
+                else processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
+
+                AddProcessedFrame(processedFrame);
+
+                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scroll and update pic box/dbg form
+
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error in ProcessFrame: {ex.Message}");
+                processedFrame?.Dispose();
+            }
+
+            finally
+            {
+                results?.Dispose();
+            }
+
+            Application.DoEvents(); //todo better way?
+
+            // Performance metrics
+            stopwatch.Stop();
+            totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
+            UpdateFpsLabel(processedFrame.index);
+        }
+
+        /// <summary>
+        /// Handles adding new processed frame and the listbox for it
+        /// </summary>
+        /// <param name="newFrame"></param>
+        private void AddProcessedFrame(VideoFrame newFrame)
+        {
+            if (newFrame == null) return;
+
+            try
+            {
+                // Remove oldest frame if at capacity
+                if (processedFrames.Count >= maxFrames)
                 {
-                    UpdatePictureBoxImage(new Bitmap(workingFrame.frame));
+                    var oldFrame = processedFrames.Dequeue();
+                    oldFrame?.Dispose();
+                    processedFrameIndices.RemoveAt(0);
                 }
 
-                Application.DoEvents();
+                // Add new frame
+                processedFrames.Enqueue(newFrame);
+                processedFrameIndices.Add(newFrame.index);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error managing frame queue: {ex.Message}");
             }
         }
 
@@ -281,89 +322,22 @@ namespace billiard_laser
             var oldImage = pictureBoxImage.Image;
             pictureBoxImage.Image = newImage;
             oldImage?.Dispose();
-
-            UpdateDebugForm(newImage);
         }
 
-        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
+        //display average fps @ resolution
+        private void UpdateFpsLabel(int currentFrameIndex)
         {
-            if (isPaused)
-            {
-                frame.Dispose();
-                return;
-            }
-
-            if (rawFrames.Count > maxFrames)
-            {
-                var oldFrame = rawFrames.Dequeue();
-                oldFrame.Dispose();
-            }
-
-            rawFrames.Enqueue(frame);
-            ProcessFrame(frame);
+            var fps = currentFrameIndex / totalProcessingTime;
+            labelFrameRate.Text = $"FPS: {fps:F2} @ {outputVideoResolution.Width}x{outputVideoResolution.Height}";
         }
+
+        #region Shots
 
         /// <summary>
-        /// For each frame in the video, perform ball and/or shot tracking
-        /// Pauses processing when isPaused is true
+        /// replay a selected shot's cueball trajectory over the shot
         /// </summary>
-        private async Task ProcessFramesInLoadedVideo()
-        {
-            totalProcessingTime = 0;
-
-            foreach (VideoFrame rawFrame in rawFrames)
-            {
-                while (isPaused)
-                {
-                    await Task.Delay(100); // Wait 100ms before checking pause state again
-                }
-
-                ProcessFrame(rawFrame);
-            }
-
-            Console.WriteLine("done");
-        }
-
-        private void UpdateFpsLabel(double totalTime, int index)
-        {
-            var fps = index / totalTime;
-            labelFrameRate.Text = $"FPS: {fps:F2}";
-        }
-
-        //display a selected individual rawFrame of the video and send to debug form if its open
-        private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
-            {
-                var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
-                if (processedFrame != null && processedFrame.frame != null)
-                {
-
-                    UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
-
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null && rawFrame.frame != null)
-                    {
-                        try
-                        {
-                            using (var tempBitmap = new Bitmap(rawFrame.frame))
-                            {
-                                UpdateDebugForm(tempBitmap);
-                            }
-                        }
-                        catch (ArgumentException)
-                        {
-                            Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Raw frame was null. Not sending to debug form!");
-                    }
-                }
-            }
-        }
-
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBoxShots.SelectedIndex >= 0)
@@ -371,6 +345,23 @@ namespace billiard_laser
                 Shot selectedShot = (Shot)listBoxShots.SelectedItem;
                 ReplayShotWithBallPath(selectedShot, 60);
             }
+        }
+
+        /// <summary>
+        /// dispose of the shot data and the listbox they are referenced in
+        /// </summary>
+        private void DisposeShots()
+        {
+            // Dispose each Shot object before clearing the list
+            foreach (Shot shot in listBoxShots.Items) shot.Dispose();
+            listBoxShots.Items.Clear();
+        }
+
+        //clear all shot data and everything associated with it
+        private void ResetShotState()
+        {
+            DisposeShots();
+            shotDetector.ResetState();
         }
 
         private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
@@ -406,6 +397,8 @@ namespace billiard_laser
             }
         }
 
+        #endregion
+
         #region Media Contols
 
         //go back a rawFrame
@@ -420,8 +413,60 @@ namespace billiard_laser
             if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1)) listBoxProcessedFrames.SelectedIndex += 1;
         }
 
-        private void btnPlayPause_Click(object sender, EventArgs e)
+        /// <summary>
+        /// Start showing the loaded videos frames, detecting balls if enabled
+        /// </summary>
+        private async void StartLoadedVideo() {
+            loadedVideoStarted = true;
+
+            //reset state
+            ResetFrameQueuesState(clearRawFrames: false);
+            ResetShotState();
+
+            //set media controls
+            btnPlayPause.Enabled = true;
+            btnPlayPause.Text = PAUSE_ICON;
+            btnNextFrame.Enabled = false;
+            btnLastFrame.Enabled = false;
+
+            //reset fps
+            totalProcessingTime = 0;
+            UpdateFpsLabel(0);
+
+
+            if (currentInputType == InputType.Video)
+            {
+                btnNextFrame.Enabled = false;
+
+                await ProcessFramesInLoadedVideo();
+
+                isPaused = false;
+
+                btnLastFrame.Enabled = true;
+                btnNextFrame.Enabled = true;
+                btnPlayPause.Enabled = true;
+                btnPlayPause.Text = PLAY_ICON;
+
+                //video finished, allow it to be replayed
+                loadedVideoStarted = false;
+            }
+
+            //else its camera input, let it do its thing
+        }
+
+        /// <summary>
+        /// Start to play the loaded video and allow it to be paused/resumed on demand
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private async void btnPlayPause_Click(object sender, EventArgs e)
         {
+            //first time running
+            if (!loadedVideoStarted) {
+                StartLoadedVideo();
+                return;
+            }
+
             isPaused = !isPaused;
 
             if (isPaused)
@@ -430,12 +475,6 @@ namespace billiard_laser
                 btnPlayPause.Text = PLAY_ICON;
                 btnLastFrame.Enabled = true;
                 btnNextFrame.Enabled = true;
-
-                // Keep displaying the last frame
-                if (lastProcessedFrame != null)
-                {
-                    UpdatePictureBoxImage(new Bitmap(lastProcessedFrame.frame));
-                }
             }
             else
             {
@@ -468,16 +507,32 @@ namespace billiard_laser
                 frame.frame.Dispose();
             }
 
-            if (lastProcessedFrame != null)
-            {
-                lastProcessedFrame.Dispose();
-            }
-
             if (pictureBoxImage.Image != null)
             {
                 pictureBoxImage.Image.Dispose();
                 pictureBoxImage.Image = null;
             }
+        }
+
+        private void buttonShowDebugForm_Click(object sender, EventArgs e)
+        {
+            if (debugForm == null || debugForm.IsDisposed)
+            {
+                debugForm = new ImageProcessingDebugForm(ballDetector);
+
+                debugForm.DebugFormClosed += DebugForm_DebugFormClosed;
+                debugForm.Show();
+
+                //init debug form with current (raw) selected rawFrame
+                if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
+                {
+                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex); //bug: sometimes last frame disposed
+                    if (rawFrame != null) debugForm.ShowDebugImages(rawFrame.frame);
+                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
+                }
+            }
+
+            else debugForm.Focus();
         }
 
         private void DebugForm_DebugFormClosed(object sender, EventArgs e)

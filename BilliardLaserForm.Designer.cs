@@ -37,10 +37,12 @@ namespace billiard_laser
             btnLastFrame = new Button();
             btnNextFrame = new Button();
             btnPlayPause = new Button();
+            labelFrameRate = new Label();
             panelListBoxes = new Panel();
             listBoxProcessedFrames = new ListBox();
             listBoxShots = new ListBox();
             panelVideoControls = new Panel();
+            checkBoxDetectBalls = new CheckBox();
             labelShots = new Label();
             labelFrames = new Label();
             buttonShowDebugForm = new Button();
@@ -48,10 +50,7 @@ namespace billiard_laser
             cboCamera = new ComboBox();
             labelVideoControls = new Label();
             btnLoadVideo = new Button();
-            btnGetCameraInput = new Button();
-            labelFrameRate = new Label();
-            btnDetectBalls = new Button();
-            checkBoxDetectBalls = new CheckBox();
+            btnLoadCameraInput = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             tableLayoutPanelVideoControls.SuspendLayout();
             panelMediaControls.SuspendLayout();
@@ -85,7 +84,7 @@ namespace billiard_laser
             tableLayoutPanelVideoControls.RowCount = 3;
             tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 229F));
             tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
-            tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 100F));
+            tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 115F));
             tableLayoutPanelVideoControls.Size = new Size(203, 561);
             tableLayoutPanelVideoControls.TabIndex = 47;
             // 
@@ -95,10 +94,11 @@ namespace billiard_laser
             panelMediaControls.Controls.Add(btnLastFrame);
             panelMediaControls.Controls.Add(btnNextFrame);
             panelMediaControls.Controls.Add(btnPlayPause);
+            panelMediaControls.Controls.Add(labelFrameRate);
             panelMediaControls.Dock = DockStyle.Fill;
-            panelMediaControls.Location = new Point(3, 464);
+            panelMediaControls.Location = new Point(3, 449);
             panelMediaControls.Name = "panelMediaControls";
-            panelMediaControls.Size = new Size(197, 94);
+            panelMediaControls.Size = new Size(197, 109);
             panelMediaControls.TabIndex = 49;
             // 
             // labelMediaControls
@@ -150,6 +150,16 @@ namespace billiard_laser
             btnPlayPause.UseVisualStyleBackColor = true;
             btnPlayPause.Click += btnPlayPause_Click;
             // 
+            // labelFrameRate
+            // 
+            labelFrameRate.AutoSize = true;
+            labelFrameRate.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            labelFrameRate.Location = new Point(8, 84);
+            labelFrameRate.Name = "labelFrameRate";
+            labelFrameRate.Size = new Size(38, 19);
+            labelFrameRate.TabIndex = 48;
+            labelFrameRate.Text = "FPS: ";
+            // 
             // panelListBoxes
             // 
             panelListBoxes.Controls.Add(listBoxProcessedFrames);
@@ -158,7 +168,7 @@ namespace billiard_laser
             panelListBoxes.Location = new Point(3, 229);
             panelListBoxes.Margin = new Padding(3, 0, 3, 3);
             panelListBoxes.Name = "panelListBoxes";
-            panelListBoxes.Size = new Size(197, 229);
+            panelListBoxes.Size = new Size(197, 214);
             panelListBoxes.TabIndex = 44;
             // 
             // listBoxProcessedFrames
@@ -169,7 +179,7 @@ namespace billiard_laser
             listBoxProcessedFrames.Location = new Point(0, 0);
             listBoxProcessedFrames.Margin = new Padding(3, 0, 3, 0);
             listBoxProcessedFrames.Name = "listBoxProcessedFrames";
-            listBoxProcessedFrames.Size = new Size(87, 229);
+            listBoxProcessedFrames.Size = new Size(87, 214);
             listBoxProcessedFrames.TabIndex = 40;
             listBoxProcessedFrames.SelectedIndexChanged += listBoxFrames_SelectedIndexChanged;
             // 
@@ -181,7 +191,7 @@ namespace billiard_laser
             listBoxShots.Location = new Point(110, 0);
             listBoxShots.Margin = new Padding(3, 0, 3, 0);
             listBoxShots.Name = "listBoxShots";
-            listBoxShots.Size = new Size(87, 229);
+            listBoxShots.Size = new Size(87, 214);
             listBoxShots.TabIndex = 41;
             listBoxShots.SelectedIndexChanged += listBoxShots_SelectedIndexChanged;
             // 
@@ -189,21 +199,32 @@ namespace billiard_laser
             // 
             panelVideoControls.Controls.Add(checkBoxDetectBalls);
             panelVideoControls.Controls.Add(labelShots);
-            panelVideoControls.Controls.Add(btnDetectBalls);
             panelVideoControls.Controls.Add(labelFrames);
             panelVideoControls.Controls.Add(buttonShowDebugForm);
             panelVideoControls.Controls.Add(labelCameras);
             panelVideoControls.Controls.Add(cboCamera);
             panelVideoControls.Controls.Add(labelVideoControls);
             panelVideoControls.Controls.Add(btnLoadVideo);
-            panelVideoControls.Controls.Add(btnGetCameraInput);
-            panelVideoControls.Controls.Add(labelFrameRate);
+            panelVideoControls.Controls.Add(btnLoadCameraInput);
             panelVideoControls.Dock = DockStyle.Fill;
             panelVideoControls.Location = new Point(3, 3);
             panelVideoControls.Margin = new Padding(3, 3, 3, 0);
             panelVideoControls.Name = "panelVideoControls";
             panelVideoControls.Size = new Size(197, 226);
             panelVideoControls.TabIndex = 48;
+            // 
+            // checkBoxDetectBalls
+            // 
+            checkBoxDetectBalls.AutoSize = true;
+            checkBoxDetectBalls.Checked = true;
+            checkBoxDetectBalls.CheckState = CheckState.Checked;
+            checkBoxDetectBalls.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            checkBoxDetectBalls.Location = new Point(9, 106);
+            checkBoxDetectBalls.Name = "checkBoxDetectBalls";
+            checkBoxDetectBalls.Size = new Size(112, 23);
+            checkBoxDetectBalls.TabIndex = 54;
+            checkBoxDetectBalls.Text = "Ball Detection";
+            checkBoxDetectBalls.UseVisualStyleBackColor = true;
             // 
             // labelShots
             // 
@@ -227,7 +248,7 @@ namespace billiard_laser
             // 
             // buttonShowDebugForm
             // 
-            buttonShowDebugForm.Location = new Point(6, 165);
+            buttonShowDebugForm.Location = new Point(8, 167);
             buttonShowDebugForm.Margin = new Padding(3, 2, 3, 2);
             buttonShowDebugForm.Name = "buttonShowDebugForm";
             buttonShowDebugForm.Size = new Size(181, 25);
@@ -249,9 +270,9 @@ namespace billiard_laser
             // cboCamera
             // 
             cboCamera.FormattingEnabled = true;
-            cboCamera.Location = new Point(3, 66);
+            cboCamera.Location = new Point(6, 66);
             cboCamera.Name = "cboCamera";
-            cboCamera.Size = new Size(103, 23);
+            cboCamera.Size = new Size(100, 23);
             cboCamera.TabIndex = 45;
             // 
             // labelVideoControls
@@ -266,7 +287,7 @@ namespace billiard_laser
             // 
             // btnLoadVideo
             // 
-            btnLoadVideo.Location = new Point(6, 136);
+            btnLoadVideo.Location = new Point(8, 138);
             btnLoadVideo.Margin = new Padding(3, 2, 3, 2);
             btnLoadVideo.Name = "btnLoadVideo";
             btnLoadVideo.Size = new Size(181, 25);
@@ -275,51 +296,16 @@ namespace billiard_laser
             btnLoadVideo.UseVisualStyleBackColor = true;
             btnLoadVideo.Click += btnLoadVideo_Click;
             // 
-            // btnGetCameraInput
+            // btnLoadCameraInput
             // 
-            btnGetCameraInput.Location = new Point(112, 64);
-            btnGetCameraInput.Margin = new Padding(3, 2, 3, 2);
-            btnGetCameraInput.Name = "btnGetCameraInput";
-            btnGetCameraInput.Size = new Size(75, 25);
-            btnGetCameraInput.TabIndex = 44;
-            btnGetCameraInput.Text = "Load Cam";
-            btnGetCameraInput.UseVisualStyleBackColor = true;
-            btnGetCameraInput.Click += btnGetCameraInput_Click;
-            // 
-            // labelFrameRate
-            // 
-            labelFrameRate.AutoSize = true;
-            labelFrameRate.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelFrameRate.Location = new Point(71, 36);
-            labelFrameRate.Name = "labelFrameRate";
-            labelFrameRate.Size = new Size(38, 19);
-            labelFrameRate.TabIndex = 48;
-            labelFrameRate.Text = "FPS: ";
-            // 
-            // btnDetectBalls
-            // 
-            btnDetectBalls.Enabled = false;
-            btnDetectBalls.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDetectBalls.Location = new Point(69, 2);
-            btnDetectBalls.Margin = new Padding(3, 2, 3, 2);
-            btnDetectBalls.Name = "btnDetectBalls";
-            btnDetectBalls.Size = new Size(181, 25);
-            btnDetectBalls.TabIndex = 47;
-            btnDetectBalls.Text = "Start Ball Detection";
-            btnDetectBalls.UseVisualStyleBackColor = true;
-            btnDetectBalls.Click += btnDetectBalls_Click;
-            // 
-            // checkBoxDetectBalls
-            // 
-            checkBoxDetectBalls.AutoSize = true;
-            checkBoxDetectBalls.Checked = true;
-            checkBoxDetectBalls.CheckState = CheckState.Checked;
-            checkBoxDetectBalls.Location = new Point(107, 97);
-            checkBoxDetectBalls.Name = "checkBoxDetectBalls";
-            checkBoxDetectBalls.Size = new Size(87, 19);
-            checkBoxDetectBalls.TabIndex = 54;
-            checkBoxDetectBalls.Text = "Detect Balls";
-            checkBoxDetectBalls.UseVisualStyleBackColor = true;
+            btnLoadCameraInput.Location = new Point(112, 65);
+            btnLoadCameraInput.Margin = new Padding(3, 2, 3, 2);
+            btnLoadCameraInput.Name = "btnLoadCameraInput";
+            btnLoadCameraInput.Size = new Size(75, 25);
+            btnLoadCameraInput.TabIndex = 44;
+            btnLoadCameraInput.Text = "Load Cam";
+            btnLoadCameraInput.UseVisualStyleBackColor = true;
+            btnLoadCameraInput.Click += btnLoadCameraInput_Click;
             // 
             // BilliardLaserForm
             // 
@@ -355,9 +341,8 @@ namespace billiard_laser
         private ComboBox cboCamera;
         private Label labelVideoControls;
         private Button btnLoadVideo;
-        private Button btnGetCameraInput;
+        private Button btnLoadCameraInput;
         private Label labelFrameRate;
-        private Button btnDetectBalls;
         private Panel panelListBoxes;
         private ListBox listBoxProcessedFrames;
         private ListBox listBoxShots;
