@@ -34,10 +34,9 @@ namespace billiard_laser
             tableLayoutPanelVideoControls = new TableLayoutPanel();
             panelMediaControls = new Panel();
             labelMediaControls = new Label();
-            buttonLastFrame = new Button();
-            buttonResume = new Button();
-            buttonNextFrame = new Button();
-            buttonPause = new Button();
+            btnLastFrame = new Button();
+            btnNextFrame = new Button();
+            btnPlayPause = new Button();
             panelListBoxes = new Panel();
             listBoxProcessedFrames = new ListBox();
             listBoxShots = new ListBox();
@@ -52,6 +51,7 @@ namespace billiard_laser
             btnGetCameraInput = new Button();
             labelFrameRate = new Label();
             btnDetectBalls = new Button();
+            checkBoxDetectBalls = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             tableLayoutPanelVideoControls.SuspendLayout();
             panelMediaControls.SuspendLayout();
@@ -92,10 +92,9 @@ namespace billiard_laser
             // panelMediaControls
             // 
             panelMediaControls.Controls.Add(labelMediaControls);
-            panelMediaControls.Controls.Add(buttonLastFrame);
-            panelMediaControls.Controls.Add(buttonResume);
-            panelMediaControls.Controls.Add(buttonNextFrame);
-            panelMediaControls.Controls.Add(buttonPause);
+            panelMediaControls.Controls.Add(btnLastFrame);
+            panelMediaControls.Controls.Add(btnNextFrame);
+            panelMediaControls.Controls.Add(btnPlayPause);
             panelMediaControls.Dock = DockStyle.Fill;
             panelMediaControls.Location = new Point(3, 464);
             panelMediaControls.Name = "panelMediaControls";
@@ -112,53 +111,44 @@ namespace billiard_laser
             labelMediaControls.TabIndex = 54;
             labelMediaControls.Text = "Media Controls";
             // 
-            // buttonLastFrame
+            // btnLastFrame
             // 
-            buttonLastFrame.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonLastFrame.Location = new Point(14, 32);
-            buttonLastFrame.Margin = new Padding(3, 2, 3, 2);
-            buttonLastFrame.Name = "buttonLastFrame";
-            buttonLastFrame.Size = new Size(80, 25);
-            buttonLastFrame.TabIndex = 42;
-            buttonLastFrame.Text = "Last Frame";
-            buttonLastFrame.UseVisualStyleBackColor = true;
-            buttonLastFrame.Click += buttonLastFrame_Click;
+            btnLastFrame.Enabled = false;
+            btnLastFrame.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnLastFrame.Location = new Point(8, 33);
+            btnLastFrame.Margin = new Padding(3, 2, 3, 2);
+            btnLastFrame.Name = "btnLastFrame";
+            btnLastFrame.Size = new Size(60, 45);
+            btnLastFrame.TabIndex = 42;
+            btnLastFrame.Text = "Last Frame";
+            btnLastFrame.UseVisualStyleBackColor = true;
+            btnLastFrame.Click += btnLastFrame_Click;
             // 
-            // buttonResume
+            // btnNextFrame
             // 
-            buttonResume.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonResume.Location = new Point(14, 57);
-            buttonResume.Margin = new Padding(3, 2, 3, 2);
-            buttonResume.Name = "buttonResume";
-            buttonResume.Size = new Size(80, 25);
-            buttonResume.TabIndex = 44;
-            buttonResume.Text = "Resume";
-            buttonResume.UseVisualStyleBackColor = true;
-            buttonResume.Click += buttonResume_Click;
+            btnNextFrame.Enabled = false;
+            btnNextFrame.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnNextFrame.Location = new Point(129, 33);
+            btnNextFrame.Margin = new Padding(3, 2, 3, 2);
+            btnNextFrame.Name = "btnNextFrame";
+            btnNextFrame.Size = new Size(60, 45);
+            btnNextFrame.TabIndex = 43;
+            btnNextFrame.Text = "Next Frame";
+            btnNextFrame.UseVisualStyleBackColor = true;
+            btnNextFrame.Click += btnNextFrame_Click;
             // 
-            // buttonNextFrame
+            // btnPlayPause
             // 
-            buttonNextFrame.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonNextFrame.Location = new Point(103, 32);
-            buttonNextFrame.Margin = new Padding(3, 2, 3, 2);
-            buttonNextFrame.Name = "buttonNextFrame";
-            buttonNextFrame.Size = new Size(80, 25);
-            buttonNextFrame.TabIndex = 43;
-            buttonNextFrame.Text = "Next Frame";
-            buttonNextFrame.UseVisualStyleBackColor = true;
-            buttonNextFrame.Click += buttonNextFrame_Click;
-            // 
-            // buttonPause
-            // 
-            buttonPause.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            buttonPause.Location = new Point(103, 57);
-            buttonPause.Margin = new Padding(3, 2, 3, 2);
-            buttonPause.Name = "buttonPause";
-            buttonPause.Size = new Size(80, 25);
-            buttonPause.TabIndex = 45;
-            buttonPause.Text = "Pause";
-            buttonPause.UseVisualStyleBackColor = true;
-            buttonPause.Click += buttonPause_Click;
+            btnPlayPause.Enabled = false;
+            btnPlayPause.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            btnPlayPause.Location = new Point(69, 33);
+            btnPlayPause.Margin = new Padding(3, 2, 3, 2);
+            btnPlayPause.Name = "btnPlayPause";
+            btnPlayPause.Size = new Size(60, 45);
+            btnPlayPause.TabIndex = 45;
+            btnPlayPause.Text = "⏵";
+            btnPlayPause.UseVisualStyleBackColor = true;
+            btnPlayPause.Click += btnPlayPause_Click;
             // 
             // panelListBoxes
             // 
@@ -197,7 +187,9 @@ namespace billiard_laser
             // 
             // panelVideoControls
             // 
+            panelVideoControls.Controls.Add(checkBoxDetectBalls);
             panelVideoControls.Controls.Add(labelShots);
+            panelVideoControls.Controls.Add(btnDetectBalls);
             panelVideoControls.Controls.Add(labelFrames);
             panelVideoControls.Controls.Add(buttonShowDebugForm);
             panelVideoControls.Controls.Add(labelCameras);
@@ -206,7 +198,6 @@ namespace billiard_laser
             panelVideoControls.Controls.Add(btnLoadVideo);
             panelVideoControls.Controls.Add(btnGetCameraInput);
             panelVideoControls.Controls.Add(labelFrameRate);
-            panelVideoControls.Controls.Add(btnDetectBalls);
             panelVideoControls.Dock = DockStyle.Fill;
             panelVideoControls.Location = new Point(3, 3);
             panelVideoControls.Margin = new Padding(3, 3, 3, 0);
@@ -236,7 +227,7 @@ namespace billiard_laser
             // 
             // buttonShowDebugForm
             // 
-            buttonShowDebugForm.Location = new Point(6, 134);
+            buttonShowDebugForm.Location = new Point(6, 165);
             buttonShowDebugForm.Margin = new Padding(3, 2, 3, 2);
             buttonShowDebugForm.Name = "buttonShowDebugForm";
             buttonShowDebugForm.Size = new Size(181, 25);
@@ -275,10 +266,10 @@ namespace billiard_laser
             // 
             // btnLoadVideo
             // 
-            btnLoadVideo.Location = new Point(112, 93);
+            btnLoadVideo.Location = new Point(6, 136);
             btnLoadVideo.Margin = new Padding(3, 2, 3, 2);
             btnLoadVideo.Name = "btnLoadVideo";
-            btnLoadVideo.Size = new Size(75, 25);
+            btnLoadVideo.Size = new Size(181, 25);
             btnLoadVideo.TabIndex = 49;
             btnLoadVideo.Text = "Load Video";
             btnLoadVideo.UseVisualStyleBackColor = true;
@@ -299,7 +290,7 @@ namespace billiard_laser
             // 
             labelFrameRate.AutoSize = true;
             labelFrameRate.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelFrameRate.Location = new Point(2, 96);
+            labelFrameRate.Location = new Point(71, 36);
             labelFrameRate.Name = "labelFrameRate";
             labelFrameRate.Size = new Size(38, 19);
             labelFrameRate.TabIndex = 48;
@@ -309,7 +300,7 @@ namespace billiard_laser
             // 
             btnDetectBalls.Enabled = false;
             btnDetectBalls.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnDetectBalls.Location = new Point(6, 169);
+            btnDetectBalls.Location = new Point(69, 2);
             btnDetectBalls.Margin = new Padding(3, 2, 3, 2);
             btnDetectBalls.Name = "btnDetectBalls";
             btnDetectBalls.Size = new Size(181, 25);
@@ -317,6 +308,18 @@ namespace billiard_laser
             btnDetectBalls.Text = "Start Ball Detection";
             btnDetectBalls.UseVisualStyleBackColor = true;
             btnDetectBalls.Click += btnDetectBalls_Click;
+            // 
+            // checkBoxDetectBalls
+            // 
+            checkBoxDetectBalls.AutoSize = true;
+            checkBoxDetectBalls.Checked = true;
+            checkBoxDetectBalls.CheckState = CheckState.Checked;
+            checkBoxDetectBalls.Location = new Point(107, 97);
+            checkBoxDetectBalls.Name = "checkBoxDetectBalls";
+            checkBoxDetectBalls.Size = new Size(87, 19);
+            checkBoxDetectBalls.TabIndex = 54;
+            checkBoxDetectBalls.Text = "Detect Balls";
+            checkBoxDetectBalls.UseVisualStyleBackColor = true;
             // 
             // BilliardLaserForm
             // 
@@ -359,10 +362,10 @@ namespace billiard_laser
         private ListBox listBoxProcessedFrames;
         private ListBox listBoxShots;
         private Panel panelMediaControls;
-        private Button buttonLastFrame;
-        private Button buttonResume;
-        private Button buttonNextFrame;
-        private Button buttonPause;
+        private Button btnLastFrame;
+        private Button btnNextFrame;
+        private Button btnPlayPause;
         private Label labelMediaControls;
+        private CheckBox checkBoxDetectBalls;
     }
 }

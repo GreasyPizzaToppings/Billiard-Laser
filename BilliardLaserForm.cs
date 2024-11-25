@@ -1,4 +1,4 @@
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.ComponentModel;
 using OpenCvSharp;
 using System.Windows.Controls;
@@ -31,17 +31,22 @@ namespace billiard_laser
         private BindingList<int> processedFrameIndices = new BindingList<int>();
         private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
         private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
+        private VideoFrame lastProcessedFrame = null; //used for paused state
         private const int maxFrames = 1000; //testing
 
         //flags
         private bool detectingBalls = false;
         private bool replayInProgress = false;
+        private bool isPaused = false;
 
         private InputType currentInputType;
-
+        
         //fps
         private Stopwatch stopwatch = new Stopwatch();
         private double totalProcessingTime = 0;
+
+        private const string PAUSE_ICON = "⏸";
+        private const string PLAY_ICON = "⏵";
 
         public enum InputType
         {
@@ -128,16 +133,26 @@ namespace billiard_laser
             detectingBalls = true;
             btnDetectBalls.Enabled = false;
 
+            //set media controls
+            btnPlayPause.Enabled = true;
+            btnPlayPause.Text = PAUSE_ICON;
+            btnNextFrame.Enabled = false;
+            btnLastFrame.Enabled = false;
+
+
             if (currentInputType == InputType.Video)
             {
-                buttonResume.Enabled = false;
-                buttonNextFrame.Enabled = false;
+                btnNextFrame.Enabled = false;
 
-                DetectBallsInLoadedVideo();
+                await ProcessFramesInLoadedVideo();
 
                 detectingBalls = false;
-                buttonResume.Enabled = false;
+                isPaused = false;
+
                 btnDetectBalls.Enabled = true;
+                btnLastFrame.Enabled = true;
+                btnNextFrame.Enabled = true;
+                btnPlayPause.Enabled = false;
             }
 
             //else its camera input, let it do its thing
@@ -153,10 +168,15 @@ namespace billiard_laser
             {
                 btnDetectBalls.Enabled = false;
 
+                //reset state of playpause button
+                btnPlayPause.Enabled = false;
+                btnPlayPause.Text = PLAY_ICON;
+
                 //reset previous state
                 ResetFrameQueuesState();
                 ResetShotState();
 
+                //actually loading video here
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
 
                 btnDetectBalls.Enabled = true;
@@ -183,10 +203,15 @@ namespace billiard_laser
         /// <param name="rawFrame"></param>
         private void ProcessFrame(VideoFrame rawFrame)
         {
-
             if (InvokeRequired)
             {
                 Invoke(new Action(() => ProcessFrame(rawFrame)));
+                return;
+            }
+
+            // If paused, don't process new frames
+            if (isPaused)
+            {
                 return;
             }
 
@@ -220,9 +245,15 @@ namespace billiard_laser
                             //scroll
                             listBoxProcessedFrames.TopIndex = listBoxProcessedFrames.Items.Count - 1;
 
-                            // Update the PictureBox directly without changing the ListBox index
-                            UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
+                            // Store the last processed frame before updating the display
+                            if (lastProcessedFrame != null)
+                            {
+                                lastProcessedFrame.Dispose();
+                            }
+                            lastProcessedFrame = new VideoFrame(new Bitmap(processedFrame.frame), processedFrame.index);
 
+                            // Update the PictureBox
+                            UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
 
                             stopwatch.Stop();
                             totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
@@ -256,6 +287,12 @@ namespace billiard_laser
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
+            if (isPaused)
+            {
+                frame.Dispose();
+                return;
+            }
+
             if (rawFrames.Count > maxFrames)
             {
                 var oldFrame = rawFrames.Dequeue();
@@ -267,13 +304,24 @@ namespace billiard_laser
         }
 
         /// <summary>
-        /// For each rawFrame in the video, perform ball and/or shot tracking
+        /// For each frame in the video, perform ball and/or shot tracking
+        /// Pauses processing when isPaused is true
         /// </summary>
-        /// <returns></returns>
-        private void DetectBallsInLoadedVideo()
+        private async Task ProcessFramesInLoadedVideo()
         {
             totalProcessingTime = 0;
-            foreach (VideoFrame rawFrame in rawFrames) ProcessFrame(rawFrame);
+
+            foreach (VideoFrame rawFrame in rawFrames)
+            {
+                while (isPaused)
+                {
+                    await Task.Delay(100); // Wait 100ms before checking pause state again
+                }
+
+                ProcessFrame(rawFrame);
+            }
+
+            Console.WriteLine("done");
         }
 
         private void UpdateFpsLabel(double totalTime, int index)
@@ -361,50 +409,42 @@ namespace billiard_laser
         #region Media Contols
 
         //go back a rawFrame
-        private void buttonLastFrame_Click(object sender, EventArgs e)
+        private void btnLastFrame_Click(object sender, EventArgs e)
         {
-            //stop the video from playing
-            if (detectingBalls)
-            {
-                detectingBalls = false;
-                buttonResume.Enabled = true;
-            }
-
             if (listBoxProcessedFrames.SelectedIndex > 0) listBoxProcessedFrames.SelectedIndex -= 1;
-            buttonNextFrame.Enabled = true;
         }
 
         //go forward a rawFrame
-        private void buttonNextFrame_Click(object sender, EventArgs e)
+        private void btnNextFrame_Click(object sender, EventArgs e)
         {
-            if (detectingBalls) return; //cant skip rawFrame when at the latest rawFrame
-
-            //stop the video from playing
-            detectingBalls = false;
-
             if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1)) listBoxProcessedFrames.SelectedIndex += 1;
-            buttonResume.Enabled = true;
         }
 
-        //skip to latest
-        private void buttonResume_Click(object sender, EventArgs e)
+        private void btnPlayPause_Click(object sender, EventArgs e)
         {
-            detectingBalls = true;
-            buttonResume.Enabled = false;
-            buttonNextFrame.Enabled = false;
+            isPaused = !isPaused;
 
-            //show latest processed rawFrame from list box in the picturebox
-            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-        }
+            if (isPaused)
+            {
+                // Pause
+                btnPlayPause.Text = PLAY_ICON;
+                btnLastFrame.Enabled = true;
+                btnNextFrame.Enabled = true;
 
-        private void buttonPause_Click(object sender, EventArgs e)
-        {
-            // Stop processing more frames
-            detectingBalls = false;
-
-            // Enable the resume button
-            buttonResume.Enabled = true;
-            buttonNextFrame.Enabled = true;
+                // Keep displaying the last frame
+                if (lastProcessedFrame != null)
+                {
+                    UpdatePictureBoxImage(new Bitmap(lastProcessedFrame.frame));
+                }
+            }
+            else
+            {
+                // Resume
+                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
+                btnPlayPause.Text = PAUSE_ICON;
+                btnLastFrame.Enabled = false;
+                btnNextFrame.Enabled = false;
+            }
         }
 
         #endregion
@@ -426,6 +466,11 @@ namespace billiard_laser
             {
                 var frame = processedFrames.Dequeue();
                 frame.frame.Dispose();
+            }
+
+            if (lastProcessedFrame != null)
+            {
+                lastProcessedFrame.Dispose();
             }
 
             if (pictureBoxImage.Image != null)

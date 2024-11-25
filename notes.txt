@@ -3,10 +3,13 @@ decent mask
 44,107,0
 64,255,255
 
+done:
+1: clean up ui, remove unused buttons (yagni)
+remove shot graph stuff (yagni)
 
 todo:
-1: clean up ui, remove unused buttons (yagni)
-bonus: fix pause/play button
+
+fix pause/play button
 2: figure out what images u want on debug form 
 3: implement real shot detection (1 ball start moving - all balls stop)
 4: implement ball replacement helper (to actually achieve mvp)
