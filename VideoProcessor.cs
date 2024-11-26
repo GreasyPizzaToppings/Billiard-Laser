@@ -31,8 +31,6 @@ public class VideoProcessor
             Bitmap bitmap = BitmapConverter.ToBitmap(image);
             VideoFrame frame = new VideoFrame(bitmap, index);
 
-            
-
             if (framesQueue.Count >= maxFrames)
             {
                 framesQueue.Dequeue();
