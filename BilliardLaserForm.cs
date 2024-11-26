@@ -140,6 +140,7 @@ namespace billiard_laser
         {
             // Cancel any previous video processing task
             videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource?.Dispose();
             videoCancellationTokenSource = null;
 
             // Reset the frame queues
@@ -178,18 +179,57 @@ namespace billiard_laser
         }
 
         /// <summary>
+        /// Start showing the loaded videos frames, detecting balls if enabled
+        /// </summary>
+        private async void StartLoadedVideo()
+        {
+            loadedVideoStarted = true;
+
+            //reset state
+            ResetFrameQueuesState(clearRawFrames: false);
+            ResetShotState();
+
+            //reset fps
+            totalProcessingTime = 0;
+            UpdateFpsLabel(0);
+
+            CurrentPlaybackState = PlaybackState.Playing;
+
+            if (currentInputType == InputType.Video)
+            {
+                try
+                {
+                    await ProcessFramesInLoadedVideo();
+                }
+
+                catch (OperationCanceledException ex)
+                {
+                    Console.WriteLine("caught OperationCanceledException in startloadedvideo(): " + ex.Message);
+                    return;
+                }
+
+                CurrentPlaybackState = PlaybackState.Finished;
+                loadedVideoStarted = false;
+            }
+
+            //else its camera input, let it do its thing
+        }
+
+
+        /// <summary>
         /// For each frame in the video, perform ball and/or shot tracking
         /// Pauses processing when playback state is paused
         /// </summary>
         private async Task ProcessFramesInLoadedVideo()
         {
             totalProcessingTime = 0;
-
             videoCancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = videoCancellationTokenSource.Token;
 
+            // Create a local copy of the frames to avoid enumeration modification issues
+            var framesCopy = rawFrames.ToList();
 
-            foreach (VideoFrame rawFrame in rawFrames)
+            foreach (VideoFrame rawFrame in framesCopy)
             {
                 while (CurrentPlaybackState == PlaybackState.Paused)
                 {
@@ -204,7 +244,6 @@ namespace billiard_laser
 
                 ProcessFrame(rawFrame);
             }
-
         }
 
         //display a selected processed frame of the video and send to debug form if its open
@@ -490,41 +529,6 @@ namespace billiard_laser
         private void btnNextFrame_Click(object sender, EventArgs e)
         {
             if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1)) listBoxProcessedFrames.SelectedIndex += 1;
-        }
-
-        /// <summary>
-        /// Start showing the loaded videos frames, detecting balls if enabled
-        /// </summary>
-        private async void StartLoadedVideo()
-        {
-            loadedVideoStarted = true;
-
-            //reset state
-            ResetFrameQueuesState(clearRawFrames: false);
-            ResetShotState();
-
-            //reset fps
-            totalProcessingTime = 0;
-            UpdateFpsLabel(0);
-
-            CurrentPlaybackState = PlaybackState.Playing;
-
-            if (currentInputType == InputType.Video)
-            {
-                try {
-                    await ProcessFramesInLoadedVideo();
-                }
-
-                catch (OperationCanceledException ex) {
-                    Console.WriteLine("caught OperationCanceledException in startloadedvideo(): " + ex.Message);
-                    return;
-                }
-
-                CurrentPlaybackState = PlaybackState.Finished;
-                loadedVideoStarted = false;
-            }
-
-            //else its camera input, let it do its thing
         }
 
         /// <summary>
