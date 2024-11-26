@@ -7,9 +7,10 @@ done:
 1: clean up ui, remove unused buttons (yagni)
 remove shot graph stuff (yagni)
 
-todo:
 fix fps label
+fix pause/playback
 
+todo:
 2: figure out what images u want on debug form 
 3: implement real shot detection (1 ball start moving - all balls stop)
 4: implement ball replacement helper (to actually achieve mvp)

@@ -33,9 +33,9 @@ namespace billiard_laser
 
         //flags
         private bool replayInProgress = false;
-        private bool isPaused = false;
         private bool loadedVideoStarted = false;
 
+        private PlaybackState playbackState;
         private InputType currentInputType;
 
         //fps
@@ -60,7 +60,25 @@ namespace billiard_laser
             }
         }
 
-        public enum InputType
+        private PlaybackState CurrentPlaybackState
+        {
+            get => playbackState;
+            set
+            {
+                playbackState = value;
+                UpdateMediaControlsState();
+            }
+        }
+
+        private enum PlaybackState
+        {
+            Ready,
+            Playing,
+            Paused,
+            Finished
+        }
+
+        private enum InputType
         {
             Video,
             Camera
@@ -90,12 +108,7 @@ namespace billiard_laser
         {
             if (cameraController.StartCameraCapture())
             {
-                //set media controls
-                btnPlayPause.Enabled = true;
-                btnPlayPause.Text = PAUSE_ICON;
-                btnNextFrame.Enabled = false;
-                btnLastFrame.Enabled = false;
-
+                CurrentPlaybackState = PlaybackState.Playing;
                 totalProcessingTime = 0;
                 currentInputType = InputType.Camera;
             }
@@ -103,7 +116,7 @@ namespace billiard_laser
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
-            if (isPaused)
+            if (CurrentPlaybackState == PlaybackState.Paused)
             {
                 frame.Dispose();
                 return;
@@ -142,18 +155,13 @@ namespace billiard_laser
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
 
                 currentInputType = InputType.Video;
-
-                //reset state of playpause button
-                btnPlayPause.Enabled = true;
-                btnPlayPause.Text = PLAY_ICON;
-                btnNextFrame.Enabled = false;
-                btnLastFrame.Enabled = false;
+                CurrentPlaybackState = PlaybackState.Ready;
             }
         }
 
         /// <summary>
         /// For each frame in the video, perform ball and/or shot tracking
-        /// Pauses processing when isPaused is true
+        /// Pauses processing when playback state is paused
         /// </summary>
         private async Task ProcessFramesInLoadedVideo()
         {
@@ -161,7 +169,7 @@ namespace billiard_laser
 
             foreach (VideoFrame rawFrame in rawFrames)
             {
-                while (isPaused)
+                while (CurrentPlaybackState == PlaybackState.Paused)
                 {
                     await Task.Delay(100); // Wait 100ms before checking pause state again
                 }
@@ -285,7 +293,8 @@ namespace billiard_laser
             // Performance metrics
             stopwatch.Stop();
             totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-            UpdateFpsLabel(processedFrame.index);
+            if (processedFrame != null) UpdateFpsLabel(processedFrame.index);
+            else Console.WriteLine("No processed frame available for FPS calculation");
         }
 
         /// <summary>
@@ -401,6 +410,47 @@ namespace billiard_laser
 
         #region Media Contols
 
+        private void UpdateMediaControlsState()
+        {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(UpdateMediaControlsState));
+                return;
+            }
+
+            switch (CurrentPlaybackState)
+            {
+                case PlaybackState.Ready:
+                    btnPlayPause.Text = PLAY_ICON;
+                    btnPlayPause.Enabled = true;
+                    btnNextFrame.Enabled = false;
+                    btnLastFrame.Enabled = false;
+                    break;
+
+                case PlaybackState.Playing:
+                    btnPlayPause.Text = PAUSE_ICON;
+                    btnPlayPause.Enabled = true;
+                    btnNextFrame.Enabled = false;
+                    btnLastFrame.Enabled = false;
+                    break;
+
+                case PlaybackState.Paused:
+                    btnPlayPause.Text = PLAY_ICON;
+                    btnPlayPause.Enabled = true;
+                    btnNextFrame.Enabled = true;
+                    btnLastFrame.Enabled = true;
+                    break;
+
+                case PlaybackState.Finished:
+                    btnPlayPause.Text = PLAY_ICON;
+                    btnPlayPause.Enabled = true; //can replay
+                    btnNextFrame.Enabled = true;
+                    btnLastFrame.Enabled = true;
+                    loadedVideoStarted = false;
+                    break;
+            }
+        }
+
         //go back a rawFrame
         private void btnLastFrame_Click(object sender, EventArgs e)
         {
@@ -423,31 +473,16 @@ namespace billiard_laser
             ResetFrameQueuesState(clearRawFrames: false);
             ResetShotState();
 
-            //set media controls
-            btnPlayPause.Enabled = true;
-            btnPlayPause.Text = PAUSE_ICON;
-            btnNextFrame.Enabled = false;
-            btnLastFrame.Enabled = false;
-
             //reset fps
             totalProcessingTime = 0;
             UpdateFpsLabel(0);
 
+            CurrentPlaybackState = PlaybackState.Playing;
 
             if (currentInputType == InputType.Video)
             {
-                btnNextFrame.Enabled = false;
-
                 await ProcessFramesInLoadedVideo();
-
-                isPaused = false;
-
-                btnLastFrame.Enabled = true;
-                btnNextFrame.Enabled = true;
-                btnPlayPause.Enabled = true;
-                btnPlayPause.Text = PLAY_ICON;
-
-                //video finished, allow it to be replayed
+                CurrentPlaybackState = PlaybackState.Finished;
                 loadedVideoStarted = false;
             }
 
@@ -459,37 +494,25 @@ namespace billiard_laser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private async void btnPlayPause_Click(object sender, EventArgs e)
+        private void btnPlayPause_Click(object sender, EventArgs e)
         {
-            //first time running
-            if (!loadedVideoStarted) {
+            if (!loadedVideoStarted)
+            {
                 StartLoadedVideo();
                 return;
             }
 
-            isPaused = !isPaused;
-
-            if (isPaused)
-            {
-                // Pause
-                btnPlayPause.Text = PLAY_ICON;
-                btnLastFrame.Enabled = true;
-                btnNextFrame.Enabled = true;
-            }
-            else
-            {
-                // Resume
-                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1;
-                btnPlayPause.Text = PAUSE_ICON;
-                btnLastFrame.Enabled = false;
-                btnNextFrame.Enabled = false;
-            }
+            // Toggle between Play and Pause states
+            CurrentPlaybackState = (CurrentPlaybackState == PlaybackState.Playing)
+                ? PlaybackState.Paused
+                : PlaybackState.Playing;
         }
 
         #endregion
 
         private void Form1_FormClosing(object sender, FormClosingEventArgs e)
         {
+            CurrentPlaybackState = PlaybackState.Ready;
             cameraController.StopCameraCapture();
 
             processedFrameIndices.Clear();
