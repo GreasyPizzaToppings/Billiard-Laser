@@ -10,7 +10,10 @@ remove shot graph stuff (yagni)
 fix fps label
 fix pause/playback
 
+refactor playback mechanism
+
 todo:
+fix async bug with 2 loaded videos
 2: figure out what images u want on debug form 
 3: implement real shot detection (1 ball start moving - all balls stop)
 4: implement ball replacement helper (to actually achieve mvp)
@@ -27,7 +30,6 @@ display output resolution on form?
 
 bugs:
 - loading video while its already playing/detecting balls and then detecting balls again results in collection enumeration modified error
-- pressing pause just causes ball detection to stop. it continues playing the video
 - crashed once when resising window while replaying shot. 'parameter invalid' on the application.run(new billiardlaserform()) and sometimes elsewhere
 
 

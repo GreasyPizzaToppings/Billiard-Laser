@@ -1,5 +1,6 @@
 ﻿using System.Diagnostics;
 using System.ComponentModel;
+using System.Threading;
 
 namespace billiard_laser
 {
@@ -45,6 +46,9 @@ namespace billiard_laser
 
         private const string PAUSE_ICON = "⏸";
         private const string PLAY_ICON = "⏵";
+
+        private readonly object rawFramesLock = new object();
+        private CancellationTokenSource videoCancellationTokenSource;
 
         public bool DetectingBalls
         {
@@ -132,6 +136,24 @@ namespace billiard_laser
             ProcessFrame(frame);
         }
 
+        private void ResetPlaybackState()
+        {
+            // Cancel any previous video processing task
+            videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource = null;
+
+            // Reset the frame queues
+            ResetFrameQueuesState();
+
+            // Reset the shot detection
+            ResetShotState();
+
+            // Reset other state variables
+            loadedVideoStarted = false;
+            totalProcessingTime = 0;
+            UpdateFpsLabel(0);
+        }
+
         /// <summary>
         /// load a video's frames into memory but do not play it
         /// </summary>
@@ -145,11 +167,7 @@ namespace billiard_laser
 
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
-                loadedVideoStarted = false;
-
-                //reset previous state
-                ResetFrameQueuesState();
-                ResetShotState();
+                ResetPlaybackState();
 
                 //actually loading video here
                 VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
@@ -167,15 +185,26 @@ namespace billiard_laser
         {
             totalProcessingTime = 0;
 
+            videoCancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = videoCancellationTokenSource.Token;
+
+
             foreach (VideoFrame rawFrame in rawFrames)
             {
                 while (CurrentPlaybackState == PlaybackState.Paused)
                 {
-                    await Task.Delay(100); // Wait 100ms before checking pause state again
+                    await Task.Delay(100, cancellationToken);
+                }
+
+                if (cancellationToken.IsCancellationRequested)
+                {
+                    // The playback has been stopped, break out of the loop
+                    break;
                 }
 
                 ProcessFrame(rawFrame);
             }
+
         }
 
         //display a selected processed frame of the video and send to debug form if its open
@@ -466,7 +495,8 @@ namespace billiard_laser
         /// <summary>
         /// Start showing the loaded videos frames, detecting balls if enabled
         /// </summary>
-        private async void StartLoadedVideo() {
+        private async void StartLoadedVideo()
+        {
             loadedVideoStarted = true;
 
             //reset state
@@ -481,7 +511,7 @@ namespace billiard_laser
 
             if (currentInputType == InputType.Video)
             {
-                await ProcessFramesInLoadedVideo();
+                await ProcessFramesInLoadedVideo(); //needs to handle return from here if cancelled task
                 CurrentPlaybackState = PlaybackState.Finished;
                 loadedVideoStarted = false;
             }
