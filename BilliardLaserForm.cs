@@ -199,7 +199,7 @@ namespace billiard_laser
                 if (cancellationToken.IsCancellationRequested)
                 {
                     // The playback has been stopped, break out of the loop
-                    break;
+                    throw new OperationCanceledException();
                 }
 
                 ProcessFrame(rawFrame);
@@ -511,7 +511,15 @@ namespace billiard_laser
 
             if (currentInputType == InputType.Video)
             {
-                await ProcessFramesInLoadedVideo(); //needs to handle return from here if cancelled task
+                try {
+                    await ProcessFramesInLoadedVideo();
+                }
+
+                catch (OperationCanceledException ex) {
+                    Console.WriteLine("caught OperationCanceledException in startloadedvideo(): " + ex.Message);
+                    return;
+                }
+
                 CurrentPlaybackState = PlaybackState.Finished;
                 loadedVideoStarted = false;
             }
