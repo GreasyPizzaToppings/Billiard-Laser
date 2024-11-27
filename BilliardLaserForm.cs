@@ -43,7 +43,8 @@ namespace billiard_laser
         //fps
         private Stopwatch stopwatch = new Stopwatch();
         private Stopwatch debugStopwatch = new Stopwatch();
-        private double totalProcessingTime = 0;
+        private const int FPS_WINDOW_SIZE = 30;
+        private Queue<double> frameProcessingTimes = new Queue<double>();
 
         private const string PAUSE_ICON = "⏸";
         private const string PLAY_ICON = "⏵";
@@ -122,8 +123,7 @@ namespace billiard_laser
             ResetShotState();
 
             loadedVideoStarted = false;
-            totalProcessingTime = 0;
-            UpdateFpsLabel(0);
+            UpdateFpsLabel();
 
             currentInputType = InputType.Camera;
             CurrentPlaybackState = PlaybackState.Loading;
@@ -143,8 +143,7 @@ namespace billiard_laser
             ResetShotState();
 
             loadedVideoStarted = false;
-            totalProcessingTime = 0;
-            UpdateFpsLabel(0);
+            UpdateFpsLabel();
 
             currentInputType = InputType.Video;
             CurrentPlaybackState = PlaybackState.Loading;
@@ -162,8 +161,7 @@ namespace billiard_laser
             ResetShotState();
 
             loadedVideoStarted = true;
-            totalProcessingTime = 0;
-            UpdateFpsLabel(0);
+            UpdateFpsLabel();
 
             currentInputType = InputType.Video;
             CurrentPlaybackState = PlaybackState.Playing;
@@ -255,7 +253,6 @@ namespace billiard_laser
         /// </summary>
         private async Task ProcessFramesInLoadedVideo()
         {
-            totalProcessingTime = 0;
             videoCancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = videoCancellationTokenSource.Token;
 
@@ -300,7 +297,6 @@ namespace billiard_laser
                                 debugStopwatch.Restart();
                                 UpdateDebugForm(tempBitmap);
                                 debugStopwatch.Stop();
-                                totalProcessingTime += debugStopwatch.Elapsed.TotalSeconds;
                             }
                         }
                         catch (ArgumentException)
@@ -376,6 +372,8 @@ namespace billiard_laser
 
                 listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scroll and update pic box/dbg form
 
+                Application.DoEvents(); //todo better way?
+                UpdateFpsLabel();
             }
 
             catch (Exception ex)
@@ -387,15 +385,9 @@ namespace billiard_laser
             finally
             {
                 results?.Dispose();
+                stopwatch.Stop();
+                debugStopwatch.Stop();
             }
-
-            Application.DoEvents(); //todo better way?
-
-            // Performance metrics
-            stopwatch.Stop();
-            totalProcessingTime += stopwatch.Elapsed.TotalSeconds;
-            if (processedFrame != null) UpdateFpsLabel(processedFrame.index);
-            else Console.WriteLine("No processed frame available for FPS calculation");
         }
 
         /// <summary>
@@ -435,11 +427,35 @@ namespace billiard_laser
         }
 
         //display average fps @ resolution
-        private void UpdateFpsLabel(int currentFrameIndex)
+        private void UpdateFpsLabel()
         {
-            var fps = currentFrameIndex / totalProcessingTime;
-            labelFrameRate.Text = $"FPS: {fps:F2} @ {outputVideoResolution.Width}x{outputVideoResolution.Height}";
+            if (InvokeRequired)
+            {
+                Invoke(new Action(UpdateFpsLabel));
+                return;
+            }
+
+            double frameProcessingTime = stopwatch.Elapsed.TotalSeconds + debugStopwatch.Elapsed.TotalSeconds;
+            frameProcessingTimes.Enqueue(frameProcessingTime);
+
+            // Maintain only the last 30 frame processing times
+            if (frameProcessingTimes.Count > FPS_WINDOW_SIZE)
+            {
+                frameProcessingTimes.Dequeue();
+            }
+
+            // Calculate FPS using the current window of frames
+            if (frameProcessingTimes.Count > 0)
+            {
+                double averageProcessingTime = frameProcessingTimes.Sum() / frameProcessingTimes.Count;
+                double fps = averageProcessingTime > 0
+                    ? 1.0 / averageProcessingTime
+                    : 0;
+
+                labelFrameRate.Text = $"FPS: {fps:F2} @ {outputVideoResolution.Width}x{outputVideoResolution.Height}";
+            }
         }
+
 
         #region Shots
 
