@@ -178,6 +178,8 @@ namespace billiard_laser
         {
             try
             {
+                ballReplacementForm?.UpdateTableOverlay(frame.frame); //always send to ball replacer form if possible
+
                 if (CurrentPlaybackState == PlaybackState.Paused || currentInputType != InputType.Camera)
                 {
                     frame.Dispose();
@@ -193,8 +195,6 @@ namespace billiard_laser
 
                 rawFrames.Enqueue(frame);
                 ProcessFrame(frame);
-
-                ballReplacementForm?.UpdateTableOverlay(frame.frame);
             }
 
             catch (Exception ex)
@@ -625,8 +625,8 @@ namespace billiard_laser
 
             processedFrameIndices.Clear();
 
-            videoCancellationTokenSource.Cancel();
-            videoCancellationTokenSource.Dispose();
+            videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource?.Dispose();
 
             // Dispose of all frames in the queues
             while (rawFrames.Count > 0)
