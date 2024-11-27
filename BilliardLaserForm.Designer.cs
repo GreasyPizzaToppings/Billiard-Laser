@@ -42,10 +42,11 @@ namespace billiard_laser
             listBoxProcessedFrames = new ListBox();
             listBoxShots = new ListBox();
             panelVideoControls = new Panel();
+            btnShowReplaceBallsForm = new Button();
             checkBoxDetectBalls = new CheckBox();
             labelShots = new Label();
             labelFrames = new Label();
-            buttonShowDebugForm = new Button();
+            btnShowDebugForm = new Button();
             labelCameras = new Label();
             cboCamera = new ComboBox();
             labelVideoControls = new Label();
@@ -82,7 +83,7 @@ namespace billiard_laser
             tableLayoutPanelVideoControls.Location = new Point(0, 0);
             tableLayoutPanelVideoControls.Name = "tableLayoutPanelVideoControls";
             tableLayoutPanelVideoControls.RowCount = 3;
-            tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 229F));
+            tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 250F));
             tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Percent, 100F));
             tableLayoutPanelVideoControls.RowStyles.Add(new RowStyle(SizeType.Absolute, 115F));
             tableLayoutPanelVideoControls.Size = new Size(203, 561);
@@ -165,10 +166,10 @@ namespace billiard_laser
             panelListBoxes.Controls.Add(listBoxProcessedFrames);
             panelListBoxes.Controls.Add(listBoxShots);
             panelListBoxes.Dock = DockStyle.Fill;
-            panelListBoxes.Location = new Point(3, 229);
+            panelListBoxes.Location = new Point(3, 250);
             panelListBoxes.Margin = new Padding(3, 0, 3, 3);
             panelListBoxes.Name = "panelListBoxes";
-            panelListBoxes.Size = new Size(197, 214);
+            panelListBoxes.Size = new Size(197, 193);
             panelListBoxes.TabIndex = 44;
             // 
             // listBoxProcessedFrames
@@ -179,7 +180,7 @@ namespace billiard_laser
             listBoxProcessedFrames.Location = new Point(0, 0);
             listBoxProcessedFrames.Margin = new Padding(3, 0, 3, 0);
             listBoxProcessedFrames.Name = "listBoxProcessedFrames";
-            listBoxProcessedFrames.Size = new Size(87, 214);
+            listBoxProcessedFrames.Size = new Size(87, 193);
             listBoxProcessedFrames.TabIndex = 40;
             listBoxProcessedFrames.SelectedIndexChanged += listBoxFrames_SelectedIndexChanged;
             // 
@@ -191,16 +192,17 @@ namespace billiard_laser
             listBoxShots.Location = new Point(110, 0);
             listBoxShots.Margin = new Padding(3, 0, 3, 0);
             listBoxShots.Name = "listBoxShots";
-            listBoxShots.Size = new Size(87, 214);
+            listBoxShots.Size = new Size(87, 193);
             listBoxShots.TabIndex = 41;
             listBoxShots.SelectedIndexChanged += listBoxShots_SelectedIndexChanged;
             // 
             // panelVideoControls
             // 
+            panelVideoControls.Controls.Add(btnShowReplaceBallsForm);
             panelVideoControls.Controls.Add(checkBoxDetectBalls);
             panelVideoControls.Controls.Add(labelShots);
             panelVideoControls.Controls.Add(labelFrames);
-            panelVideoControls.Controls.Add(buttonShowDebugForm);
+            panelVideoControls.Controls.Add(btnShowDebugForm);
             panelVideoControls.Controls.Add(labelCameras);
             panelVideoControls.Controls.Add(cboCamera);
             panelVideoControls.Controls.Add(labelVideoControls);
@@ -210,8 +212,19 @@ namespace billiard_laser
             panelVideoControls.Location = new Point(3, 3);
             panelVideoControls.Margin = new Padding(3, 3, 3, 0);
             panelVideoControls.Name = "panelVideoControls";
-            panelVideoControls.Size = new Size(197, 226);
+            panelVideoControls.Size = new Size(197, 247);
             panelVideoControls.TabIndex = 48;
+            // 
+            // btnShowReplaceBallsForm
+            // 
+            btnShowReplaceBallsForm.Location = new Point(8, 192);
+            btnShowReplaceBallsForm.Margin = new Padding(3, 2, 3, 2);
+            btnShowReplaceBallsForm.Name = "btnShowReplaceBallsForm";
+            btnShowReplaceBallsForm.Size = new Size(181, 25);
+            btnShowReplaceBallsForm.TabIndex = 55;
+            btnShowReplaceBallsForm.Text = "Replace Balls";
+            btnShowReplaceBallsForm.UseVisualStyleBackColor = true;
+            btnShowReplaceBallsForm.Click += btnShowReplaceBallsForm_Click;
             // 
             // checkBoxDetectBalls
             // 
@@ -219,7 +232,7 @@ namespace billiard_laser
             checkBoxDetectBalls.Checked = true;
             checkBoxDetectBalls.CheckState = CheckState.Checked;
             checkBoxDetectBalls.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            checkBoxDetectBalls.Location = new Point(9, 106);
+            checkBoxDetectBalls.Location = new Point(7, 101);
             checkBoxDetectBalls.Name = "checkBoxDetectBalls";
             checkBoxDetectBalls.Size = new Size(112, 23);
             checkBoxDetectBalls.TabIndex = 54;
@@ -230,7 +243,7 @@ namespace billiard_laser
             // 
             labelShots.AutoSize = true;
             labelShots.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelShots.Location = new Point(112, 203);
+            labelShots.Location = new Point(112, 226);
             labelShots.Name = "labelShots";
             labelShots.Size = new Size(43, 19);
             labelShots.TabIndex = 53;
@@ -240,22 +253,22 @@ namespace billiard_laser
             // 
             labelFrames.AutoSize = true;
             labelFrames.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            labelFrames.Location = new Point(6, 203);
+            labelFrames.Location = new Point(6, 226);
             labelFrames.Name = "labelFrames";
             labelFrames.Size = new Size(53, 19);
             labelFrames.TabIndex = 52;
             labelFrames.Text = "Frames";
             // 
-            // buttonShowDebugForm
+            // btnShowDebugForm
             // 
-            buttonShowDebugForm.Location = new Point(8, 167);
-            buttonShowDebugForm.Margin = new Padding(3, 2, 3, 2);
-            buttonShowDebugForm.Name = "buttonShowDebugForm";
-            buttonShowDebugForm.Size = new Size(181, 25);
-            buttonShowDebugForm.TabIndex = 51;
-            buttonShowDebugForm.Text = "Show Debug Form";
-            buttonShowDebugForm.UseVisualStyleBackColor = true;
-            buttonShowDebugForm.Click += buttonShowDebugForm_Click;
+            btnShowDebugForm.Location = new Point(8, 163);
+            btnShowDebugForm.Margin = new Padding(3, 2, 3, 2);
+            btnShowDebugForm.Name = "btnShowDebugForm";
+            btnShowDebugForm.Size = new Size(181, 25);
+            btnShowDebugForm.TabIndex = 51;
+            btnShowDebugForm.Text = "Show Debug Form";
+            btnShowDebugForm.UseVisualStyleBackColor = true;
+            btnShowDebugForm.Click += btnShowDebugForm_Click;
             // 
             // labelCameras
             // 
@@ -287,7 +300,7 @@ namespace billiard_laser
             // 
             // btnLoadVideo
             // 
-            btnLoadVideo.Location = new Point(8, 138);
+            btnLoadVideo.Location = new Point(8, 134);
             btnLoadVideo.Margin = new Padding(3, 2, 3, 2);
             btnLoadVideo.Name = "btnLoadVideo";
             btnLoadVideo.Size = new Size(181, 25);
@@ -336,7 +349,7 @@ namespace billiard_laser
         private Panel panelVideoControls;
         private Label labelShots;
         private Label labelFrames;
-        private Button buttonShowDebugForm;
+        private Button btnShowDebugForm;
         private Label labelCameras;
         private ComboBox cboCamera;
         private Label labelVideoControls;
@@ -352,5 +365,6 @@ namespace billiard_laser
         private Button btnPlayPause;
         private Label labelMediaControls;
         private CheckBox checkBoxDetectBalls;
+        private Button btnShowReplaceBallsForm;
     }
 }
