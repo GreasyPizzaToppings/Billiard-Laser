@@ -112,6 +112,9 @@ namespace billiard_laser
         private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
+
+            targetTableLayout.Dispose();
+            pictureBoxTable.Dispose();
         }
     }
 }
