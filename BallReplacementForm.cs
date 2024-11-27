@@ -39,6 +39,12 @@ namespace billiard_laser
         /// <param name="image"></param>
         public void UpdateTableOverlay(Bitmap cameraImage)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => UpdateTableOverlay(cameraImage)));
+                return;
+            }
+
             if (cameraImage == null || TargetTableLayout == null)
                 return;
 
