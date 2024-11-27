@@ -70,9 +70,26 @@ public class CameraController
     {
         if (videoCaptureDevice != null && videoCaptureDevice.IsRunning)
         {
-            videoCaptureDevice.SignalToStop();
-            videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
-            videoCaptureDevice = null;
+            try
+            {
+                videoCaptureDevice.NewFrame -= FinalFrame_NewFrame;
+                videoCaptureDevice.SignalToStop();
+
+                // Fallback
+                if (videoCaptureDevice.IsRunning)
+                {
+                    videoCaptureDevice.Stop();
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error stopping camera capture: {ex.Message}");
+            }
+            finally
+            {
+                videoCaptureDevice = null;
+                frameIndex = 0;
+            }
         }
     }
 }

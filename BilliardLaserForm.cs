@@ -48,8 +48,7 @@ namespace billiard_laser
         private const string PAUSE_ICON = "⏸";
         private const string PLAY_ICON = "⏵";
 
-        private readonly object rawFramesLock = new object();
-        private CancellationTokenSource cancellationTokenSource;
+        private CancellationTokenSource videoCancellationTokenSource;
 
         public bool DetectingBalls
         {
@@ -110,49 +109,39 @@ namespace billiard_laser
             listBoxProcessedFrames.DataSource = processedFrameIndices;
         }
 
-        private void btnLoadCameraInput_Click(object sender, EventArgs e)
+        private void SetStateLoadCamera()
         {
-            if (cameraController.StartCameraCapture())
-            {
-                CurrentPlaybackState = PlaybackState.Playing;
-                totalProcessingTime = 0;
-                currentInputType = InputType.Camera;
-            }
-        }
+            cameraController.StopCameraCapture(); //stop previous camera
 
-        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
-        {
-            if (CurrentPlaybackState == PlaybackState.Paused)
-            {
-                frame.Dispose();
-                return;
-            }
+            //get rid of current video
+            videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource?.Dispose();
+            videoCancellationTokenSource = null;
 
-            if (rawFrames.Count > maxFrames)
-            {
-                var oldFrame = rawFrames.Dequeue();
-                oldFrame.Dispose();
-            }
+            ResetFrameQueuesState();
+            ResetShotState();
 
-            rawFrames.Enqueue(frame);
-            ProcessFrame(frame);
+            loadedVideoStarted = false;
+            totalProcessingTime = 0;
+            UpdateFpsLabel(0);
+
+            currentInputType = InputType.Camera;
+            CurrentPlaybackState = PlaybackState.Loading;
         }
 
         //before loading video
         private void SetStateLoadVideo()
         {
+            cameraController.StopCameraCapture();
+
             // Cancel any previous video or shot processing task
-            cancellationTokenSource?.Cancel();
-            cancellationTokenSource?.Dispose();
-            cancellationTokenSource = null;
+            videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource?.Dispose();
+            videoCancellationTokenSource = null;
 
-            // Reset the frame queues
             ResetFrameQueuesState();
-
-            // Reset the shot detection
             ResetShotState();
 
-            // Reset other state variables
             loadedVideoStarted = false;
             totalProcessingTime = 0;
             UpdateFpsLabel(0);
@@ -162,24 +151,58 @@ namespace billiard_laser
         }
 
         //before playing video
-        private void SetStatePlayVideo() {
+        private void SetStateStartVideo()
+        {
             // Cancel any previous video or shot processing task
-            cancellationTokenSource?.Cancel();
-            cancellationTokenSource?.Dispose();
-            cancellationTokenSource = null;
+            videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource?.Dispose();
+            videoCancellationTokenSource = null;
 
-            //reset state
             ResetFrameQueuesState(clearRawFrames: false);
             ResetShotState();
 
-            //reset fps
+            loadedVideoStarted = true;
             totalProcessingTime = 0;
             UpdateFpsLabel(0);
 
-            loadedVideoStarted = true;
             currentInputType = InputType.Video;
             CurrentPlaybackState = PlaybackState.Playing;
         }
+
+        private void btnStartCameraInput_Click(object sender, EventArgs e)
+        {
+            SetStateLoadCamera();
+            if (cameraController.StartCameraCapture()) CurrentPlaybackState = PlaybackState.Playing;
+        }
+
+        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
+        {
+            try
+            {
+                if (CurrentPlaybackState == PlaybackState.Paused || currentInputType != InputType.Camera)
+                {
+                    frame.Dispose();
+                    return;
+                }
+
+                if (rawFrames.Count > maxFrames)
+                {
+                    var oldFrame = rawFrames.Dequeue();
+                    oldFrame.Dispose();
+                    Console.WriteLine("raw frames count exceed maxframes, disposing old frame");
+                }
+
+                rawFrames.Enqueue(frame);
+                ProcessFrame(frame);
+            }
+
+            catch (Exception ex)
+            {
+                Console.WriteLine("exception in camera controller received frame: " + ex.Message);
+                return;
+            }
+        }
+
 
         /// <summary>
         /// load a video's frames into memory but do not play it
@@ -207,11 +230,11 @@ namespace billiard_laser
         /// </summary>
         private async void StartLoadedVideo()
         {
-            loadedVideoStarted = true;
-            SetStatePlayVideo();
+            SetStateStartVideo();
 
             try
             {
+                loadedVideoStarted = true;
                 await ProcessFramesInLoadedVideo();
             }
 
@@ -233,8 +256,8 @@ namespace billiard_laser
         private async Task ProcessFramesInLoadedVideo()
         {
             totalProcessingTime = 0;
-            cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
+            videoCancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = videoCancellationTokenSource.Token;
 
             // Create a local copy of the frames to avoid enumeration modification issues
             var framesCopy = rawFrames.ToList();
@@ -459,8 +482,8 @@ namespace billiard_laser
                 return;
 
             replayInProgress = true;
-            cancellationTokenSource = new CancellationTokenSource();
-            CancellationToken cancellationToken = cancellationTokenSource.Token;
+            videoCancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = videoCancellationTokenSource.Token;
 
             try
             {
@@ -560,11 +583,12 @@ namespace billiard_laser
         /// <param name="e"></param>
         private void btnPlayPause_Click(object sender, EventArgs e)
         {
-            if (!loadedVideoStarted)
+            if (currentInputType == InputType.Video && !loadedVideoStarted)
             {
                 StartLoadedVideo();
                 return;
             }
+
 
             // Toggle between Play and Pause states
             CurrentPlaybackState = (CurrentPlaybackState == PlaybackState.Playing)
@@ -581,8 +605,8 @@ namespace billiard_laser
 
             processedFrameIndices.Clear();
 
-            cancellationTokenSource.Cancel();
-            cancellationTokenSource.Dispose();
+            videoCancellationTokenSource.Cancel();
+            videoCancellationTokenSource.Dispose();
 
             // Dispose of all frames in the queues
             while (rawFrames.Count > 0)

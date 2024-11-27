@@ -6,18 +6,22 @@ decent mask
 done:
 1: clean up ui, remove unused buttons (yagni)
 remove shot graph stuff (yagni)
-
 fix fps label
 fix pause/playback
-
 refactor playback mechanism
+fix async bug with 2 loaded videos
+fix async bug load video while playing shot
+fix start camera after playing video / vice versa
 
 todo:
-fix async bug with 2 loaded videos
+fps counter buggy with camera input. plus nan 
+
 2: figure out what images u want on debug form 
 3: implement real shot detection (1 ball start moving - all balls stop)
 4: implement ball replacement helper (to actually achieve mvp)
 5: improve cueball tracker/path tracer
+
+test pausing and loading video while using camera and stopping camera input
 
 ideas:
 cueball tracker: implement some logic to prevent snapping away from moving cueball. find best contour closest to expected path

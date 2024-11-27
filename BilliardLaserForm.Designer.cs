@@ -50,7 +50,7 @@ namespace billiard_laser
             cboCamera = new ComboBox();
             labelVideoControls = new Label();
             btnLoadVideo = new Button();
-            btnLoadCameraInput = new Button();
+            btnStartCameraInput = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).BeginInit();
             tableLayoutPanelVideoControls.SuspendLayout();
             panelMediaControls.SuspendLayout();
@@ -205,7 +205,7 @@ namespace billiard_laser
             panelVideoControls.Controls.Add(cboCamera);
             panelVideoControls.Controls.Add(labelVideoControls);
             panelVideoControls.Controls.Add(btnLoadVideo);
-            panelVideoControls.Controls.Add(btnLoadCameraInput);
+            panelVideoControls.Controls.Add(btnStartCameraInput);
             panelVideoControls.Dock = DockStyle.Fill;
             panelVideoControls.Location = new Point(3, 3);
             panelVideoControls.Margin = new Padding(3, 3, 3, 0);
@@ -296,16 +296,16 @@ namespace billiard_laser
             btnLoadVideo.UseVisualStyleBackColor = true;
             btnLoadVideo.Click += btnLoadVideo_Click;
             // 
-            // btnLoadCameraInput
+            // btnStartCameraInput
             // 
-            btnLoadCameraInput.Location = new Point(112, 65);
-            btnLoadCameraInput.Margin = new Padding(3, 2, 3, 2);
-            btnLoadCameraInput.Name = "btnLoadCameraInput";
-            btnLoadCameraInput.Size = new Size(75, 25);
-            btnLoadCameraInput.TabIndex = 44;
-            btnLoadCameraInput.Text = "Load Cam";
-            btnLoadCameraInput.UseVisualStyleBackColor = true;
-            btnLoadCameraInput.Click += btnLoadCameraInput_Click;
+            btnStartCameraInput.Location = new Point(112, 65);
+            btnStartCameraInput.Margin = new Padding(3, 2, 3, 2);
+            btnStartCameraInput.Name = "btnStartCameraInput";
+            btnStartCameraInput.Size = new Size(75, 25);
+            btnStartCameraInput.TabIndex = 44;
+            btnStartCameraInput.Text = "Start Cam";
+            btnStartCameraInput.UseVisualStyleBackColor = true;
+            btnStartCameraInput.Click += btnStartCameraInput_Click;
             // 
             // BilliardLaserForm
             // 
@@ -341,7 +341,7 @@ namespace billiard_laser
         private ComboBox cboCamera;
         private Label labelVideoControls;
         private Button btnLoadVideo;
-        private Button btnLoadCameraInput;
+        private Button btnStartCameraInput;
         private Label labelFrameRate;
         private Panel panelListBoxes;
         private ListBox listBoxProcessedFrames;
