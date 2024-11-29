@@ -272,7 +272,7 @@ namespace billiard_laser
                     throw new OperationCanceledException();
                 }
 
-                ProcessFrame(rawFrame);
+                await ProcessFrameAsync(rawFrame);
             }
         }
 
@@ -281,34 +281,7 @@ namespace billiard_laser
         {
             if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
             {
-                var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
-                if (processedFrame != null && processedFrame.frame != null)
-                {
-
-                    UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
-
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null && rawFrame.frame != null)
-                    {
-                        try
-                        {
-                            using (var tempBitmap = new Bitmap(rawFrame.frame))
-                            {
-                                debugStopwatch.Restart();
-                                UpdateDebugForm(tempBitmap);
-                                debugStopwatch.Stop();
-                            }
-                        }
-                        catch (ArgumentException)
-                        {
-                            Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
-                        }
-                    }
-                    else
-                    {
-                        Console.WriteLine("Raw frame was null. Not sending to debug form!");
-                    }
-                }
+                UpdateToFrame(selectedIndex);
             }
         }
 
@@ -326,6 +299,75 @@ namespace billiard_laser
         }
 
         /// <summary>
+        /// display the selected processed frame in pic box and give to debug form if needed
+        /// </summary>
+        private void UpdateToFrame(int frameIndex)
+        {
+            var processedFrame = processedFrames.FirstOrDefault(f => f.index == frameIndex);
+            if (processedFrame != null && processedFrame.frame != null)
+            {
+                UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
+
+                if (debugForm == null || debugForm.IsDisposed) return;
+
+                var rawFrame = rawFrames.FirstOrDefault(f => f.index == frameIndex);
+                if (rawFrame != null && rawFrame.frame != null)
+                {
+                    try
+                    {
+                        using (var tempBitmap = new Bitmap(rawFrame.frame))
+                        {
+                            debugStopwatch.Restart();
+                            UpdateDebugForm(tempBitmap);
+                            debugStopwatch.Stop();
+                        }
+                    }
+                    catch (ArgumentException)
+                    {
+                        Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Raw frame was null. Not sending to debug form!");
+                }
+            }
+        }
+
+        private async Task ProcessFrameAsync(VideoFrame rawFrame)
+        {
+            // Do heavy processing off the UI thread
+            ImageProcessingResults results = null;
+            VideoFrame processedFrame = null;
+
+            await Task.Run(() => {
+                // Perform ball detection and processing
+                if (DetectingBalls)
+                {
+                    // Create a copy of the frame before processing
+                    using (var frameCopy = new Bitmap(rawFrame.frame))
+                    {
+                        results = ballDetector.ProcessTableImage(frameCopy);
+                        processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), rawFrame.index);
+                        shotDetector.ProcessFrame(results.CueBall, processedFrame);
+                    }
+                }
+                else
+                {
+                    processedFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index);
+                }
+            });
+
+            // Update UI on the main thread
+            BeginInvoke(new Action(() => {
+                AddProcessedFrame(processedFrame);
+                UpdateToFrame(processedFrameIndices.Last());
+                UpdateFpsLabel();
+                results?.Dispose();
+            }));
+        }
+
+        /// <summary>
         /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
         /// </summary>
         /// <param name="rawFrame"></param>
@@ -333,7 +375,7 @@ namespace billiard_laser
         {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => ProcessFrame(rawFrame)));
+                BeginInvoke(new Action(() => ProcessFrame(rawFrame)));
                 return;
             }
 
@@ -369,10 +411,7 @@ namespace billiard_laser
                 else processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
 
                 AddProcessedFrame(processedFrame);
-
-                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scroll and update pic box/dbg form
-
-                Application.DoEvents(); //todo better way?
+                UpdateToFrame(processedFrameIndices.Last());
                 UpdateFpsLabel();
             }
 
@@ -397,7 +436,6 @@ namespace billiard_laser
         private void AddProcessedFrame(VideoFrame newFrame)
         {
             if (newFrame == null) return;
-
             try
             {
                 // Remove oldest frame if at capacity
@@ -421,12 +459,17 @@ namespace billiard_laser
         // Helper method to update PictureBoxImage safely
         private void UpdatePictureBoxImage(Bitmap newImage)
         {
+            if (InvokeRequired) { 
+                BeginInvoke(new Action(() => UpdatePictureBoxImage(newImage)));
+                return;
+            }
+
             var oldImage = pictureBoxImage.Image;
             pictureBoxImage.Image = newImage;
             oldImage?.Dispose();
         }
 
-        //display average fps @ resolution
+        //display average fps @ resolution by looking at the stopwatches
         private void UpdateFpsLabel()
         {
             if (InvokeRequired)
@@ -464,12 +507,33 @@ namespace billiard_laser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
+        private async void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
         {
+            if (InvokeRequired)
+            {
+                BeginInvoke(new Action(() => listBoxShots_SelectedIndexChanged(sender, e)));
+                return;
+            }
+
+            // Check if a valid shot is selected
             if (listBoxShots.SelectedIndex >= 0)
             {
                 Shot selectedShot = (Shot)listBoxShots.SelectedItem;
-                ReplayShotWithBallPath(selectedShot, 60);
+
+                // Use async method with try-catch for error handling
+                try
+                {
+                    await ReplayShotWithBallPath(selectedShot, 60);
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Shot replay cancelled.");
+                }
+                catch (Exception ex)
+                {
+                    // Show user-friendly error message
+                    MessageBox.Show($"Could not replay shot: {ex.Message}", "Replay Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
         }
 
@@ -490,7 +554,15 @@ namespace billiard_laser
             shotDetector.ResetState();
         }
 
-        private void ShotDetector_ShotFinished(object sender, Shot shot) => listBoxShots.Items.Add(shot);
+        private void ShotDetector_ShotFinished(object sender, Shot shot) {
+            //ensure we on ui thread
+            if (InvokeRequired) {
+                BeginInvoke(new Action(() => ShotDetector_ShotFinished(sender, shot)));
+                return;
+            }
+
+            listBoxShots.Items.Add(shot);
+        }
 
         private async Task ReplayShotWithBallPath(Shot shot, int replayFPS)
         {
