@@ -44,7 +44,7 @@ public class CameraController
         }
     }
 
-    private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
+    private async void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
         frameReceivedEvent.Set(); //signal that we have received at least one frame
 

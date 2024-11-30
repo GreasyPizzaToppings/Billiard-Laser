@@ -24,20 +24,31 @@ namespace billiard_laser
 
         public void ShowDebugImages(Bitmap rawImage)
         {
-            ImageProcessingResults images = ballDetector.ProcessTableImage(rawImage);
-            
-            SetImage(originalImagePicBox, images.OriginalImage);
-            SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
-            SetImage(allContoursPicBox, images.AllBallsHighlighted);
-            SetImage(invMaskPicBox, images.TableMask);
-            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
-            SetImage(cueBallMaskPicBox, images.CueBallMask);
-            SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
-            SetImage(transformedImagePicBox, images.TransformedImage);
+            // Process on a background thread
+            Task.Run(() => {
+                ImageProcessingResults images = ballDetector.ProcessTableImageDebug(rawImage);
+
+                // Update UI on the main thread
+                BeginInvoke(new Action(() => {
+                    SetImage(originalImagePicBox, images.OriginalImage);
+                    SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
+                    SetImage(allContoursPicBox, images.AllBallsHighlighted);
+                    SetImage(invMaskPicBox, images.TableMask);
+                    SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
+                    SetImage(cueBallMaskPicBox, images.CueBallMask);
+                    SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
+                    SetImage(transformedImagePicBox, images.TransformedImage);
+                }));
+            });
         }
 
         private void SetImage(PictureBox pictureBox, Image newImage)
         {
+            if (InvokeRequired) {
+                BeginInvoke(new Action(() => SetImage(pictureBox, newImage)));
+                return;
+            }
+
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
             oldImage?.Dispose();

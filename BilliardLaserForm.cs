@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.ComponentModel;
 using System.Threading;
+using MethodTimer;
 
 namespace billiard_laser
 {
@@ -25,7 +26,7 @@ namespace billiard_laser
         private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
         //testing output
-        private OpenCvSharp.Size outputVideoResolution = p300;
+        private OpenCvSharp.Size outputVideoResolution = p480;
 
         //frames
         private BindingList<int> processedFrameIndices = new BindingList<int>();
@@ -173,10 +174,11 @@ namespace billiard_laser
             if (cameraController.StartCameraCapture()) CurrentPlaybackState = PlaybackState.Playing;
         }
 
-        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
+        private async void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
             try
             {
+                stopwatch.Restart();
                 if (CurrentPlaybackState == PlaybackState.Paused || currentInputType != InputType.Camera)
                 {
                     frame.Dispose();
@@ -191,7 +193,10 @@ namespace billiard_laser
                 }
 
                 rawFrames.Enqueue(frame);
-                ProcessFrame(frame);
+
+                await ProcessFrameAsync(frame);
+                stopwatch.Stop();
+                UpdateFpsLabel();
             }
 
             catch (Exception ex)
@@ -272,7 +277,10 @@ namespace billiard_laser
                     throw new OperationCanceledException();
                 }
 
+                stopwatch.Restart();
                 await ProcessFrameAsync(rawFrame);
+                stopwatch.Stop();
+                UpdateFpsLabel();
             }
         }
 
@@ -315,12 +323,11 @@ namespace billiard_laser
                 {
                     try
                     {
-                        using (var tempBitmap = new Bitmap(rawFrame.frame))
-                        {
-                            debugStopwatch.Restart();
-                            UpdateDebugForm(tempBitmap);
-                            debugStopwatch.Stop();
-                        }
+
+                        debugStopwatch.Restart();
+                        UpdateDebugForm(rawFrame.frame);
+                        debugStopwatch.Stop();
+                        
                     }
                     catch (ArgumentException)
                     {
@@ -334,6 +341,7 @@ namespace billiard_laser
             }
         }
 
+        [Time]
         private async Task ProcessFrameAsync(VideoFrame rawFrame)
         {
             // Do heavy processing off the UI thread
@@ -361,72 +369,9 @@ namespace billiard_laser
             // Update UI on the main thread
             BeginInvoke(new Action(() => {
                 AddProcessedFrame(processedFrame);
-                UpdateToFrame(processedFrameIndices.Last());
-                UpdateFpsLabel();
+                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scroll listbox and update to frame
                 results?.Dispose();
             }));
-        }
-
-        /// <summary>
-        /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
-        /// </summary>
-        /// <param name="rawFrame"></param>
-        private void ProcessFrame(VideoFrame rawFrame)
-        {
-            if (InvokeRequired)
-            {
-                BeginInvoke(new Action(() => ProcessFrame(rawFrame)));
-                return;
-            }
-
-            if (rawFrame?.frame == null)
-            {
-                Console.WriteLine("Received null frame or frame data");
-                return;
-            }
-
-            stopwatch.Restart();
-
-            VideoFrame processedFrame = null;
-            ImageProcessingResults results = null;
-
-            try
-            {
-                using var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index);
-
-                if (DetectingBalls)
-                {
-                    try
-                    {
-                        results = ballDetector.ProcessTableImageDebug(workingFrame.frame);
-                        processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
-                        shotDetector.ProcessFrame(results.CueBall, processedFrame);
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error during ball detection: {ex.Message}");
-                        processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
-                    }
-                }
-                else processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
-
-                AddProcessedFrame(processedFrame);
-                UpdateToFrame(processedFrameIndices.Last());
-                UpdateFpsLabel();
-            }
-
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in ProcessFrame: {ex.Message}");
-                processedFrame?.Dispose();
-            }
-
-            finally
-            {
-                results?.Dispose();
-                stopwatch.Stop();
-                debugStopwatch.Stop();
-            }
         }
 
         /// <summary>
@@ -456,6 +401,7 @@ namespace billiard_laser
             }
         }
 
+        [Time]
         // Helper method to update PictureBoxImage safely
         private void UpdatePictureBoxImage(Bitmap newImage)
         {
@@ -579,15 +525,20 @@ namespace billiard_laser
                 for (int i = 0; i < shot.FrameCount; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
+
                     using (Bitmap frameToDrawOn = shot.GetFrameCopy(i).frame)
+                    using (Bitmap drawnImage = DrawingHelper.DrawBallPath(
+                        shot.cueBallPath,
+                        new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height),
+                        frameToDrawOn.Size,
+                        frameToDrawOn))
                     {
-                        Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
                         UpdatePictureBoxImage(drawnImage);
                         await Task.Delay(delay, cancellationToken);
                     }
                 }
             }
-            catch (OperationCanceledException e)
+            catch (OperationCanceledException)
             {
                 Console.WriteLine("Shot replay ball path cancelled.");
             }

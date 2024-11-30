@@ -14,8 +14,8 @@ fix async bug load video while playing shot
 fix start camera after playing video / vice versa
 
 todo:
-fps counter buggy with camera input. plus nan 
-
+fps counter with camera input buggy
+fps resolution innaccurate for camera?
 2: figure out what images u want on debug form 
 3: implement real shot detection (1 ball start moving - all balls stop)
 4: implement ball replacement helper (to actually achieve mvp)
