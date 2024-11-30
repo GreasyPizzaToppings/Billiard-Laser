@@ -347,7 +347,7 @@ namespace billiard_laser
                     // Create a copy of the frame before processing
                     using (var frameCopy = new Bitmap(rawFrame.frame))
                     {
-                        results = ballDetector.ProcessTableImage(frameCopy);
+                        results = ballDetector.FindAndHighlightCueball(frameCopy);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), rawFrame.index);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
                     }
@@ -398,7 +398,7 @@ namespace billiard_laser
                 {
                     try
                     {
-                        results = ballDetector.ProcessTableImage(workingFrame.frame);
+                        results = ballDetector.ProcessTableImageDebug(workingFrame.frame);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
                     }

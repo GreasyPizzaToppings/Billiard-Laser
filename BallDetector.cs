@@ -1,8 +1,10 @@
-﻿using AForge.Imaging.Filters;
+﻿using Accord.MachineLearning.Bayes;
+using AForge.Imaging.Filters;
 using Emgu.CV;
 using Emgu.CV.CvEnum;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
+using MethodTimer;
 using OpenCvSharp.Extensions;
 using System.Drawing.Imaging;
 using ColorConversion = Emgu.CV.CvEnum.ColorConversion;
@@ -28,13 +30,13 @@ public class BallDetector
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
 
-
+    [Time]
     /// <summary>
-    /// Return all the balls and the stages of image processing
+    /// Return all the balls and the stages of image processing for debugging
     /// </summary>
     /// <param name="tableImage">Image of the table</param>
     /// <returns></returns>
-    public ImageProcessingResults ProcessTableImage(Bitmap tableImage)
+    public ImageProcessingResults ProcessTableImageDebug(Bitmap tableImage)
     {
         imageSize = tableImage.Size;
 
@@ -95,8 +97,48 @@ public class BallDetector
         }
     }
 
+    [Time]
     /// <summary>
-    /// Apple cueball mask to the masked table image. The cue ball is the biggest area Contour
+    /// gives you the cueball and it drawn on the table without unnecessary images
+    /// </summary>
+    /// <param name="tableImage"></param>
+    /// <returns></returns>
+    public ImageProcessingResults FindAndHighlightCueball(Bitmap tableImage)
+    {
+        Bitmap workingImage = tableImage;
+
+        if (EnableSharpening)
+        {
+            workingImage = SharpenImage(workingImage);
+        }
+
+        if (EnableBlur)
+        {
+            workingImage = BlurImage(workingImage);
+        }
+
+        Bitmap tableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
+        Bitmap tableWithMaskApplied = ApplyMask(tableImage, tableMask);
+
+        using (var allContoursFound = GetAllContours(tableWithMaskApplied))
+        {
+            VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound) : null;
+            using (var filteredContoursFound = tableContour != null ? FilterContours(allContoursFound, tableContour) : FilterContours(allContoursFound))
+            {
+                Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
+
+                return new ImageProcessingResults
+                {
+                    CueBallHighlighted = cueball.Draw(tableImage),
+                    CueBall = cueball
+                };
+            }
+        }
+    }
+
+    [Time]
+    /// <summary>
+    /// Apply cueball mask to the masked table image. The cue ball is the biggest area Contour
     /// </summary>
     /// <param name="maskedTableImage"></param>
     /// <returns></returns>
