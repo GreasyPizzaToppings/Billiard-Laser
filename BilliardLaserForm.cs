@@ -10,7 +10,6 @@ namespace billiard_laser
         private BallReplacementForm ballReplacementForm; 
 
         //utility classes
-        private ArduinoController arduinoController;
         private CameraController cameraController;
         private ShotDetector shotDetector;
         private BallDetector ballDetector;
@@ -99,7 +98,6 @@ namespace billiard_laser
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
 
-            arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(cboCamera);
             shotDetector = new ShotDetector();
             ballDetector = new BallDetector();

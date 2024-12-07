@@ -32,8 +32,17 @@
             labelCameraOpacity = new Label();
             trackBarCameraOpacity = new TrackBar();
             labelCameraOpacityValue = new Label();
+            btnLaserLeft = new Button();
+            btnLaserRight = new Button();
+            btnLaserUp = new Button();
+            btnLaserDown = new Button();
+            labelLaserStepAmountValue = new Label();
+            trackBarLaserStepAmount = new TrackBar();
+            labelLaserStepAmount = new Label();
+            btnLaserEnableToggle = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarCameraOpacity).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarLaserStepAmount).BeginInit();
             SuspendLayout();
             // 
             // pictureBoxTable
@@ -77,11 +86,111 @@
             labelCameraOpacityValue.TabIndex = 38;
             labelCameraOpacityValue.Text = "X%";
             // 
+            // btnLaserLeft
+            // 
+            btnLaserLeft.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+            btnLaserLeft.Location = new Point(940, 667);
+            btnLaserLeft.Margin = new Padding(3, 2, 3, 2);
+            btnLaserLeft.Name = "btnLaserLeft";
+            btnLaserLeft.Size = new Size(35, 33);
+            btnLaserLeft.TabIndex = 56;
+            btnLaserLeft.Text = "←";
+            btnLaserLeft.UseVisualStyleBackColor = true;
+            btnLaserLeft.Click += btnLaserLeft_Click;
+            // 
+            // btnLaserRight
+            // 
+            btnLaserRight.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+            btnLaserRight.Location = new Point(1022, 667);
+            btnLaserRight.Margin = new Padding(3, 2, 3, 2);
+            btnLaserRight.Name = "btnLaserRight";
+            btnLaserRight.Size = new Size(35, 33);
+            btnLaserRight.TabIndex = 57;
+            btnLaserRight.Text = "→";
+            btnLaserRight.UseVisualStyleBackColor = true;
+            btnLaserRight.Click += btnLaserRight_Click;
+            // 
+            // btnLaserUp
+            // 
+            btnLaserUp.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+            btnLaserUp.Location = new Point(981, 630);
+            btnLaserUp.Margin = new Padding(3, 2, 3, 2);
+            btnLaserUp.Name = "btnLaserUp";
+            btnLaserUp.Size = new Size(35, 33);
+            btnLaserUp.TabIndex = 58;
+            btnLaserUp.Text = "↑";
+            btnLaserUp.UseVisualStyleBackColor = true;
+            btnLaserUp.Click += btnLaserUp_Click;
+            // 
+            // btnLaserDown
+            // 
+            btnLaserDown.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+            btnLaserDown.Location = new Point(981, 667);
+            btnLaserDown.Margin = new Padding(3, 2, 3, 2);
+            btnLaserDown.Name = "btnLaserDown";
+            btnLaserDown.Size = new Size(35, 33);
+            btnLaserDown.TabIndex = 59;
+            btnLaserDown.Text = "↓";
+            btnLaserDown.UseVisualStyleBackColor = true;
+            btnLaserDown.Click += btnLaserDown_Click;
+            // 
+            // labelLaserStepAmountValue
+            // 
+            labelLaserStepAmountValue.Anchor = AnchorStyles.None;
+            labelLaserStepAmountValue.AutoSize = true;
+            labelLaserStepAmountValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelLaserStepAmountValue.Location = new Point(871, 667);
+            labelLaserStepAmountValue.Name = "labelLaserStepAmountValue";
+            labelLaserStepAmountValue.Size = new Size(18, 20);
+            labelLaserStepAmountValue.TabIndex = 62;
+            labelLaserStepAmountValue.Text = "X";
+            // 
+            // trackBarLaserStepAmount
+            // 
+            trackBarLaserStepAmount.Location = new Point(687, 667);
+            trackBarLaserStepAmount.Maximum = 500;
+            trackBarLaserStepAmount.Minimum = 1;
+            trackBarLaserStepAmount.Name = "trackBarLaserStepAmount";
+            trackBarLaserStepAmount.Size = new Size(178, 45);
+            trackBarLaserStepAmount.TabIndex = 61;
+            trackBarLaserStepAmount.Value = 65;
+            trackBarLaserStepAmount.ValueChanged += trackBarLaserStepAmount_ValueChanged;
+            // 
+            // labelLaserStepAmount
+            // 
+            labelLaserStepAmount.AutoSize = true;
+            labelLaserStepAmount.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelLaserStepAmount.Location = new Point(687, 636);
+            labelLaserStepAmount.Name = "labelLaserStepAmount";
+            labelLaserStepAmount.Size = new Size(96, 20);
+            labelLaserStepAmount.TabIndex = 60;
+            labelLaserStepAmount.Text = "Step Amount";
+            // 
+            // btnLaserEnableToggle
+            // 
+            btnLaserEnableToggle.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnLaserEnableToggle.Location = new Point(544, 667);
+            btnLaserEnableToggle.Margin = new Padding(3, 2, 3, 2);
+            btnLaserEnableToggle.Name = "btnLaserEnableToggle";
+            btnLaserEnableToggle.Size = new Size(101, 33);
+            btnLaserEnableToggle.TabIndex = 63;
+            btnLaserEnableToggle.Text = "Toggle Laser";
+            btnLaserEnableToggle.UseVisualStyleBackColor = true;
+            btnLaserEnableToggle.Click += btnLaserEnableToggle_Click;
+            // 
             // BallReplacementForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1264, 724);
+            Controls.Add(btnLaserEnableToggle);
+            Controls.Add(labelLaserStepAmountValue);
+            Controls.Add(trackBarLaserStepAmount);
+            Controls.Add(labelLaserStepAmount);
+            Controls.Add(btnLaserDown);
+            Controls.Add(btnLaserUp);
+            Controls.Add(btnLaserRight);
+            Controls.Add(btnLaserLeft);
             Controls.Add(labelCameraOpacityValue);
             Controls.Add(trackBarCameraOpacity);
             Controls.Add(labelCameraOpacity);
@@ -91,6 +200,7 @@
             FormClosed += BallReplacementForm_FormClosed;
             ((System.ComponentModel.ISupportInitialize)pictureBoxTable).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarCameraOpacity).EndInit();
+            ((System.ComponentModel.ISupportInitialize)trackBarLaserStepAmount).EndInit();
             ResumeLayout(false);
             PerformLayout();
         }
@@ -101,5 +211,13 @@
         private Label labelCameraOpacity;
         private TrackBar trackBarCameraOpacity;
         private Label labelCameraOpacityValue;
+        private Button btnLaserLeft;
+        private Button btnLaserRight;
+        private Button btnLaserUp;
+        private Button btnLaserDown;
+        private Label labelLaserStepAmountValue;
+        private TrackBar trackBarLaserStepAmount;
+        private Label labelLaserStepAmount;
+        private Button btnLaserEnableToggle;
     }
 }

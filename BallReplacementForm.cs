@@ -14,10 +14,13 @@ namespace billiard_laser
     public partial class BallReplacementForm : Form
     {
         private Bitmap targetTableLayout;
+        private ArduinoController arduinoController;
 
-        public Bitmap TargetTableLayout { get => targetTableLayout; 
-            set 
-            { 
+        public Bitmap TargetTableLayout
+        {
+            get => targetTableLayout;
+            set
+            {
                 targetTableLayout = value;
                 SetImage(pictureBoxTable, TargetTableLayout);
             }
@@ -25,12 +28,14 @@ namespace billiard_laser
 
         public event EventHandler BallReplacementFormClosed;
 
-
         public BallReplacementForm(Bitmap targetTableLayout)
         {
             InitializeComponent();
             UpdateOpacityValueLabel();
+            UpdateStepAmountValueLabel();
             this.TargetTableLayout = targetTableLayout;
+
+            arduinoController = new ArduinoController("COM4"); //TODO find better way to find what port to connect to
         }
 
         /// <summary>
@@ -115,12 +120,48 @@ namespace billiard_laser
             labelCameraOpacityValue.Text = trackBarCameraOpacity.Value.ToString() + "%";
         }
 
+        private void UpdateStepAmountValueLabel()
+        {
+            labelLaserStepAmountValue.Text = trackBarLaserStepAmount.Value.ToString();
+        }
+
         private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
 
             targetTableLayout.Dispose();
             pictureBoxTable.Dispose();
+        }
+
+        private void btnLaserUp_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveUp();
+        }
+
+        private void btnLaserLeft_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveLeft();
+        }
+
+        private void btnLaserDown_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveDown();
+        }
+
+        private void btnLaserRight_Click(object sender, EventArgs e)
+        {
+            arduinoController.MoveRight();
+        }
+
+        private void btnLaserEnableToggle_Click(object sender, EventArgs e)
+        {
+            arduinoController.ToggleLaser();
+        }
+
+        private void trackBarLaserStepAmount_ValueChanged(object sender, EventArgs e)
+        {
+            UpdateStepAmountValueLabel();
+            arduinoController.SetStepAmount(trackBarLaserStepAmount.Value);
         }
     }
 }
