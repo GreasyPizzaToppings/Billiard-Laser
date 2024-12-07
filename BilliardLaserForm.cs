@@ -26,7 +26,7 @@ namespace billiard_laser
         private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
 
         //testing output
-        private OpenCvSharp.Size outputVideoResolution = p480;
+        private OpenCvSharp.Size outputVideoResolution = p360;
 
         //frames
         private BindingList<int> processedFrameIndices = new BindingList<int>();
@@ -341,6 +341,7 @@ namespace billiard_laser
             }
         }
 
+        //38-48ms
         [Time]
         private async Task ProcessFrameAsync(VideoFrame rawFrame)
         {
@@ -401,7 +402,6 @@ namespace billiard_laser
             }
         }
 
-        [Time]
         // Helper method to update PictureBoxImage safely
         private void UpdatePictureBoxImage(Bitmap newImage)
         {
@@ -644,8 +644,8 @@ namespace billiard_laser
 
             processedFrameIndices.Clear();
 
-            videoCancellationTokenSource.Cancel();
-            videoCancellationTokenSource.Dispose();
+            videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource?.Dispose();
 
             // Dispose of all frames in the queues
             while (rawFrames.Count > 0)
