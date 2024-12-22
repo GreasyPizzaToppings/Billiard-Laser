@@ -8,14 +8,42 @@ public class CameraController
     private ComboBox comboBox;
     private ManualResetEvent frameReceivedEvent = new ManualResetEvent(false);
     private int frameIndex = 0;
+    private bool isFlipped = false;
+    private bool isMirrored = false;
 
     public event EventHandler<VideoFrame> ReceivedFrame;
+    public event EventHandler TransformationChanged; //for flip or mirror
+
+    public bool IsFlipped
+    {
+        get => isFlipped;
+        set
+        {
+            isFlipped = value;
+            OnTransformationChanged();
+        }
+    }
+
+    public bool IsMirrored
+    {
+        get => isMirrored;
+        set
+        {
+            isMirrored = value;
+            OnTransformationChanged();
+        }
+    }
 
     public CameraController(ComboBox comboBox)
     {
         this.comboBox = comboBox;
 
         PopulateCameraComboBox();
+    }
+
+    private void OnTransformationChanged()
+    {
+        TransformationChanged?.Invoke(this, EventArgs.Empty);
     }
 
     public bool StartCameraCapture() {
@@ -46,17 +74,56 @@ public class CameraController
 
     private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
-        frameReceivedEvent.Set(); //signal that we have received at least one frame
+        frameReceivedEvent.Set();
 
-        //put the frame into our adapter class
-        VideoFrame frame = new VideoFrame((Bitmap)eventArgs.Frame.Clone(), frameIndex);
-        frameIndex++;
+        // Clone and transform the frame
+        using (Bitmap originalFrame = (Bitmap)eventArgs.Frame.Clone())
+        {
+            Bitmap transformedFrame = TransformFrame(originalFrame);
+            VideoFrame frame = new VideoFrame(transformedFrame, frameIndex);
+            frameIndex++;
 
-        //alert followers we got a frame for them
-        ReceivedFrame?.Invoke(this, frame);
+            ReceivedFrame?.Invoke(this, frame);
+        }
     }
 
-    private void PopulateCameraComboBox()
+    /// <summary>
+    /// Flip and or mirror the image if enabled
+    /// </summary>
+    /// <param name="original"></param>
+    /// <returns></returns>
+    private Bitmap TransformFrame(Bitmap original)
+    {
+        if (!IsFlipped && !IsMirrored)
+            return (Bitmap)original.Clone();
+
+        Bitmap transformed = new Bitmap(original.Width, original.Height);
+
+        using (Graphics g = Graphics.FromImage(transformed))
+        {
+            if (IsFlipped && IsMirrored)
+            {
+                g.RotateTransform(180);
+                g.TranslateTransform(-original.Width, -original.Height);
+            }
+            else if (IsFlipped)
+            {
+                g.TranslateTransform(0, original.Height);
+                g.ScaleTransform(1, -1);
+            }
+            else if (IsMirrored)
+            {
+                g.TranslateTransform(original.Width, 0);
+                g.ScaleTransform(-1, 1);
+            }
+
+            g.DrawImage(original, 0, 0);
+        }
+
+        return transformed;
+    }
+
+private void PopulateCameraComboBox()
     {
         filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
         foreach (FilterInfo Device in filterInfoCollection)

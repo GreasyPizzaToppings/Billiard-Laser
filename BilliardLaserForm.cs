@@ -700,7 +700,7 @@ namespace billiard_laser
                     if (ballReplacementForm == null || ballReplacementForm.IsDisposed)
                     {
                         // Create new form if it doesn't exist
-                        ballReplacementForm = new BallReplacementForm(rawFrame.frame);
+                        ballReplacementForm = new BallReplacementForm(rawFrame.frame, cameraController);
                         ballReplacementForm.BallReplacementFormClosed += BallReplacementForm_FormClosed;
                         ballReplacementForm.Show();
                     }

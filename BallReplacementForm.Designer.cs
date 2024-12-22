@@ -40,6 +40,8 @@
             trackBarLaserStepAmount = new TrackBar();
             labelLaserStepAmount = new Label();
             btnLaserEnableToggle = new Button();
+            btnFlipCamera = new Button();
+            btnMirrorCamera = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarCameraOpacity).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarLaserStepAmount).BeginInit();
@@ -169,7 +171,7 @@
             // btnLaserEnableToggle
             // 
             btnLaserEnableToggle.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLaserEnableToggle.Location = new Point(544, 667);
+            btnLaserEnableToggle.Location = new Point(541, 670);
             btnLaserEnableToggle.Margin = new Padding(3, 2, 3, 2);
             btnLaserEnableToggle.Name = "btnLaserEnableToggle";
             btnLaserEnableToggle.Size = new Size(101, 33);
@@ -178,11 +180,37 @@
             btnLaserEnableToggle.UseVisualStyleBackColor = true;
             btnLaserEnableToggle.Click += btnLaserEnableToggle_Click;
             // 
+            // btnFlipCamera
+            // 
+            btnFlipCamera.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnFlipCamera.Location = new Point(280, 630);
+            btnFlipCamera.Margin = new Padding(3, 2, 3, 2);
+            btnFlipCamera.Name = "btnFlipCamera";
+            btnFlipCamera.Size = new Size(101, 33);
+            btnFlipCamera.TabIndex = 64;
+            btnFlipCamera.Text = "Flip Camera";
+            btnFlipCamera.UseVisualStyleBackColor = true;
+            btnFlipCamera.Click += btnFlipCamera_Click;
+            // 
+            // btnMirrorCamera
+            // 
+            btnMirrorCamera.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnMirrorCamera.Location = new Point(280, 670);
+            btnMirrorCamera.Margin = new Padding(3, 2, 3, 2);
+            btnMirrorCamera.Name = "btnMirrorCamera";
+            btnMirrorCamera.Size = new Size(101, 33);
+            btnMirrorCamera.TabIndex = 65;
+            btnMirrorCamera.Text = "Mirror Camera";
+            btnMirrorCamera.UseVisualStyleBackColor = true;
+            btnMirrorCamera.Click += btnMirrorCamera_Click;
+            // 
             // BallReplacementForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1264, 724);
+            Controls.Add(btnMirrorCamera);
+            Controls.Add(btnFlipCamera);
             Controls.Add(btnLaserEnableToggle);
             Controls.Add(labelLaserStepAmountValue);
             Controls.Add(trackBarLaserStepAmount);
@@ -219,5 +247,7 @@
         private TrackBar trackBarLaserStepAmount;
         private Label labelLaserStepAmount;
         private Button btnLaserEnableToggle;
+        private Button btnFlipCamera;
+        private Button btnMirrorCamera;
     }
 }

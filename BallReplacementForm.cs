@@ -15,6 +15,7 @@ namespace billiard_laser
     {
         private Bitmap targetTableLayout;
         private ArduinoController arduinoController;
+        public CameraController cameraController;
 
         public Bitmap TargetTableLayout
         {
@@ -28,7 +29,7 @@ namespace billiard_laser
 
         public event EventHandler BallReplacementFormClosed;
 
-        public BallReplacementForm(Bitmap targetTableLayout)
+        public BallReplacementForm(Bitmap targetTableLayout, CameraController cameraController)
         {
             InitializeComponent();
             UpdateOpacityValueLabel();
@@ -36,6 +37,7 @@ namespace billiard_laser
             this.TargetTableLayout = targetTableLayout;
 
             arduinoController = new ArduinoController("COM4"); //TODO find better way to find what port to connect to
+            this.cameraController = cameraController;   
         }
 
         /// <summary>
@@ -162,6 +164,16 @@ namespace billiard_laser
         {
             UpdateStepAmountValueLabel();
             arduinoController.SetStepAmount(trackBarLaserStepAmount.Value);
+        }
+
+        private void btnFlipCamera_Click(object sender, EventArgs e)
+        {
+            cameraController.IsFlipped = !cameraController.IsFlipped;
+        }
+
+        private void btnMirrorCamera_Click(object sender, EventArgs e)
+        {
+            cameraController.IsMirrored = !cameraController.IsMirrored;
         }
     }
 }
