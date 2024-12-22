@@ -169,11 +169,43 @@ namespace billiard_laser
         private void btnFlipCamera_Click(object sender, EventArgs e)
         {
             cameraController.IsFlipped = !cameraController.IsFlipped;
+
+            // Flip the reference image
+            if (targetTableLayout != null)
+            {
+                Bitmap flippedImage = new Bitmap(targetTableLayout.Width, targetTableLayout.Height);
+                using (Graphics g = Graphics.FromImage(flippedImage))
+                {
+                    g.TranslateTransform(0, targetTableLayout.Height);
+                    g.ScaleTransform(1, -1);
+                    g.DrawImage(targetTableLayout, 0, 0);
+                }
+
+                // Update the property which will handle disposal of old image
+                TargetTableLayout = flippedImage;
+            }
+
         }
 
         private void btnMirrorCamera_Click(object sender, EventArgs e)
         {
             cameraController.IsMirrored = !cameraController.IsMirrored;
+
+            // Mirror the reference image
+            if (targetTableLayout != null)
+            {
+                Bitmap mirroredImage = new Bitmap(targetTableLayout.Width, targetTableLayout.Height);
+                using (Graphics g = Graphics.FromImage(mirroredImage))
+                {
+                    g.TranslateTransform(targetTableLayout.Width, 0);
+                    g.ScaleTransform(-1, 1);
+                    g.DrawImage(targetTableLayout, 0, 0);
+                }
+
+                // Update the property which will handle disposal of old image
+                TargetTableLayout = mirroredImage;
+
+            }
         }
     }
 }
