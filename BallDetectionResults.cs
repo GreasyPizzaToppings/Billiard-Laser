@@ -5,7 +5,7 @@ using System.Drawing;
 /// <summary>
 /// Stores the results of the image processing for ball detection
 /// </summary>
-public class ImageProcessingResults : IDisposable
+public class BallDetectionResults : IDisposable
 {
     private bool disposed = false;
 
@@ -74,7 +74,7 @@ public class ImageProcessingResults : IDisposable
         }
     }
 
-    ~ImageProcessingResults()
+    ~BallDetectionResults()
     {
         Dispose(false);
     }

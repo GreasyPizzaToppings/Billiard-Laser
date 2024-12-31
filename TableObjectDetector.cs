@@ -11,7 +11,7 @@ using Point = System.Drawing.Point;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 
-public class BallDetector
+public class TableObjectDetector
 {
     private Size imageSize = new Size(0, 0);
 
@@ -28,13 +28,19 @@ public class BallDetector
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
 
+    // Laser detection settings
+    public Rgb LowerLaserMask = new Rgb(0, 150, 150);  // HSV values for red laser
+    public Rgb UpperLaserMask = new Rgb(10, 255, 255); // May need adjustment based on lighting
+    public double MinLaserArea = 4;  // Minimum area for laser dot
+    public double MaxLaserArea = 100; // Maximum area for laser dot
 
+    
     /// <summary>
     /// Return all the balls and the stages of image processing
     /// </summary>
     /// <param name="tableImage">Image of the table</param>
     /// <returns></returns>
-    public ImageProcessingResults ProcessTableImage(Bitmap tableImage)
+    public BallDetectionResults ProcessBallDetection(Bitmap tableImage)
     {
         imageSize = tableImage.Size;
 
@@ -59,7 +65,7 @@ public class BallDetector
         using (var allContoursFound = GetAllContours(tableWithMaskApplied))
         {
             VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound) : null;
-            using (var filteredContoursFound = tableContour != null ? FilterContours(allContoursFound, tableContour) : FilterContours(allContoursFound))
+            using (var filteredContoursFound = tableContour != null ? FilterBallContours(allContoursFound, tableContour) : FilterBallContours(allContoursFound))
             {
                 Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
 
@@ -77,7 +83,7 @@ public class BallDetector
 
                 tableContour?.Dispose();
 
-                return new ImageProcessingResults
+                return new BallDetectionResults
                 {
                     OriginalImage = tableImage,
                     TransformedImage = transformedImage,
@@ -94,6 +100,122 @@ public class BallDetector
             }
         }
     }
+
+
+    public LaserDetectionResults ProcessLaserDetection(Bitmap tableImage)
+    {
+        LaserDetectionResults laserDetectionResults = new LaserDetectionResults();
+        laserDetectionResults.OriginalImage = new Bitmap(tableImage); // Store original image
+
+        Bitmap workingImage = tableImage;
+        Bitmap? transformedImage = null;
+
+        // Apply any image transformations if enabled
+        if (EnableSharpening)
+        {
+            transformedImage = SharpenImage(workingImage);
+            workingImage = transformedImage;
+        }
+
+        if (EnableBlur)
+        {
+            transformedImage = BlurImage(workingImage);
+            workingImage = transformedImage;
+        }
+
+        laserDetectionResults.TransformedImage = transformedImage != null ? new Bitmap(transformedImage) : null;
+
+        // Get table mask and apply it
+        laserDetectionResults.TableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
+        laserDetectionResults.TableWithMaskApplied = ApplyMask(workingImage, laserDetectionResults.TableMask); //fails here. removing cloth removes the laser...
+
+        using (var workingImageRgb = workingImage.ToImage<Rgb, byte>())
+        {
+            // Create mask for red laser detection
+            laserDetectionResults.LaserMask = GetMaskImage(workingImage, LowerLaserMask, UpperLaserMask);
+
+            using (var contours = GetAllContours(laserDetectionResults.LaserMask))
+            {
+                // Store image with all candidates highlighted
+                using (var allCandidatesImage = workingImage.ToImage<Rgb, byte>())
+                {
+                    for (int i = 0; i < contours.Size; i++)
+                    {
+                        using (var contour = contours[i])
+                        {
+                            double area = CvInvoke.ContourArea(contour);
+                            if (area >= MinLaserArea && area <= MaxLaserArea)
+                            {
+                                CvInvoke.DrawContours(
+                                    allCandidatesImage,
+                                    new VectorOfVectorOfPoint(contour),
+                                    -1,
+                                    new MCvScalar(0, 255, 0), // Green for all candidates
+                                    2);
+                            }
+                        }
+                    }
+                    laserDetectionResults.AllCandidatesHighlighted = allCandidatesImage.ToBitmap();
+                }
+
+                double maxIntensity = 0;
+                for (int i = 0; i < contours.Size; i++)
+                {
+                    using (var contour = contours[i])
+                    {
+                        double area = CvInvoke.ContourArea(contour);
+                        if (area < MinLaserArea || area > MaxLaserArea)
+                            continue;
+
+                        var moments = CvInvoke.Moments(contour);
+                        int centerX = (int)(moments.M10 / moments.M00);
+                        int centerY = (int)(moments.M01 / moments.M00);
+
+                        using (var mask = new Mat(tableImage.Size, DepthType.Cv8U, 1))
+                        {
+                            mask.SetTo(new MCvScalar(0));
+                            CvInvoke.DrawContours(mask, contours, i, new MCvScalar(255), -1);
+
+                            using (var roi = new Mat())
+                            {
+                                CvInvoke.BitwiseAnd(workingImageRgb, workingImageRgb, roi, mask);
+                                var mean = CvInvoke.Mean(roi, mask);
+                                double intensity = mean.V2; // Red channel intensity
+
+                                if (intensity > maxIntensity)
+                                {
+                                    maxIntensity = intensity;
+                                    laserDetectionResults.Laser = new Laser(
+                                        new Point(centerX, centerY),
+                                        intensity,
+                                        area
+                                    );
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // Draw circle around the detected laser point
+        if (laserDetectionResults.Laser != null)
+        {
+            using (var img = workingImage.ToImage<Rgb, byte>())
+            {
+                CvInvoke.Circle(
+                    img,
+                    laserDetectionResults.Laser.Location,
+                    10,
+                    new MCvScalar(0, 0, 255), // Red circle for final detection
+                    2);
+                laserDetectionResults.LaserHighlighted = img.ToBitmap();
+            }
+        }
+
+        return laserDetectionResults;
+    }
+
 
     /// <summary>
     /// Apple cueball mask to the masked table image. The cue ball is the biggest area Contour
@@ -192,6 +314,12 @@ public class BallDetector
         }
     }
 
+    /// <summary>
+    /// Apply the mask such that all the pixels in the mask range are black but all other pixels have their original colour
+    /// </summary>
+    /// <param name="inputImage"></param>
+    /// <param name="tableMask"></param>
+    /// <returns></returns>
     private static Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
     {
         using (Mat maskedObjects = new Mat())
@@ -204,7 +332,7 @@ public class BallDetector
     }
 
     /// <summary>
-    /// get the mask image for the table to remove the cloth
+    /// Get mask image such that every pixel within the lower and upper mask range become black and everything else becomes white
     /// </summary>
     /// <param name="tableImage">Image of the table to mask</param>
     /// <returns></returns>
@@ -225,7 +353,7 @@ public class BallDetector
 
             Emgu.CV.CvInvoke.MorphologyEx(mask, maskClosing, MorphOp.Close, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar());
 
-            Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
+            Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 10, 255, ThresholdType.BinaryInv); //all pixels between this range will become black
             return maskInv.ToBitmap();
         }
     }
@@ -256,7 +384,7 @@ public class BallDetector
     /// <param name="min_s"></param>
     /// <param name="max_s"></param>
     /// <returns></returns>
-    private static VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
+    private static VectorOfVectorOfPoint FilterBallContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
     {
         using (VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint())
         {

@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.ComponentModel;
 using System.Threading;
+using System.Media;
 
 namespace billiard_laser
 {
@@ -13,7 +14,7 @@ namespace billiard_laser
         private ArduinoController arduinoController;
         private CameraController cameraController;
         private ShotDetector shotDetector;
-        private BallDetector ballDetector;
+        private TableObjectDetector objectDetector;
 
         //selection of output resolutions
         private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(355, 200);
@@ -102,12 +103,14 @@ namespace billiard_laser
             arduinoController = new ArduinoController("COM3"); //TODO find better way to find what port to connect to
             cameraController = new CameraController(cboCamera);
             shotDetector = new ShotDetector();
-            ballDetector = new BallDetector();
+            objectDetector = new TableObjectDetector();
 
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
             listBoxProcessedFrames.DataSource = processedFrameIndices;
+
+            SystemSounds.Asterisk.Play();
         }
 
         private void SetStateLoadCamera()
@@ -346,7 +349,7 @@ namespace billiard_laser
             stopwatch.Restart();
 
             VideoFrame processedFrame = null;
-            ImageProcessingResults results = null;
+            BallDetectionResults results = null;
 
             try
             {
@@ -356,9 +359,15 @@ namespace billiard_laser
                 {
                     try
                     {
-                        results = ballDetector.ProcessTableImage(workingFrame.frame);
+                        //todo remove. MODIFIED FOR DETECTING LASER AND NOT CUE BALL
+                        LaserDetectionResults laserResults = objectDetector.ProcessLaserDetection(workingFrame.frame);
+                        processedFrame = new VideoFrame(new Bitmap(laserResults.LaserHighlighted), workingFrame.index);
+
+                        /*
+                        results = objectDetector.ProcessBallDetection(workingFrame.frame);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
+                        */
                     }
                     catch (Exception ex)
                     {
@@ -621,8 +630,8 @@ namespace billiard_laser
 
             processedFrameIndices.Clear();
 
-            videoCancellationTokenSource.Cancel();
-            videoCancellationTokenSource.Dispose();
+            videoCancellationTokenSource?.Cancel();
+            videoCancellationTokenSource?.Dispose();
 
             // Dispose of all frames in the queues
             while (rawFrames.Count > 0)
@@ -648,7 +657,7 @@ namespace billiard_laser
         {
             if (debugForm == null || debugForm.IsDisposed)
             {
-                debugForm = new ImageProcessingDebugForm(ballDetector);
+                debugForm = new ImageProcessingDebugForm(objectDetector);
 
                 debugForm.DebugFormClosed += DebugForm_DebugFormClosed;
                 debugForm.Show();
