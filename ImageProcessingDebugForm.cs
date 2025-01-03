@@ -24,20 +24,21 @@ namespace billiard_laser
 
         public void ShowDebugImages(Bitmap rawImage)
         {
-            /*
+            
             //todo remove. TESTING for laser only
             LaserDetectionResults images = objectDetector.ProcessLaserDetection(rawImage);
 
             SetImage(originalImagePicBox, images.OriginalImage);
-            SetImage(filteredContoursPicBox, images.AllCandidatesHighlighted);
-            //SetImage(allContoursPicBox, images.AllBallsHighlighted);
+            SetImage(filteredContoursPicBox, images.FilteredCandidatesHighlighted);
+            SetImage(allContoursPicBox, images.AllCandidatesHighlighted);
             SetImage(invMaskPicBox, images.TableMask);
             SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
             SetImage(cueBallMaskPicBox, images.LaserMask);
             SetImage(cueBallFoundPicBox, images.LaserHighlighted);
             SetImage(transformedImagePicBox, images.TransformedImage);
-            */
+            
 
+            /*
             BallDetectionResults images = objectDetector.ProcessBallDetection(rawImage);
                         
             
@@ -49,7 +50,7 @@ namespace billiard_laser
             SetImage(cueBallMaskPicBox, images.CueBallMask);
             SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
             SetImage(transformedImagePicBox, images.TransformedImage);
-            
+            */
         }
 
         private void SetImage(PictureBox pictureBox, Image newImage)

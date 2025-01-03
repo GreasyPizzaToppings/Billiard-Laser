@@ -10,9 +10,11 @@ public class LaserDetectionResults : IDisposable
     public Bitmap? OriginalImage { get; set; }
     public Bitmap? TransformedImage { get; set; }
     public Bitmap? LaserMask { get; set; }
+    public Bitmap? LaserMaskApplied { get; set; }
     public Bitmap? TableMask { get; set; }
     public Bitmap? TableWithMaskApplied { get; set; }
     public Bitmap? AllCandidatesHighlighted { get; set; }
+    public Bitmap? FilteredCandidatesHighlighted { get; set; }
     public Bitmap? LaserHighlighted { get; set; } //the chosen candidate
     public Laser? Laser { get; set; }
 

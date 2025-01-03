@@ -126,28 +126,39 @@ public class TableObjectDetector
         laserDetectionResults.TransformedImage = transformedImage != null ? new Bitmap(transformedImage) : null;
 
         // Get table mask and apply it
-        laserDetectionResults.TableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
-        laserDetectionResults.TableWithMaskApplied = ApplyMask(workingImage, laserDetectionResults.TableMask); //fails here. removing cloth removes the laser...
+        //laserDetectionResults.TableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
+        //laserDetectionResults.TableWithMaskApplied = ApplyMask(workingImage, laserDetectionResults.TableMask); //fails here. removing cloth removes the laser...
 
         using (var workingImageRgb = workingImage.ToImage<Rgb, byte>())
         {
             // Create mask for red laser detection
             laserDetectionResults.LaserMask = GetMaskImage(workingImage, LowerLaserMask, UpperLaserMask);
+            laserDetectionResults.LaserMaskApplied = ApplyMask(workingImage, laserDetectionResults.LaserMask);
 
-            using (var contours = GetAllContours(laserDetectionResults.LaserMask))
+            using (var contours = GetAllContours(laserDetectionResults.LaserMaskApplied))
             {
+                
                 // Store image with all candidates highlighted
                 using (var allCandidatesImage = workingImage.ToImage<Rgb, byte>())
+                using (var filteredCandidatesImage = workingImage.ToImage<Rgb, byte>())
                 {
                     for (int i = 0; i < contours.Size; i++)
                     {
                         using (var contour = contours[i])
                         {
                             double area = CvInvoke.ContourArea(contour);
+                            CvInvoke.DrawContours(
+                            allCandidatesImage,
+                            new VectorOfVectorOfPoint(contour),
+                            -1,
+                            new MCvScalar(0, 255, 0), // Green for all candidates
+                            2);
+
+                            // try and filter out non lasers
                             if (area >= MinLaserArea && area <= MaxLaserArea)
                             {
                                 CvInvoke.DrawContours(
-                                    allCandidatesImage,
+                                    filteredCandidatesImage,
                                     new VectorOfVectorOfPoint(contour),
                                     -1,
                                     new MCvScalar(0, 255, 0), // Green for all candidates
@@ -156,6 +167,7 @@ public class TableObjectDetector
                         }
                     }
                     laserDetectionResults.AllCandidatesHighlighted = allCandidatesImage.ToBitmap();
+                    laserDetectionResults.FilteredCandidatesHighlighted = filteredCandidatesImage.ToBitmap();
                 }
 
                 double maxIntensity = 0;
