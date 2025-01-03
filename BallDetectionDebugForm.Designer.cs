@@ -1,7 +1,7 @@
 ﻿
 namespace billiard_laser
 {
-    partial class ImageProcessingDebugForm
+    partial class BallDetectionDebugForm
     {
         /// <summary>
         /// Required designer variable.
@@ -45,6 +45,7 @@ namespace billiard_laser
             labelClothMaskBlueMinValue = new Label();
             tableLayoutPanelMain = new TableLayoutPanel();
             tableLayoutPanelCueballMask = new TableLayoutPanel();
+            labelCueBallMaskArea = new Label();
             labelCbMaskBlue = new Label();
             labelCbMaskGreen = new Label();
             labelCbMaskRed = new Label();
@@ -67,6 +68,7 @@ namespace billiard_laser
             checkBoxEnableTableBoundary = new CheckBox();
             checkBoxEnableBlurr = new CheckBox();
             tableLayoutPanelClothMask = new TableLayoutPanel();
+            labelClothMaskArea = new Label();
             labelClothMaskBlue = new Label();
             trackBarClothMaskRedMax = new TrackBar();
             labelClothMaskGreenMaxValue = new Label();
@@ -90,8 +92,6 @@ namespace billiard_laser
             label2 = new Label();
             originalImagePicBox = new PictureBox();
             filteredContoursPicBox = new PictureBox();
-            labelCueBallMaskArea = new Label();
-            labelClothMaskArea = new Label();
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)allContoursPicBox).BeginInit();
@@ -333,6 +333,17 @@ namespace billiard_laser
             tableLayoutPanelCueballMask.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanelCueballMask.Size = new Size(543, 93);
             tableLayoutPanelCueballMask.TabIndex = 42;
+            // 
+            // labelCueBallMaskArea
+            // 
+            labelCueBallMaskArea.Anchor = AnchorStyles.None;
+            labelCueBallMaskArea.AutoSize = true;
+            labelCueBallMaskArea.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            labelCueBallMaskArea.Location = new Point(11, 2);
+            labelCueBallMaskArea.Name = "labelCueBallMaskArea";
+            labelCueBallMaskArea.Size = new Size(22, 15);
+            labelCueBallMaskArea.TabIndex = 40;
+            labelCueBallMaskArea.Text = "CB";
             // 
             // labelCbMaskBlue
             // 
@@ -616,6 +627,17 @@ namespace billiard_laser
             tableLayoutPanelClothMask.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanelClothMask.Size = new Size(544, 93);
             tableLayoutPanelClothMask.TabIndex = 41;
+            // 
+            // labelClothMaskArea
+            // 
+            labelClothMaskArea.Anchor = AnchorStyles.None;
+            labelClothMaskArea.AutoSize = true;
+            labelClothMaskArea.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
+            labelClothMaskArea.Location = new Point(4, 2);
+            labelClothMaskArea.Name = "labelClothMaskArea";
+            labelClothMaskArea.Size = new Size(36, 15);
+            labelClothMaskArea.TabIndex = 45;
+            labelClothMaskArea.Text = "Cloth";
             // 
             // labelClothMaskBlue
             // 
@@ -904,29 +926,7 @@ namespace billiard_laser
             filteredContoursPicBox.TabIndex = 39;
             filteredContoursPicBox.TabStop = false;
             // 
-            // labelCueBallMaskArea
-            // 
-            labelCueBallMaskArea.Anchor = AnchorStyles.None;
-            labelCueBallMaskArea.AutoSize = true;
-            labelCueBallMaskArea.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            labelCueBallMaskArea.Location = new Point(11, 2);
-            labelCueBallMaskArea.Name = "labelCueBallMaskArea";
-            labelCueBallMaskArea.Size = new Size(22, 15);
-            labelCueBallMaskArea.TabIndex = 40;
-            labelCueBallMaskArea.Text = "CB";
-            // 
-            // labelClothMaskArea
-            // 
-            labelClothMaskArea.Anchor = AnchorStyles.None;
-            labelClothMaskArea.AutoSize = true;
-            labelClothMaskArea.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            labelClothMaskArea.Location = new Point(4, 2);
-            labelClothMaskArea.Name = "labelClothMaskArea";
-            labelClothMaskArea.Size = new Size(36, 15);
-            labelClothMaskArea.TabIndex = 45;
-            labelClothMaskArea.Text = "Cloth";
-            // 
-            // ImageProcessingDebugForm
+            // BallDetectionDebugForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
@@ -934,8 +934,8 @@ namespace billiard_laser
             Controls.Add(tableLayoutPanelDebugImages);
             Controls.Add(tableLayoutPanelMain);
             Margin = new Padding(3, 2, 3, 2);
-            Name = "ImageProcessingDebugForm";
-            Text = "Image Processing Debugging";
+            Name = "BallDetectionDebugForm";
+            Text = "Ball Detection Image Debugging";
             FormClosed += ImageProcessingDebugForm_FormClosed;
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).EndInit();

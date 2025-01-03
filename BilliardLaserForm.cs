@@ -7,7 +7,7 @@ namespace billiard_laser
     public partial class BilliardLaserForm : Form
     {
         //video debugging form
-        private ImageProcessingDebugForm debugForm;
+        private LaserDetectionDebugForm debugForm;
 
         //utility classes
         private ArduinoController arduinoController;
@@ -654,7 +654,7 @@ namespace billiard_laser
         {
             if (debugForm == null || debugForm.IsDisposed)
             {
-                debugForm = new ImageProcessingDebugForm(objectDetector);
+                debugForm = new LaserDetectionDebugForm(objectDetector); //
 
                 debugForm.DebugFormClosed += DebugForm_DebugFormClosed;
                 debugForm.Show();

@@ -2,7 +2,7 @@
 
 namespace billiard_laser
 {
-    public partial class ImageProcessingDebugForm : Form, IDisposable
+    public partial class LaserDetectionDebugForm : Form, IDisposable
     {
         private bool initialisingControls = true;
         private TableObjectDetector objectDetector;
@@ -10,9 +10,9 @@ namespace billiard_laser
 
         public event EventHandler DebugFormClosed;
 
-        public ImageProcessingDebugForm(TableObjectDetector ballDetector)
+        public LaserDetectionDebugForm(TableObjectDetector objectDetector)
         {
-            this.objectDetector = ballDetector;
+            this.objectDetector = objectDetector;
             this.FormClosed += ImageProcessingDebugForm_FormClosed;
 
             InitializeComponent();
@@ -24,33 +24,16 @@ namespace billiard_laser
 
         public void ShowDebugImages(Bitmap rawImage)
         {
-            
-            //todo remove. TESTING for laser only
             LaserDetectionResults images = objectDetector.ProcessLaserDetection(rawImage);
 
             SetImage(originalImagePicBox, images.OriginalImage);
-            SetImage(filteredContoursPicBox, images.FilteredCandidatesHighlighted);
-            SetImage(allContoursPicBox, images.AllCandidatesHighlighted);
+            SetImage(filteredCandidatesPicBox, images.FilteredCandidatesHighlighted);
+            SetImage(allCandidatesPicBox, images.AllCandidatesHighlighted);
             SetImage(invMaskPicBox, images.TableMask);
             SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
-            SetImage(cueBallMaskPicBox, images.LaserMask);
-            SetImage(cueBallFoundPicBox, images.LaserHighlighted);
+            SetImage(laserMaskPicBox, images.LaserMask);
+            SetImage(laserFoundPicBox, images.LaserHighlighted);
             SetImage(transformedImagePicBox, images.TransformedImage);
-            
-
-            /*
-            BallDetectionResults images = objectDetector.ProcessBallDetection(rawImage);
-                        
-            
-            SetImage(originalImagePicBox, images.OriginalImage);
-            SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
-            SetImage(allContoursPicBox, images.AllBallsHighlighted);
-            SetImage(invMaskPicBox, images.TableMask);
-            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
-            SetImage(cueBallMaskPicBox, images.CueBallMask);
-            SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
-            SetImage(transformedImagePicBox, images.TransformedImage);
-            */
         }
 
         private void SetImage(PictureBox pictureBox, Image newImage)
@@ -67,7 +50,7 @@ namespace billiard_laser
             checkBoxEnableTableBoundary.Checked = objectDetector.EnableTableBoundary;
         }
 
-        private void SetBallDetectorSettings()
+        private void SetObjectDetectorSettings()
         {
             if (initialisingControls)
                 return;
@@ -75,27 +58,27 @@ namespace billiard_laser
             objectDetector.LowerClothMask = new Rgb(trackBarClothMaskRedMin.Value, trackBarClothMaskGreenMin.Value, trackBarClothMaskBlueMin.Value);
             objectDetector.UpperClothMask = new Rgb(trackBarClothMaskRedMax.Value, trackBarClothMaskGreenMax.Value, trackBarClothMaskBlueMax.Value);
 
-            objectDetector.LowerCueBallMask = new Rgb(trackBarCbMaskRedMin.Value, trackBarCbMaskGreenMin.Value, trackBarCbMaskBlueMin.Value);
-            objectDetector.UpperCueBallMask = new Rgb(trackBarCbMaskRedMax.Value, trackBarCbMaskGreenMax.Value, trackBarCbMaskBlueMax.Value);
+            objectDetector.LowerLaserMask = new Rgb(trackBarLaserMaskRedMin.Value, trackBarLaserMaskGreenMin.Value, trackBarLaserMaskBlueMin.Value);
+            objectDetector.UpperLaserMask = new Rgb(trackBarLaserMaskRedMax.Value, trackBarLaserMaskGreenMax.Value, trackBarLaserMaskBlueMax.Value);
 
             objectDetector.EnableBlur = checkBoxEnableBlurr.Checked;
             objectDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
             objectDetector.EnableTableBoundary = checkBoxEnableTableBoundary.Checked;
 
-            PrintBallDetectorSettings();
+            PrintObjectDetectorSettings();
 
             //update images upon setting changes
             if (originalImagePicBox.Image != null) ShowDebugImages((Bitmap)originalImagePicBox.Image);
         }
 
-        private void PrintBallDetectorSettings()
+        private void PrintObjectDetectorSettings()
         {
             Console.WriteLine(
               $"\nImage processing settings changed! TableObjectDetector Values:" +
               $"\nLower Cloth Mask RGB: {objectDetector.LowerClothMask}" +
               $"\nUpper Cloth Mask RGB: {objectDetector.UpperClothMask}" +
-              $"\nLower Cb Mask RGB: {objectDetector.LowerCueBallMask}" +
-              $"\nUpper Cb Mask RGB: {objectDetector.UpperCueBallMask}" +
+              $"\nLower Laser Mask RGB: {objectDetector.LowerLaserMask}" +
+              $"\nUpper Laser Mask RGB: {objectDetector.UpperLaserMask}" +
               $"\nEnable Blur: {objectDetector.EnableBlur}" +
               $"\nEnable Sharpening: {objectDetector.EnableSharpening}\n" +
               $"\nEnable Table Boundary: {objectDetector.EnableTableBoundary}\n"
@@ -115,13 +98,13 @@ namespace billiard_laser
             trackBarClothMaskGreenMax.Value = (int)objectDetector.UpperClothMask.Green;
             trackBarClothMaskBlueMax.Value = (int)objectDetector.UpperClothMask.Blue;
 
-            trackBarCbMaskRedMin.Value = (int)objectDetector.LowerCueBallMask.Red;
-            trackBarCbMaskGreenMin.Value = (int)objectDetector.LowerCueBallMask.Green;
-            trackBarCbMaskBlueMin.Value = (int)objectDetector.LowerCueBallMask.Blue;
+            trackBarLaserMaskRedMin.Value = (int)objectDetector.LowerLaserMask.Red;
+            trackBarLaserMaskGreenMin.Value = (int)objectDetector.LowerLaserMask.Green;
+            trackBarLaserMaskBlueMin.Value = (int)objectDetector.LowerLaserMask.Blue;
 
-            trackBarCbMaskRedMax.Value = (int)objectDetector.UpperCueBallMask.Red;
-            trackBarCbMaskGreenMax.Value = (int)objectDetector.UpperCueBallMask.Green;
-            trackBarCbMaskBlueMax.Value = (int)objectDetector.UpperCueBallMask.Blue;
+            trackBarLaserMaskRedMax.Value = (int)objectDetector.UpperLaserMask.Red;
+            trackBarLaserMaskGreenMax.Value = (int)objectDetector.UpperLaserMask.Green;
+            trackBarLaserMaskBlueMax.Value = (int)objectDetector.UpperLaserMask.Blue;
 
             //labels
             labelClothMaskRedMinValue.Text = trackBarClothMaskRedMin.Value.ToString();
@@ -135,100 +118,100 @@ namespace billiard_laser
         private void trackBarMaskRedMin_ValueChanged(object sender, EventArgs e)
         {
             labelClothMaskRedMinValue.Text = trackBarClothMaskRedMin.Value.ToString();
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void trackBarMaskGreenMin_ValueChanged(object sender, EventArgs e)
         {
             labelClothMaskGreenMinValue.Text = trackBarClothMaskGreenMin.Value.ToString();
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void trackBarMaskBlueMin_ValueChanged(object sender, EventArgs e)
         {
             labelClothMaskBlueMinValue.Text = trackBarClothMaskBlueMin.Value.ToString();
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void trackBarMaskRedMax_ValueChanged(object sender, EventArgs e)
         {
             labelClothMaskRedMaxValue.Text = trackBarClothMaskRedMax.Value.ToString();
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void trackBarMaskGreenMax_ValueChanged(object sender, EventArgs e)
         {
             labelClothMaskGreenMaxValue.Text = trackBarClothMaskGreenMax.Value.ToString();
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void trackBarMaskBlueMax_ValueChanged(object sender, EventArgs e)
         {
             labelClothMaskBlueMaxValue.Text = trackBarClothMaskBlueMax.Value.ToString();
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
-        private void trackBarCbMaskRedMin_ValueChanged(object sender, EventArgs e)
+        private void trackBarLaserMaskRedMin_ValueChanged(object sender, EventArgs e)
         {
-            labelCbMaskRedMin.Text = trackBarCbMaskRedMin.Value.ToString();
-            SetBallDetectorSettings();
+            labelLaserMaskRedMin.Text = trackBarLaserMaskRedMin.Value.ToString();
+            SetObjectDetectorSettings();
         }
 
-        private void trackBarCbMaskRedMax_ValueChanged(object sender, EventArgs e)
+        private void trackBarLaserMaskRedMax_ValueChanged(object sender, EventArgs e)
         {
-            labelCbMaskRedMax.Text = trackBarCbMaskRedMax.Value.ToString();
-            SetBallDetectorSettings();
+            labelLaserMaskRedMax.Text = trackBarLaserMaskRedMax.Value.ToString();
+            SetObjectDetectorSettings();
         }
 
-        private void trackBarCbMaskGreenMin_ValueChanged(object sender, EventArgs e)
+        private void trackBarLaserMaskGreenMin_ValueChanged(object sender, EventArgs e)
         {
-            labelCbMaskGreenMin.Text = trackBarCbMaskGreenMin.Value.ToString();
-            SetBallDetectorSettings();
+            labelLaserMaskGreenMin.Text = trackBarLaserMaskGreenMin.Value.ToString();
+            SetObjectDetectorSettings();
         }
 
-        private void trackBarCbMaskGreenMax_ValueChanged(object sender, EventArgs e)
+        private void trackBarLaserMaskGreenMax_ValueChanged(object sender, EventArgs e)
         {
-            labelCbMaskGreenMax.Text = trackBarCbMaskGreenMax.Value.ToString();
-            SetBallDetectorSettings();
+            labelLaserMaskGreenMax.Text = trackBarLaserMaskGreenMax.Value.ToString();
+            SetObjectDetectorSettings();
         }
 
-        private void trackBarCbMaskBlueMin_ValueChanged(object sender, EventArgs e)
+        private void trackBarLaserMaskBlueMin_ValueChanged(object sender, EventArgs e)
         {
-            labelCbMaskBlueMin.Text = trackBarCbMaskBlueMin.Value.ToString();
-            SetBallDetectorSettings();
+            labelLaserMaskBlueMin.Text = trackBarLaserMaskBlueMin.Value.ToString();
+            SetObjectDetectorSettings();
         }
 
-        private void trackBarCbMaskBlueMax_ValueChanged(object sender, EventArgs e)
+        private void trackBarLaserMaskBlueMax_ValueChanged(object sender, EventArgs e)
         {
-            labelCbMaskBlueMax.Text = trackBarCbMaskBlueMax.Value.ToString();
-            SetBallDetectorSettings();
+            labelLaserMaskBlueMax.Text = trackBarLaserMaskBlueMax.Value.ToString();
+            SetObjectDetectorSettings();
         }
         #endregion
 
         private void checkBoxEnableSharpen_CheckedChanged(object sender, EventArgs e)
         {
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void checkBoxEnableBlurr_CheckedChanged(object sender, EventArgs e)
         {
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void checkBoxEnableTableBoundary_CheckedChanged(object sender, EventArgs e)
         {
-            SetBallDetectorSettings();
+            SetObjectDetectorSettings();
         }
 
         private void ImageProcessingDebugForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             originalImagePicBox.Image?.Dispose();
-            filteredContoursPicBox.Image?.Dispose();
-            allContoursPicBox.Image?.Dispose();
+            filteredCandidatesPicBox.Image?.Dispose();
+            allCandidatesPicBox.Image?.Dispose();
             invMaskPicBox.Image?.Dispose();
             appliedMaskPicBox.Image?.Dispose();
-            cueBallMaskPicBox.Image?.Dispose();
-            cueBallFoundPicBox.Image?.Dispose();
+            laserMaskPicBox.Image?.Dispose();
+            laserFoundPicBox.Image?.Dispose();
             transformedImagePicBox.Image?.Dispose();
 
             objectDetector = null;

@@ -5,7 +5,10 @@
     <Compile Update="BilliardLaserForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="ImageProcessingDebugForm.cs">
+    <Compile Update="BallDetectionDebugForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="LaserDetectionDebugForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>
