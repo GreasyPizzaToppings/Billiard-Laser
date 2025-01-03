@@ -1,7 +1,6 @@
 ﻿using System.Diagnostics;
 using System.ComponentModel;
 using System.Threading;
-using System.Media;
 
 namespace billiard_laser
 {
@@ -109,8 +108,6 @@ namespace billiard_laser
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
             listBoxProcessedFrames.DataSource = processedFrameIndices;
-
-            SystemSounds.Asterisk.Play();
         }
 
         private void SetStateLoadCamera()
