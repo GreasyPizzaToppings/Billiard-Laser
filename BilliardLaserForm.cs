@@ -7,7 +7,8 @@ namespace billiard_laser
     public partial class BilliardLaserForm : Form
     {
         //video debugging form
-        private ImageProcessingDebugForm debugForm;
+        private BallDetectionDebugForm debugForm;
+        private BallReplacementForm ballReplacementForm;
 
         //utility classes
         private CameraController cameraController;
@@ -355,7 +356,7 @@ namespace billiard_laser
                 {
                     try
                     {
-                        results = ballDetector.ProcessTableImage(workingFrame.frame);
+                        results = objectDetector.ProcessBallDetection(workingFrame.frame);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
                     }
@@ -650,7 +651,7 @@ namespace billiard_laser
         {
             if (debugForm == null || debugForm.IsDisposed)
             {
-                debugForm = new ImageProcessingDebugForm(ballDetector);
+                debugForm = new BallDetectionDebugForm(objectDetector);
 
                 debugForm.DebugFormClosed += DebugForm_FormClosed;
                 debugForm.Show();
