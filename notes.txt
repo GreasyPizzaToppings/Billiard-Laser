@@ -12,16 +12,14 @@ refactor playback mechanism
 fix async bug with 2 loaded videos
 fix async bug load video while playing shot
 fix start camera after playing video / vice versa
-
-todo:
 fps counter buggy with camera input. plus nan 
 
-2: figure out what images u want on debug form 
-3: implement real shot detection (1 ball start moving - all balls stop)
-4: implement ball replacement helper (to actually achieve mvp)
-5: improve cueball tracker/path tracer
+todo:
+implement ball replacement helper (to actually achieve mvp)
 
-test pausing and loading video while using camera and stopping camera input
+2: figure out what images u want on debug form 
+3: implement real shot detection (1 ball start moving - all balls stop) 
+4: improve cueball tracker/path tracer
 
 ideas:
 cueball tracker: implement some logic to prevent snapping away from moving cueball. find best contour closest to expected path
@@ -30,10 +28,7 @@ cueball tracker: on a completed shot, if path isnt smooth, go back in time and f
 
 currently loads whole video in memory before taking maxFrames from it into queue. make it only load in maxFrames to memory to prevent crashes on big videos
 
-display output resolution on form?
-
 bugs:
-- loading video while its already playing/detecting balls and then detecting balls again results in collection enumeration modified error
 - crashed once when resising window while replaying shot. 'parameter invalid' on the application.run(new billiardlaserform()) and sometimes elsewhere
 
 

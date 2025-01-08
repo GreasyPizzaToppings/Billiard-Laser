@@ -37,7 +37,7 @@ namespace billiard_laser
             SetImage(transformedImagePicBox, images.TransformedImage);   
         }
 
-        private void SetImage(PictureBox pictureBox, Image newImage)
+        private static void SetImage(PictureBox pictureBox, Image newImage)
         {
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;

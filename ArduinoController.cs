@@ -5,13 +5,16 @@ public class ArduinoController
 {
     private SerialPort serialPort;
 
+    //commands
     private const string LASER_OFF = "0";
     private const string LASER_ON = "1";
     private const string LEFT = "l";
     private const string RIGHT = "r";
     private const string UP = "u";
     private const string DOWN = "d";
+    private const string STEPAMOUNT = "s";
 
+    private bool laserOn = false;
 
     public ArduinoController(string portName,
                              int baudRate = 9600)
@@ -55,6 +58,12 @@ public class ArduinoController
         SendCommand(LASER_OFF);
     }
 
+    public void ToggleLaser() { 
+        laserOn = !laserOn;
+        if (laserOn) LaserOn();
+        else LaserOff();
+    }
+
     public void MoveLeft()
     {
         SendCommand(LEFT);
@@ -73,5 +82,13 @@ public class ArduinoController
     public void MoveDown()
     {
         SendCommand(DOWN);
+    }
+
+    public void SetStepAmount(int amount) {
+        SendCommand(STEPAMOUNT + amount.ToString());
+        if (serialPort.IsOpen)
+        {
+            Console.WriteLine(serialPort.ReadLine()); //response
+        }
     }
 }
