@@ -15,6 +15,8 @@ namespace billiard_laser
     {
         private Bitmap targetTableLayout;
         private ArduinoController arduinoController;
+        private LaserDetectionDebugForm debugForm;
+
         public CameraController cameraController;
 
         public Bitmap TargetTableLayout
@@ -37,7 +39,7 @@ namespace billiard_laser
             this.TargetTableLayout = targetTableLayout;
 
             arduinoController = new ArduinoController("COM4"); //TODO find better way to find what port to connect to
-            this.cameraController = cameraController;   
+            this.cameraController = cameraController;
         }
 
         /// <summary>
@@ -57,6 +59,8 @@ namespace billiard_laser
 
             try
             {
+                UpdateDebugForm(cameraImage);
+
                 // Ensure the camera image is the same size as the target table layout
                 using (Bitmap resizedCameraImage = new Bitmap(cameraImage, TargetTableLayout.Size))
                 {
@@ -129,6 +133,12 @@ namespace billiard_laser
 
         private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
         {
+            if (debugForm != null)
+            {
+                debugForm.Dispose();
+                debugForm = null;
+            }
+
             BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
 
             targetTableLayout.Dispose();
@@ -206,6 +216,40 @@ namespace billiard_laser
                 TargetTableLayout = mirroredImage;
 
             }
+        }
+
+        private void btnShowDebugForm_Click(object sender, EventArgs e)
+        {
+            if (debugForm == null || debugForm.IsDisposed)
+            {
+                debugForm = new LaserDetectionDebugForm(new TableObjectDetector()); //todo do laser detection in this form
+                debugForm.DebugFormClosed += DebugForm_FormClosed;
+                debugForm.Show();
+
+                // Initialize debug form with current image if available
+                if (targetTableLayout != null)
+                {
+                    debugForm.ShowDebugImages(targetTableLayout);
+                }
+            }
+            else
+            {
+                debugForm.Focus();
+            }
+        }
+
+        private void DebugForm_FormClosed(object sender, EventArgs e)
+        {
+            if (debugForm != null)
+            {
+                debugForm.Dispose();
+                debugForm = null;
+            }
+        }
+
+        private void UpdateDebugForm(Bitmap image)
+        {
+            debugForm?.ShowDebugImages(image);
         }
     }
 }

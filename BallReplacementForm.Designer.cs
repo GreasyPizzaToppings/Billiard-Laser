@@ -42,6 +42,7 @@
             btnLaserEnableToggle = new Button();
             btnFlipCamera = new Button();
             btnMirrorCamera = new Button();
+            btnShowDebugForm = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarCameraOpacity).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarLaserStepAmount).BeginInit();
@@ -82,7 +83,7 @@
             labelCameraOpacityValue.Anchor = AnchorStyles.None;
             labelCameraOpacityValue.AutoSize = true;
             labelCameraOpacityValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelCameraOpacityValue.Location = new Point(196, 670);
+            labelCameraOpacityValue.Location = new Point(189, 676);
             labelCameraOpacityValue.Name = "labelCameraOpacityValue";
             labelCameraOpacityValue.Size = new Size(30, 20);
             labelCameraOpacityValue.TabIndex = 38;
@@ -91,7 +92,7 @@
             // btnLaserLeft
             // 
             btnLaserLeft.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLaserLeft.Location = new Point(940, 667);
+            btnLaserLeft.Location = new Point(799, 668);
             btnLaserLeft.Margin = new Padding(3, 2, 3, 2);
             btnLaserLeft.Name = "btnLaserLeft";
             btnLaserLeft.Size = new Size(35, 33);
@@ -103,7 +104,7 @@
             // btnLaserRight
             // 
             btnLaserRight.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLaserRight.Location = new Point(1022, 667);
+            btnLaserRight.Location = new Point(881, 668);
             btnLaserRight.Margin = new Padding(3, 2, 3, 2);
             btnLaserRight.Name = "btnLaserRight";
             btnLaserRight.Size = new Size(35, 33);
@@ -115,7 +116,7 @@
             // btnLaserUp
             // 
             btnLaserUp.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLaserUp.Location = new Point(981, 630);
+            btnLaserUp.Location = new Point(840, 631);
             btnLaserUp.Margin = new Padding(3, 2, 3, 2);
             btnLaserUp.Name = "btnLaserUp";
             btnLaserUp.Size = new Size(35, 33);
@@ -127,7 +128,7 @@
             // btnLaserDown
             // 
             btnLaserDown.Font = new Font("Segoe UI", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLaserDown.Location = new Point(981, 667);
+            btnLaserDown.Location = new Point(840, 668);
             btnLaserDown.Margin = new Padding(3, 2, 3, 2);
             btnLaserDown.Name = "btnLaserDown";
             btnLaserDown.Size = new Size(35, 33);
@@ -141,7 +142,7 @@
             labelLaserStepAmountValue.Anchor = AnchorStyles.None;
             labelLaserStepAmountValue.AutoSize = true;
             labelLaserStepAmountValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserStepAmountValue.Location = new Point(871, 667);
+            labelLaserStepAmountValue.Location = new Point(730, 673);
             labelLaserStepAmountValue.Name = "labelLaserStepAmountValue";
             labelLaserStepAmountValue.Size = new Size(18, 20);
             labelLaserStepAmountValue.TabIndex = 62;
@@ -149,7 +150,7 @@
             // 
             // trackBarLaserStepAmount
             // 
-            trackBarLaserStepAmount.Location = new Point(687, 667);
+            trackBarLaserStepAmount.Location = new Point(546, 668);
             trackBarLaserStepAmount.Maximum = 500;
             trackBarLaserStepAmount.Minimum = 1;
             trackBarLaserStepAmount.Name = "trackBarLaserStepAmount";
@@ -162,7 +163,7 @@
             // 
             labelLaserStepAmount.AutoSize = true;
             labelLaserStepAmount.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserStepAmount.Location = new Point(687, 636);
+            labelLaserStepAmount.Location = new Point(546, 637);
             labelLaserStepAmount.Name = "labelLaserStepAmount";
             labelLaserStepAmount.Size = new Size(96, 20);
             labelLaserStepAmount.TabIndex = 60;
@@ -171,7 +172,7 @@
             // btnLaserEnableToggle
             // 
             btnLaserEnableToggle.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnLaserEnableToggle.Location = new Point(541, 670);
+            btnLaserEnableToggle.Location = new Point(400, 671);
             btnLaserEnableToggle.Margin = new Padding(3, 2, 3, 2);
             btnLaserEnableToggle.Name = "btnLaserEnableToggle";
             btnLaserEnableToggle.Size = new Size(101, 33);
@@ -183,7 +184,7 @@
             // btnFlipCamera
             // 
             btnFlipCamera.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnFlipCamera.Location = new Point(280, 630);
+            btnFlipCamera.Location = new Point(280, 631);
             btnFlipCamera.Margin = new Padding(3, 2, 3, 2);
             btnFlipCamera.Name = "btnFlipCamera";
             btnFlipCamera.Size = new Size(101, 33);
@@ -195,7 +196,7 @@
             // btnMirrorCamera
             // 
             btnMirrorCamera.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnMirrorCamera.Location = new Point(280, 670);
+            btnMirrorCamera.Location = new Point(280, 671);
             btnMirrorCamera.Margin = new Padding(3, 2, 3, 2);
             btnMirrorCamera.Name = "btnMirrorCamera";
             btnMirrorCamera.Size = new Size(101, 33);
@@ -204,11 +205,24 @@
             btnMirrorCamera.UseVisualStyleBackColor = true;
             btnMirrorCamera.Click += btnMirrorCamera_Click;
             // 
+            // btnShowDebugForm
+            // 
+            btnShowDebugForm.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnShowDebugForm.Location = new Point(958, 668);
+            btnShowDebugForm.Margin = new Padding(3, 2, 3, 2);
+            btnShowDebugForm.Name = "btnShowDebugForm";
+            btnShowDebugForm.Size = new Size(116, 33);
+            btnShowDebugForm.TabIndex = 66;
+            btnShowDebugForm.Text = "Show Debug Form";
+            btnShowDebugForm.UseVisualStyleBackColor = true;
+            btnShowDebugForm.Click += btnShowDebugForm_Click;
+            // 
             // BallReplacementForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1264, 724);
+            ClientSize = new Size(1105, 712);
+            Controls.Add(btnShowDebugForm);
             Controls.Add(btnMirrorCamera);
             Controls.Add(btnFlipCamera);
             Controls.Add(btnLaserEnableToggle);
@@ -249,5 +263,6 @@
         private Button btnLaserEnableToggle;
         private Button btnFlipCamera;
         private Button btnMirrorCamera;
+        private Button btnShowDebugForm;
     }
 }
