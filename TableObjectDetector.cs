@@ -29,8 +29,8 @@ public class TableObjectDetector
     public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
 
     // Laser detection settings
-    public Rgb LowerLaserMask = new Rgb(0, 150, 150);  // HSV values for red laser
-    public Rgb UpperLaserMask = new Rgb(10, 255, 255); // May need adjustment based on lighting
+    public Rgb LowerLaserMask = new Rgb(42, 145, 52);
+    public Rgb UpperLaserMask = new Rgb(97, 255, 220);
     public double MinLaserArea = 4;  // Minimum area for laser dot
     public double MaxLaserArea = 100; // Maximum area for laser dot
 
@@ -125,26 +125,21 @@ public class TableObjectDetector
 
         laserDetectionResults.TransformedImage = transformedImage != null ? new Bitmap(transformedImage) : null;
 
-        // Get table mask and apply it
-        //laserDetectionResults.TableMask = GetMaskImage(workingImage, LowerClothMask, UpperClothMask);
-        //laserDetectionResults.TableWithMaskApplied = ApplyMask(workingImage, laserDetectionResults.TableMask); //fails here. removing cloth removes the laser...
-
         using (var workingImageRgb = workingImage.ToImage<Rgb, byte>())
         {
             // Create mask for red laser detection
             laserDetectionResults.LaserMask = GetMaskImage(workingImage, LowerLaserMask, UpperLaserMask);
             laserDetectionResults.LaserMaskApplied = ApplyMask(workingImage, laserDetectionResults.LaserMask);
 
-            using (var contours = GetAllContours(laserDetectionResults.LaserMaskApplied))
+            using (var allContoursFound = GetAllContours(laserDetectionResults.LaserMaskApplied))
             {
-                
-                // Store image with all candidates highlighted
-                using (var allCandidatesImage = workingImage.ToImage<Rgb, byte>())
-                using (var filteredCandidatesImage = workingImage.ToImage<Rgb, byte>())
+                VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound) : null;
+                using (var allCandidatesImage = workingImage.ToImage<Rgb, byte>()) // get image with all candidates highlighted for debug
+                using (var filteredCandidatesImage = workingImage.ToImage<Rgb, byte>()) //get image with filtered candidates highlighted for debug
                 {
-                    for (int i = 0; i < contours.Size; i++)
+                    for (int i = 0; i < allContoursFound.Size; i++)
                     {
-                        using (var contour = contours[i])
+                        using (var contour = allContoursFound[i])
                         {
                             double area = CvInvoke.ContourArea(contour);
                             CvInvoke.DrawContours(
@@ -157,12 +152,15 @@ public class TableObjectDetector
                             // try and filter out non lasers
                             if (area >= MinLaserArea && area <= MaxLaserArea)
                             {
-                                CvInvoke.DrawContours(
+                                //table boundary checking if enabled
+                                if (tableContour != null && IsContourInside(contour, tableContour)) { 
+                                    CvInvoke.DrawContours(
                                     filteredCandidatesImage,
                                     new VectorOfVectorOfPoint(contour),
                                     -1,
                                     new MCvScalar(0, 255, 0), // Green for all candidates
                                     2);
+                                }
                             }
                         }
                     }
@@ -170,10 +168,11 @@ public class TableObjectDetector
                     laserDetectionResults.FilteredCandidatesHighlighted = filteredCandidatesImage.ToBitmap();
                 }
 
+                //brightest laser point within area range is our pick
                 double maxIntensity = 0;
-                for (int i = 0; i < contours.Size; i++)
+                for (int i = 0; i < allContoursFound.Size; i++)
                 {
-                    using (var contour = contours[i])
+                    using (var contour = allContoursFound[i])
                     {
                         double area = CvInvoke.ContourArea(contour);
                         if (area < MinLaserArea || area > MaxLaserArea)
@@ -186,7 +185,7 @@ public class TableObjectDetector
                         using (var mask = new Mat(tableImage.Size, DepthType.Cv8U, 1))
                         {
                             mask.SetTo(new MCvScalar(0));
-                            CvInvoke.DrawContours(mask, contours, i, new MCvScalar(255), -1);
+                            CvInvoke.DrawContours(mask, allContoursFound, i, new MCvScalar(255), -1);
 
                             using (var roi = new Mat())
                             {
@@ -210,7 +209,7 @@ public class TableObjectDetector
             }
         }
 
-        // Draw circle around the detected laser point
+        // Draw circle around the detected laser point for debug
         if (laserDetectionResults.Laser != null)
         {
             using (var img = workingImage.ToImage<Rgb, byte>())

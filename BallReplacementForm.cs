@@ -208,7 +208,7 @@ namespace billiard_laser
                 using (Graphics g = Graphics.FromImage(mirroredImage))
                 {
                     g.TranslateTransform(targetTableLayout.Width, 0);
-                    g.ScaleTransform(-1, 1);
+                    g.ScaleTransform(-1, 1); 
                     g.DrawImage(targetTableLayout, 0, 0);
                 }
 

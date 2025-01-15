@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.ComponentModel;
 using System.Threading;
+using System.Windows.Controls;
 
 namespace billiard_laser
 {
@@ -359,6 +360,9 @@ namespace billiard_laser
                         results = objectDetector.ProcessBallDetection(workingFrame.frame);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
+
+                        //testing laser detection with video. todo remove later
+                        ballReplacementForm?.UpdateTableOverlay(workingFrame.frame);
                     }
                     catch (Exception ex)
                     {
