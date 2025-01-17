@@ -222,7 +222,7 @@ namespace billiard_laser
         {
             if (debugForm == null || debugForm.IsDisposed)
             {
-                debugForm = new LaserDetectionDebugForm(new TableObjectDetector()); //todo do laser detection in this form
+                debugForm = new LaserDetectionDebugForm(new LaserDetector()); //todo do laser detection in this form
                 debugForm.DebugFormClosed += DebugForm_FormClosed;
                 debugForm.Show();
 

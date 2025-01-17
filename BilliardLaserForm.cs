@@ -15,7 +15,7 @@ namespace billiard_laser
         //utility classes
         private CameraController cameraController;
         private ShotDetector shotDetector;
-        private TableObjectDetector objectDetector;
+        private BallDetector ballDetector;
 
         //selection of output resolutions
         private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(355, 200);
@@ -103,7 +103,7 @@ namespace billiard_laser
 
             cameraController = new CameraController(cboCamera);
             shotDetector = new ShotDetector();
-            objectDetector = new TableObjectDetector();
+            ballDetector = new BallDetector();
 
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
@@ -356,7 +356,7 @@ namespace billiard_laser
                 {
                     try
                     {
-                        results = objectDetector.ProcessBallDetection(workingFrame.frame);
+                        results = ballDetector.ProcessBallDetection(workingFrame.frame);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
                     }
@@ -651,7 +651,7 @@ namespace billiard_laser
         {
             if (ballDetectionDebugForm == null || ballDetectionDebugForm.IsDisposed)
             {
-                ballDetectionDebugForm = new BallDetectionDebugForm(objectDetector);
+                ballDetectionDebugForm = new BallDetectionDebugForm(ballDetector);
 
                 ballDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
                 ballDetectionDebugForm.Show();

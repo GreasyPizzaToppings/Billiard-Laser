@@ -5,14 +5,14 @@ namespace billiard_laser
     public partial class LaserDetectionDebugForm : Form, IDisposable
     {
         private bool initialisingControls = true;
-        private TableObjectDetector objectDetector;
+        private LaserDetector laserDetector;
         private bool disposed = false;
 
         public event EventHandler DebugFormClosed;
 
-        public LaserDetectionDebugForm(TableObjectDetector objectDetector)
+        public LaserDetectionDebugForm(LaserDetector laserDetector)
         {
-            this.objectDetector = objectDetector;
+            this.laserDetector = laserDetector;
             this.FormClosed += ImageProcessingDebugForm_FormClosed;
 
             InitializeComponent();
@@ -24,7 +24,7 @@ namespace billiard_laser
 
         public void ShowDebugImages(Bitmap rawImage)
         {
-            LaserDetectionResults images = objectDetector.ProcessLaserDetection(rawImage);
+            LaserDetectionResults images = laserDetector.ProcessLaserDetection(rawImage);
 
             SetImage(originalImagePicBox, images.OriginalImage);
             SetImage(filteredCandidatesPicBox, images.FilteredCandidatesHighlighted);
@@ -45,9 +45,9 @@ namespace billiard_laser
 
         private void InitCheckBoxes()
         {
-            checkBoxEnableBlurr.Checked = objectDetector.EnableBlur;
-            checkBoxEnableSharpen.Checked = objectDetector.EnableSharpening;
-            checkBoxEnableTableBoundary.Checked = objectDetector.EnableTableBoundary;
+            checkBoxEnableBlurr.Checked = laserDetector.EnableBlur;
+            checkBoxEnableSharpen.Checked = laserDetector.EnableSharpening;
+            checkBoxEnableTableBoundary.Checked = laserDetector.EnableTableBoundary;
         }
 
         private void SetObjectDetectorSettings()
@@ -55,15 +55,12 @@ namespace billiard_laser
             if (initialisingControls)
                 return;
 
-            objectDetector.LowerClothMask = new Rgb(trackBarClothMaskRedMin.Value, trackBarClothMaskGreenMin.Value, trackBarClothMaskBlueMin.Value);
-            objectDetector.UpperClothMask = new Rgb(trackBarClothMaskRedMax.Value, trackBarClothMaskGreenMax.Value, trackBarClothMaskBlueMax.Value);
+            laserDetector.LowerLaserMask = new Rgb(trackBarLaserMaskRedMin.Value, trackBarLaserMaskGreenMin.Value, trackBarLaserMaskBlueMin.Value);
+            laserDetector.UpperLaserMask = new Rgb(trackBarLaserMaskRedMax.Value, trackBarLaserMaskGreenMax.Value, trackBarLaserMaskBlueMax.Value);
 
-            objectDetector.LowerLaserMask = new Rgb(trackBarLaserMaskRedMin.Value, trackBarLaserMaskGreenMin.Value, trackBarLaserMaskBlueMin.Value);
-            objectDetector.UpperLaserMask = new Rgb(trackBarLaserMaskRedMax.Value, trackBarLaserMaskGreenMax.Value, trackBarLaserMaskBlueMax.Value);
-
-            objectDetector.EnableBlur = checkBoxEnableBlurr.Checked;
-            objectDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
-            objectDetector.EnableTableBoundary = checkBoxEnableTableBoundary.Checked;
+            laserDetector.EnableBlur = checkBoxEnableBlurr.Checked;
+            laserDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
+            laserDetector.EnableTableBoundary = checkBoxEnableTableBoundary.Checked;
 
             PrintObjectDetectorSettings();
 
@@ -75,13 +72,11 @@ namespace billiard_laser
         {
             Console.WriteLine(
               $"\nImage processing settings changed! TableObjectDetector Values:" +
-              $"\nLower Cloth Mask RGB: {objectDetector.LowerClothMask}" +
-              $"\nUpper Cloth Mask RGB: {objectDetector.UpperClothMask}" +
-              $"\nLower Laser Mask RGB: {objectDetector.LowerLaserMask}" +
-              $"\nUpper Laser Mask RGB: {objectDetector.UpperLaserMask}" +
-              $"\nEnable Blur: {objectDetector.EnableBlur}" +
-              $"\nEnable Sharpening: {objectDetector.EnableSharpening}\n" +
-              $"\nEnable Table Boundary: {objectDetector.EnableTableBoundary}\n"
+              $"\nLower Laser Mask RGB: {laserDetector.LowerLaserMask}" +
+              $"\nUpper Laser Mask RGB: {laserDetector.UpperLaserMask}" +
+              $"\nEnable Blur: {laserDetector.EnableBlur}" +
+              $"\nEnable Sharpening: {laserDetector.EnableSharpening}\n" +
+              $"\nEnable Table Boundary: {laserDetector.EnableTableBoundary}\n"
             );
         }
 
@@ -89,22 +84,13 @@ namespace billiard_laser
 
         private void InitMaskTrackbars()
         {
-            //trackbar values
-            trackBarClothMaskRedMin.Value = (int)objectDetector.LowerClothMask.Red;
-            trackBarClothMaskGreenMin.Value = (int)objectDetector.LowerClothMask.Green;
-            trackBarClothMaskBlueMin.Value = (int)objectDetector.LowerClothMask.Blue;
+            trackBarLaserMaskRedMin.Value = (int)laserDetector.LowerLaserMask.Red;
+            trackBarLaserMaskGreenMin.Value = (int)laserDetector.LowerLaserMask.Green;
+            trackBarLaserMaskBlueMin.Value = (int)laserDetector.LowerLaserMask.Blue;
 
-            trackBarClothMaskRedMax.Value = (int)objectDetector.UpperClothMask.Red;
-            trackBarClothMaskGreenMax.Value = (int)objectDetector.UpperClothMask.Green;
-            trackBarClothMaskBlueMax.Value = (int)objectDetector.UpperClothMask.Blue;
-
-            trackBarLaserMaskRedMin.Value = (int)objectDetector.LowerLaserMask.Red;
-            trackBarLaserMaskGreenMin.Value = (int)objectDetector.LowerLaserMask.Green;
-            trackBarLaserMaskBlueMin.Value = (int)objectDetector.LowerLaserMask.Blue;
-
-            trackBarLaserMaskRedMax.Value = (int)objectDetector.UpperLaserMask.Red;
-            trackBarLaserMaskGreenMax.Value = (int)objectDetector.UpperLaserMask.Green;
-            trackBarLaserMaskBlueMax.Value = (int)objectDetector.UpperLaserMask.Blue;
+            trackBarLaserMaskRedMax.Value = (int)laserDetector.UpperLaserMask.Red;
+            trackBarLaserMaskGreenMax.Value = (int)laserDetector.UpperLaserMask.Green;
+            trackBarLaserMaskBlueMax.Value = (int)laserDetector.UpperLaserMask.Blue;
 
             //labels
             labelClothMaskRedMinValue.Text = trackBarClothMaskRedMin.Value.ToString();
@@ -214,7 +200,7 @@ namespace billiard_laser
             laserFoundPicBox.Image?.Dispose();
             transformedImagePicBox.Image?.Dispose();
 
-            objectDetector = null;
+            laserDetector = null;
 
             DebugFormClosed?.Invoke(this, EventArgs.Empty);
         }
