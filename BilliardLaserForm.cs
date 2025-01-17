@@ -100,6 +100,7 @@ namespace billiard_laser
         private void Form1_Load(object sender, EventArgs e)
         {
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
+            btnShowReplaceBallsForm.Enabled = false;
 
             cameraController = new CameraController(cboCamera);
             shotDetector = new ShotDetector();
@@ -284,7 +285,7 @@ namespace billiard_laser
                 var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
                 if (processedFrame != null && processedFrame.frame != null)
                 {
-
+                    btnShowReplaceBallsForm.Enabled = true; //there are now balls to replace
                     UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
 
                     var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
@@ -323,6 +324,7 @@ namespace billiard_laser
             VideoProcessor.DequeueVideoFrames(processedFrames);
             processedFrames.Clear();
             processedFrameIndices.Clear();
+            btnShowReplaceBallsForm.Enabled = false;
         }
 
         /// <summary>
