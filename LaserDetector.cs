@@ -125,16 +125,17 @@ public class LaserDetector : TableObjectDetector
             }
         }
 
-        // Draw circle around the detected laser point for debug
+        // Draw circle around the detected laser point for debug, but on the original image for best clarity
         if (laserDetectionResults.Laser != null)
         {
-            using (var img = workingImage.ToImage<Rgb, byte>())
+            using (var img = laserDetectionResults.OriginalImage.ToImage<Rgb, byte>())
             {
+                //blue circle
                 CvInvoke.Circle(
                     img,
                     laserDetectionResults.Laser.Location,
                     10,
-                    new MCvScalar(0, 0, 255), // Red circle for final detection
+                    new MCvScalar(0, 0, 255), 
                     2);
                 laserDetectionResults.LaserHighlighted = img.ToBitmap();
             }
