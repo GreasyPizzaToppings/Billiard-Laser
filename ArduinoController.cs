@@ -16,6 +16,9 @@ public class ArduinoController
 
     private bool laserOn = false;
 
+    //public facing readonly laser status
+    public bool IsLaserOn { get => laserOn; }
+
     public ArduinoController(string portName,
                              int baudRate = 9600)
     {
