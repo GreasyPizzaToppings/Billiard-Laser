@@ -15,6 +15,7 @@ namespace billiard_laser
     {
         private Bitmap targetTableLayout;
         private ArduinoController arduinoController;
+        private LaserDetector laserDetector;
         private LaserDetectionDebugForm laserDetectionDebugForm;
 
         public CameraController cameraController;
@@ -37,15 +38,17 @@ namespace billiard_laser
             UpdateOpacityValueLabel();
             UpdateStepAmountValueLabel();
             this.TargetTableLayout = targetTableLayout;
+            this.cameraController = cameraController;
 
             arduinoController = new ArduinoController("COM4"); //TODO find better way to find what port to connect to
-            this.cameraController = cameraController;
+            laserDetector = new LaserDetector();
         }
 
         /// <summary>
         /// Take in a new camera frame and overlay it on the base table at a lower opacity
         /// </summary>
         /// <param name="image"></param>
+
         public void UpdateTableOverlay(Bitmap cameraImage)
         {
             if (InvokeRequired)
@@ -53,55 +56,66 @@ namespace billiard_laser
                 Invoke(new Action(() => UpdateTableOverlay(cameraImage)));
                 return;
             }
-
             if (cameraImage == null || TargetTableLayout == null)
                 return;
-
             try
             {
-                UpdateDebugForm(cameraImage);
-
-                // Ensure the camera image is the same size as the target table layout
-                using (Bitmap resizedCameraImage = new Bitmap(cameraImage, TargetTableLayout.Size))
+               
+                //if laser enabled, try and detect where our laser is on the table and highlight it
+                LaserDetectionResults? laserResults = null;
+                if (arduinoController.IsLaserOn)
                 {
-                    // Create a new bitmap to combine the images
-                    using (Bitmap overlaidImage = new Bitmap(TargetTableLayout.Width, TargetTableLayout.Height))
+                    laserResults = laserDetector.ProcessLaserDetection(cameraImage);
+                    laserDetectionDebugForm?.ShowDebugImages(laserResults);
+                }
+                else laserDetectionDebugForm?.GetAndShowDebugImages(cameraImage); //allow laser detection/debugging anyway if form is open and our laser isnt on for testing purposes
+
+                using (Bitmap overlaidImage = new Bitmap(TargetTableLayout.Width, TargetTableLayout.Height))
+                {
+                    // Calculate opacity (0-1 range from trackbar percentage)
+                    float opacity = trackBarCameraOpacity.Value / 100f;
+                    // Create color matrix for blending
+                    ColorMatrix colorMatrix = new ColorMatrix
                     {
-                        // Calculate opacity (0-1 range from trackbar percentage)
-                        float opacity = trackBarCameraOpacity.Value / 100f;
+                        Matrix33 = opacity // Set alpha channel
+                    };
 
-                        // Create color matrix for blending
-                        ColorMatrix colorMatrix = new ColorMatrix
+                    // Create image attributes for blending
+                    using (ImageAttributes imageAttributes = new ImageAttributes())
+                    {
+                        imageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+                        using (Graphics graphics = Graphics.FromImage(overlaidImage))
                         {
-                            Matrix33 = opacity // Set alpha channel
-                        };
+                            // Draw base table layout
+                            graphics.Clear(Color.Transparent);
+                            graphics.DrawImage(TargetTableLayout,
+                                new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                                0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
+                                GraphicsUnit.Pixel);
 
-                        // Create image attributes for blending
-                        using (ImageAttributes imageAttributes = new ImageAttributes())
-                        {
-                            imageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-
-                            using (Graphics graphics = Graphics.FromImage(overlaidImage))
+                            // use highlighted laser iamge if detected
+                            if (laserResults?.LaserHighlighted != null)
                             {
-                                // Draw base table layout
-                                graphics.Clear(Color.Transparent);
-                                graphics.DrawImage(TargetTableLayout,
+                                graphics.DrawImage(laserResults.LaserHighlighted,
                                     new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                                    0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
-                                    GraphicsUnit.Pixel);
-
-                                // Draw camera image with opacity
-                                graphics.DrawImage(resizedCameraImage,
-                                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                                    0, 0, resizedCameraImage.Width, resizedCameraImage.Height,
+                                    0, 0, laserResults.LaserHighlighted.Width, laserResults.LaserHighlighted.Height,
                                     GraphicsUnit.Pixel,
                                     imageAttributes);
                             }
-
-                            SetImage(pictureBoxTable, overlaidImage);
+                                
+                            else {
+                                // else draw incoming image with lower opacity
+                                graphics.DrawImage(cameraImage,
+                                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                                    0, 0, cameraImage.Width, cameraImage.Height,
+                                    GraphicsUnit.Pixel,
+                                    imageAttributes);
+                            }
                         }
+                        SetImage(pictureBoxTable, overlaidImage);
                     }
                 }
+                
             }
             catch (Exception ex)
             {
@@ -222,14 +236,14 @@ namespace billiard_laser
         {
             if (laserDetectionDebugForm == null || laserDetectionDebugForm.IsDisposed)
             {
-                laserDetectionDebugForm = new LaserDetectionDebugForm(new LaserDetector());
+                laserDetectionDebugForm = new LaserDetectionDebugForm(laserDetector);
                 laserDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
                 laserDetectionDebugForm.Show();
 
                 // Initialize debug form with current image if available
                 if (targetTableLayout != null)
                 {
-                    laserDetectionDebugForm.ShowDebugImages(targetTableLayout);
+                    laserDetectionDebugForm.GetAndShowDebugImages(targetTableLayout);
                 }
             }
             else
@@ -245,11 +259,6 @@ namespace billiard_laser
                 laserDetectionDebugForm.Dispose();
                 laserDetectionDebugForm = null;
             }
-        }
-
-        private void UpdateDebugForm(Bitmap image)
-        {
-            laserDetectionDebugForm?.ShowDebugImages(image);
         }
     }
 }

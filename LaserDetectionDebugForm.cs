@@ -22,9 +22,24 @@ namespace billiard_laser
             initialisingControls = false;
         }
 
-        public void ShowDebugImages(Bitmap rawImage)
+        private void LogLaserInfo(Laser laser)
         {
-            LaserDetectionResults images = laserDetector.ProcessLaserDetection(rawImage);
+            if (laser == null) return;
+            Console.WriteLine(
+                $"Laser Position: ({laser.Location.X}, {laser.Location.Y})\n" +
+                $"Intensity: {laser.Intensity:F2}\n" +
+                $"Area: {laser.Area:F2}"
+            );
+        }
+
+
+        /// <summary>
+        /// show precalculated debug images
+        /// </summary>
+        /// <param name="images"></param>
+        public void ShowDebugImages(LaserDetectionResults images)
+        {
+            if (images == null) return;
 
             SetImage(originalImagePicBox, images.OriginalImage);
             SetImage(filteredCandidatesPicBox, images.FilteredCandidatesHighlighted);
@@ -34,6 +49,29 @@ namespace billiard_laser
             SetImage(laserMaskPicBox, images.LaserMask);
             SetImage(laserFoundPicBox, images.LaserHighlighted);
             SetImage(transformedImagePicBox, images.TransformedImage);
+
+            LogLaserInfo(images.Laser);
+        }
+
+        /// <summary>
+        /// calculate and show debug images
+        /// </summary>
+        /// <param name="rawImage"></param>
+        public void GetAndShowDebugImages(Bitmap rawImage)
+        {
+            LaserDetectionResults images = laserDetector.ProcessLaserDetection(rawImage);
+            if (images == null) return;
+
+            SetImage(originalImagePicBox, images.OriginalImage);
+            SetImage(filteredCandidatesPicBox, images.FilteredCandidatesHighlighted);
+            SetImage(allCandidatesPicBox, images.AllCandidatesHighlighted);
+            SetImage(invMaskPicBox, images.TableMask);
+            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
+            SetImage(laserMaskPicBox, images.LaserMask);
+            SetImage(laserFoundPicBox, images.LaserHighlighted);
+            SetImage(transformedImagePicBox, images.TransformedImage);
+
+            LogLaserInfo(images.Laser);
         }
 
         private void SetImage(PictureBox pictureBox, Image newImage)
@@ -62,16 +100,16 @@ namespace billiard_laser
             laserDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
             laserDetector.EnableTableBoundary = checkBoxEnableTableBoundary.Checked;
 
-            PrintObjectDetectorSettings();
+            LogObjectDetectorSettings();
 
             //update images upon setting changes
-            if (originalImagePicBox.Image != null) ShowDebugImages((Bitmap)originalImagePicBox.Image);
+            if (originalImagePicBox.Image != null) GetAndShowDebugImages((Bitmap)originalImagePicBox.Image);
         }
 
-        private void PrintObjectDetectorSettings()
+        private void LogObjectDetectorSettings()
         {
             Console.WriteLine(
-              $"\nImage processing settings changed! TableObjectDetector Values:" +
+              $"\nImage processing settings changed! LaserDetector Values:" +
               $"\nLower Laser Mask RGB: {laserDetector.LowerLaserMask}" +
               $"\nUpper Laser Mask RGB: {laserDetector.UpperLaserMask}" +
               $"\nEnable Blur: {laserDetector.EnableBlur}" +
