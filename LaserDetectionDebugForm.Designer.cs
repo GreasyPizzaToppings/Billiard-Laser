@@ -38,11 +38,6 @@ namespace billiard_laser
             labelMaskApplied = new Label();
             labelFilteredLaserCandidates = new Label();
             labelAllLaserCandidates = new Label();
-            trackBarClothMaskBlueMin = new TrackBar();
-            trackBarClothMaskGreenMin = new TrackBar();
-            labelClothMaskRedMinValue = new Label();
-            labelClothMaskGreenMinValue = new Label();
-            labelClothMaskBlueMinValue = new Label();
             tableLayoutPanelMain = new TableLayoutPanel();
             tableLayoutPanelCueballMask = new TableLayoutPanel();
             labelLaserMaskArea = new Label();
@@ -67,20 +62,6 @@ namespace billiard_laser
             checkBoxEnableSharpen = new CheckBox();
             checkBoxEnableTableBoundary = new CheckBox();
             checkBoxEnableBlurr = new CheckBox();
-            tableLayoutPanelClothMask = new TableLayoutPanel();
-            labelClothMaskArea = new Label();
-            labelClothMaskBlue = new Label();
-            trackBarClothMaskRedMax = new TrackBar();
-            labelClothMaskGreenMaxValue = new Label();
-            labelClothMaskBlueMaxValue = new Label();
-            labelClothMaskGreen = new Label();
-            labelClothMaskRed = new Label();
-            trackBarClothMaskRedMin = new TrackBar();
-            labelClothMaskRedMaxValue = new Label();
-            trackBarClothMaskBlueMax = new TrackBar();
-            labelClothMaskMax = new Label();
-            labelClothMaskMin = new Label();
-            trackBarClothMaskGreenMax = new TrackBar();
             tableLayoutPanel1 = new TableLayoutPanel();
             label13 = new Label();
             label14 = new Label();
@@ -95,8 +76,6 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).BeginInit();
             ((System.ComponentModel.ISupportInitialize)allCandidatesPicBox).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskBlueMin).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMin).BeginInit();
             tableLayoutPanelMain.SuspendLayout();
             tableLayoutPanelCueballMask.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarLaserMaskBlueMax).BeginInit();
@@ -106,11 +85,6 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)trackBarLaserMaskGreenMin).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarLaserMaskRedMin).BeginInit();
             tableLayoutPanelCheckboxes.SuspendLayout();
-            tableLayoutPanelClothMask.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskRedMax).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskRedMin).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskBlueMax).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMax).BeginInit();
             tableLayoutPanel1.SuspendLayout();
             tableLayoutPanelDebugImages.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)laserFoundPicBox).BeginInit();
@@ -219,71 +193,15 @@ namespace billiard_laser
             labelAllLaserCandidates.TabIndex = 11;
             labelAllLaserCandidates.Text = "All Laser Candidates";
             // 
-            // trackBarClothMaskBlueMin
-            // 
-            trackBarClothMaskBlueMin.Dock = DockStyle.Fill;
-            trackBarClothMaskBlueMin.Location = new Point(377, 20);
-            trackBarClothMaskBlueMin.Margin = new Padding(0);
-            trackBarClothMaskBlueMin.Maximum = 255;
-            trackBarClothMaskBlueMin.Name = "trackBarClothMaskBlueMin";
-            trackBarClothMaskBlueMin.Size = new Size(126, 36);
-            trackBarClothMaskBlueMin.TabIndex = 20;
-            trackBarClothMaskBlueMin.ValueChanged += trackBarMaskBlueMin_ValueChanged;
-            // 
-            // trackBarClothMaskGreenMin
-            // 
-            trackBarClothMaskGreenMin.Dock = DockStyle.Fill;
-            trackBarClothMaskGreenMin.Location = new Point(211, 20);
-            trackBarClothMaskGreenMin.Margin = new Padding(0);
-            trackBarClothMaskGreenMin.Maximum = 255;
-            trackBarClothMaskGreenMin.Name = "trackBarClothMaskGreenMin";
-            trackBarClothMaskGreenMin.Size = new Size(126, 36);
-            trackBarClothMaskGreenMin.TabIndex = 18;
-            trackBarClothMaskGreenMin.ValueChanged += trackBarMaskGreenMin_ValueChanged;
-            // 
-            // labelClothMaskRedMinValue
-            // 
-            labelClothMaskRedMinValue.Anchor = AnchorStyles.None;
-            labelClothMaskRedMinValue.AutoSize = true;
-            labelClothMaskRedMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskRedMinValue.Location = new Point(182, 28);
-            labelClothMaskRedMinValue.Name = "labelClothMaskRedMinValue";
-            labelClothMaskRedMinValue.Size = new Size(17, 20);
-            labelClothMaskRedMinValue.TabIndex = 24;
-            labelClothMaskRedMinValue.Text = "0";
-            // 
-            // labelClothMaskGreenMinValue
-            // 
-            labelClothMaskGreenMinValue.Anchor = AnchorStyles.None;
-            labelClothMaskGreenMinValue.AutoSize = true;
-            labelClothMaskGreenMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskGreenMinValue.Location = new Point(348, 28);
-            labelClothMaskGreenMinValue.Name = "labelClothMaskGreenMinValue";
-            labelClothMaskGreenMinValue.Size = new Size(17, 20);
-            labelClothMaskGreenMinValue.TabIndex = 25;
-            labelClothMaskGreenMinValue.Text = "0";
-            // 
-            // labelClothMaskBlueMinValue
-            // 
-            labelClothMaskBlueMinValue.Anchor = AnchorStyles.None;
-            labelClothMaskBlueMinValue.AutoSize = true;
-            labelClothMaskBlueMinValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskBlueMinValue.Location = new Point(515, 28);
-            labelClothMaskBlueMinValue.Name = "labelClothMaskBlueMinValue";
-            labelClothMaskBlueMinValue.Size = new Size(17, 20);
-            labelClothMaskBlueMinValue.TabIndex = 26;
-            labelClothMaskBlueMinValue.Text = "0";
-            // 
             // tableLayoutPanelMain
             // 
             tableLayoutPanelMain.BackColor = SystemColors.Info;
-            tableLayoutPanelMain.ColumnCount = 3;
+            tableLayoutPanelMain.ColumnCount = 2;
             tableLayoutPanelMain.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 160F));
-            tableLayoutPanelMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
-            tableLayoutPanelMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 50F));
+            tableLayoutPanelMain.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100F));
+            tableLayoutPanelMain.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
             tableLayoutPanelMain.Controls.Add(tableLayoutPanelCueballMask, 0, 0);
             tableLayoutPanelMain.Controls.Add(tableLayoutPanelCheckboxes, 0, 0);
-            tableLayoutPanelMain.Controls.Add(tableLayoutPanelClothMask, 1, 0);
             tableLayoutPanelMain.Dock = DockStyle.Bottom;
             tableLayoutPanelMain.ImeMode = ImeMode.NoControl;
             tableLayoutPanelMain.Location = new Point(0, 513);
@@ -331,7 +249,7 @@ namespace billiard_laser
             tableLayoutPanelCueballMask.RowStyles.Add(new RowStyle());
             tableLayoutPanelCueballMask.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
             tableLayoutPanelCueballMask.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelCueballMask.Size = new Size(543, 93);
+            tableLayoutPanelCueballMask.Size = new Size(1087, 93);
             tableLayoutPanelCueballMask.TabIndex = 42;
             // 
             // labelLaserMaskArea
@@ -350,7 +268,7 @@ namespace billiard_laser
             labelLaserMaskBlue.Anchor = AnchorStyles.None;
             labelLaserMaskBlue.AutoSize = true;
             labelLaserMaskBlue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskBlue.Location = new Point(402, 0);
+            labelLaserMaskBlue.Location = new Point(854, 0);
             labelLaserMaskBlue.Name = "labelLaserMaskBlue";
             labelLaserMaskBlue.Size = new Size(76, 20);
             labelLaserMaskBlue.TabIndex = 36;
@@ -361,7 +279,7 @@ namespace billiard_laser
             labelLaserMaskGreen.Anchor = AnchorStyles.None;
             labelLaserMaskGreen.AutoSize = true;
             labelLaserMaskGreen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskGreen.Location = new Point(231, 0);
+            labelLaserMaskGreen.Location = new Point(502, 0);
             labelLaserMaskGreen.Name = "labelLaserMaskGreen";
             labelLaserMaskGreen.Size = new Size(86, 20);
             labelLaserMaskGreen.TabIndex = 36;
@@ -372,7 +290,7 @@ namespace billiard_laser
             labelLaserMaskRed.Anchor = AnchorStyles.None;
             labelLaserMaskRed.AutoSize = true;
             labelLaserMaskRed.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskRed.Location = new Point(71, 0);
+            labelLaserMaskRed.Location = new Point(162, 0);
             labelLaserMaskRed.Name = "labelLaserMaskRed";
             labelLaserMaskRed.Size = new Size(73, 20);
             labelLaserMaskRed.TabIndex = 36;
@@ -381,22 +299,22 @@ namespace billiard_laser
             // trackBarLaserMaskBlueMax
             // 
             trackBarLaserMaskBlueMax.Dock = DockStyle.Fill;
-            trackBarLaserMaskBlueMax.Location = new Point(377, 56);
+            trackBarLaserMaskBlueMax.Location = new Point(739, 56);
             trackBarLaserMaskBlueMax.Margin = new Padding(0);
             trackBarLaserMaskBlueMax.Maximum = 255;
             trackBarLaserMaskBlueMax.Name = "trackBarLaserMaskBlueMax";
-            trackBarLaserMaskBlueMax.Size = new Size(126, 37);
+            trackBarLaserMaskBlueMax.Size = new Size(307, 37);
             trackBarLaserMaskBlueMax.TabIndex = 36;
             trackBarLaserMaskBlueMax.ValueChanged += trackBarLaserMaskBlueMax_ValueChanged;
             // 
             // trackBarLaserMaskGreenMax
             // 
             trackBarLaserMaskGreenMax.Dock = DockStyle.Fill;
-            trackBarLaserMaskGreenMax.Location = new Point(211, 56);
+            trackBarLaserMaskGreenMax.Location = new Point(392, 56);
             trackBarLaserMaskGreenMax.Margin = new Padding(0);
             trackBarLaserMaskGreenMax.Maximum = 255;
             trackBarLaserMaskGreenMax.Name = "trackBarLaserMaskGreenMax";
-            trackBarLaserMaskGreenMax.Size = new Size(126, 37);
+            trackBarLaserMaskGreenMax.Size = new Size(307, 37);
             trackBarLaserMaskGreenMax.TabIndex = 36;
             trackBarLaserMaskGreenMax.ValueChanged += trackBarLaserMaskGreenMax_ValueChanged;
             // 
@@ -407,29 +325,29 @@ namespace billiard_laser
             trackBarLaserMaskRedMax.Margin = new Padding(0);
             trackBarLaserMaskRedMax.Maximum = 255;
             trackBarLaserMaskRedMax.Name = "trackBarLaserMaskRedMax";
-            trackBarLaserMaskRedMax.Size = new Size(126, 37);
+            trackBarLaserMaskRedMax.Size = new Size(307, 37);
             trackBarLaserMaskRedMax.TabIndex = 36;
             trackBarLaserMaskRedMax.ValueChanged += trackBarLaserMaskRedMax_ValueChanged;
             // 
             // trackBarLaserMaskBlueMin
             // 
             trackBarLaserMaskBlueMin.Dock = DockStyle.Fill;
-            trackBarLaserMaskBlueMin.Location = new Point(377, 20);
+            trackBarLaserMaskBlueMin.Location = new Point(739, 20);
             trackBarLaserMaskBlueMin.Margin = new Padding(0);
             trackBarLaserMaskBlueMin.Maximum = 255;
             trackBarLaserMaskBlueMin.Name = "trackBarLaserMaskBlueMin";
-            trackBarLaserMaskBlueMin.Size = new Size(126, 36);
+            trackBarLaserMaskBlueMin.Size = new Size(307, 36);
             trackBarLaserMaskBlueMin.TabIndex = 44;
             trackBarLaserMaskBlueMin.ValueChanged += trackBarLaserMaskBlueMin_ValueChanged;
             // 
             // trackBarLaserMaskGreenMin
             // 
             trackBarLaserMaskGreenMin.Dock = DockStyle.Fill;
-            trackBarLaserMaskGreenMin.Location = new Point(211, 20);
+            trackBarLaserMaskGreenMin.Location = new Point(392, 20);
             trackBarLaserMaskGreenMin.Margin = new Padding(0);
             trackBarLaserMaskGreenMin.Maximum = 255;
             trackBarLaserMaskGreenMin.Name = "trackBarLaserMaskGreenMin";
-            trackBarLaserMaskGreenMin.Size = new Size(126, 36);
+            trackBarLaserMaskGreenMin.Size = new Size(307, 36);
             trackBarLaserMaskGreenMin.TabIndex = 43;
             trackBarLaserMaskGreenMin.Value = 3;
             trackBarLaserMaskGreenMin.ValueChanged += trackBarLaserMaskGreenMin_ValueChanged;
@@ -441,7 +359,7 @@ namespace billiard_laser
             trackBarLaserMaskRedMin.Margin = new Padding(0);
             trackBarLaserMaskRedMin.Maximum = 255;
             trackBarLaserMaskRedMin.Name = "trackBarLaserMaskRedMin";
-            trackBarLaserMaskRedMin.Size = new Size(126, 36);
+            trackBarLaserMaskRedMin.Size = new Size(307, 36);
             trackBarLaserMaskRedMin.TabIndex = 35;
             trackBarLaserMaskRedMin.ValueChanged += trackBarLaserMaskRedMin_ValueChanged;
             // 
@@ -472,7 +390,7 @@ namespace billiard_laser
             labelLaserMaskRedMax.Anchor = AnchorStyles.None;
             labelLaserMaskRedMax.AutoSize = true;
             labelLaserMaskRedMax.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskRedMax.Location = new Point(182, 64);
+            labelLaserMaskRedMax.Location = new Point(363, 64);
             labelLaserMaskRedMax.Name = "labelLaserMaskRedMax";
             labelLaserMaskRedMax.Size = new Size(17, 20);
             labelLaserMaskRedMax.TabIndex = 36;
@@ -483,7 +401,7 @@ namespace billiard_laser
             labelLaserMaskRedMin.Anchor = AnchorStyles.None;
             labelLaserMaskRedMin.AutoSize = true;
             labelLaserMaskRedMin.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskRedMin.Location = new Point(182, 28);
+            labelLaserMaskRedMin.Location = new Point(363, 28);
             labelLaserMaskRedMin.Name = "labelLaserMaskRedMin";
             labelLaserMaskRedMin.Size = new Size(17, 20);
             labelLaserMaskRedMin.TabIndex = 35;
@@ -494,7 +412,7 @@ namespace billiard_laser
             labelLaserMaskGreenMax.Anchor = AnchorStyles.None;
             labelLaserMaskGreenMax.AutoSize = true;
             labelLaserMaskGreenMax.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskGreenMax.Location = new Point(348, 64);
+            labelLaserMaskGreenMax.Location = new Point(710, 64);
             labelLaserMaskGreenMax.Name = "labelLaserMaskGreenMax";
             labelLaserMaskGreenMax.Size = new Size(17, 20);
             labelLaserMaskGreenMax.TabIndex = 38;
@@ -505,7 +423,7 @@ namespace billiard_laser
             labelLaserMaskGreenMin.Anchor = AnchorStyles.None;
             labelLaserMaskGreenMin.AutoSize = true;
             labelLaserMaskGreenMin.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskGreenMin.Location = new Point(348, 28);
+            labelLaserMaskGreenMin.Location = new Point(710, 28);
             labelLaserMaskGreenMin.Name = "labelLaserMaskGreenMin";
             labelLaserMaskGreenMin.Size = new Size(17, 20);
             labelLaserMaskGreenMin.TabIndex = 37;
@@ -516,7 +434,7 @@ namespace billiard_laser
             labelLaserMaskBlueMax.Anchor = AnchorStyles.None;
             labelLaserMaskBlueMax.AutoSize = true;
             labelLaserMaskBlueMax.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskBlueMax.Location = new Point(514, 64);
+            labelLaserMaskBlueMax.Location = new Point(1058, 64);
             labelLaserMaskBlueMax.Name = "labelLaserMaskBlueMax";
             labelLaserMaskBlueMax.Size = new Size(17, 20);
             labelLaserMaskBlueMax.TabIndex = 40;
@@ -527,7 +445,7 @@ namespace billiard_laser
             labelLaserMaskBlueMin.Anchor = AnchorStyles.None;
             labelLaserMaskBlueMin.AutoSize = true;
             labelLaserMaskBlueMin.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelLaserMaskBlueMin.Location = new Point(514, 28);
+            labelLaserMaskBlueMin.Location = new Point(1058, 28);
             labelLaserMaskBlueMin.Name = "labelLaserMaskBlueMin";
             labelLaserMaskBlueMin.Size = new Size(17, 20);
             labelLaserMaskBlueMin.TabIndex = 39;
@@ -587,189 +505,6 @@ namespace billiard_laser
             checkBoxEnableBlurr.Text = "Use Blur";
             checkBoxEnableBlurr.UseVisualStyleBackColor = true;
             checkBoxEnableBlurr.CheckedChanged += checkBoxEnableBlurr_CheckedChanged;
-            // 
-            // tableLayoutPanelClothMask
-            // 
-            tableLayoutPanelClothMask.BackColor = Color.FromArgb(181, 244, 205);
-            tableLayoutPanelClothMask.ColumnCount = 7;
-            tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 45F));
-            tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-            tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-            tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
-            tableLayoutPanelClothMask.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 40F));
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskArea, 0, 0);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskBlue, 5, 0);
-            tableLayoutPanelClothMask.Controls.Add(trackBarClothMaskRedMax, 1, 2);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskGreenMaxValue, 4, 2);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskBlueMaxValue, 6, 2);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskGreen, 3, 0);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskRed, 1, 0);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskBlueMinValue, 6, 1);
-            tableLayoutPanelClothMask.Controls.Add(trackBarClothMaskRedMin, 1, 1);
-            tableLayoutPanelClothMask.Controls.Add(trackBarClothMaskBlueMin, 5, 1);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskGreenMinValue, 4, 1);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskRedMinValue, 2, 1);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskRedMaxValue, 2, 2);
-            tableLayoutPanelClothMask.Controls.Add(trackBarClothMaskBlueMax, 5, 2);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskMax, 0, 2);
-            tableLayoutPanelClothMask.Controls.Add(labelClothMaskMin, 0, 1);
-            tableLayoutPanelClothMask.Controls.Add(trackBarClothMaskGreenMax, 3, 2);
-            tableLayoutPanelClothMask.Controls.Add(trackBarClothMaskGreenMin, 3, 1);
-            tableLayoutPanelClothMask.Dock = DockStyle.Fill;
-            tableLayoutPanelClothMask.Location = new Point(703, 0);
-            tableLayoutPanelClothMask.Margin = new Padding(0);
-            tableLayoutPanelClothMask.Name = "tableLayoutPanelClothMask";
-            tableLayoutPanelClothMask.RowCount = 3;
-            tableLayoutPanelClothMask.RowStyles.Add(new RowStyle());
-            tableLayoutPanelClothMask.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelClothMask.RowStyles.Add(new RowStyle(SizeType.Percent, 50F));
-            tableLayoutPanelClothMask.Size = new Size(544, 93);
-            tableLayoutPanelClothMask.TabIndex = 41;
-            // 
-            // labelClothMaskArea
-            // 
-            labelClothMaskArea.Anchor = AnchorStyles.None;
-            labelClothMaskArea.AutoSize = true;
-            labelClothMaskArea.Font = new Font("Segoe UI", 9F, FontStyle.Bold, GraphicsUnit.Point);
-            labelClothMaskArea.Location = new Point(4, 2);
-            labelClothMaskArea.Name = "labelClothMaskArea";
-            labelClothMaskArea.Size = new Size(36, 15);
-            labelClothMaskArea.TabIndex = 45;
-            labelClothMaskArea.Text = "Cloth";
-            // 
-            // labelClothMaskBlue
-            // 
-            labelClothMaskBlue.Anchor = AnchorStyles.None;
-            labelClothMaskBlue.AutoSize = true;
-            labelClothMaskBlue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskBlue.Location = new Point(402, 0);
-            labelClothMaskBlue.Name = "labelClothMaskBlue";
-            labelClothMaskBlue.Size = new Size(76, 20);
-            labelClothMaskBlue.TabIndex = 36;
-            labelClothMaskBlue.Text = "Mask Blue";
-            // 
-            // trackBarClothMaskRedMax
-            // 
-            trackBarClothMaskRedMax.Dock = DockStyle.Fill;
-            trackBarClothMaskRedMax.Location = new Point(45, 56);
-            trackBarClothMaskRedMax.Margin = new Padding(0);
-            trackBarClothMaskRedMax.Maximum = 255;
-            trackBarClothMaskRedMax.Name = "trackBarClothMaskRedMax";
-            trackBarClothMaskRedMax.Size = new Size(126, 37);
-            trackBarClothMaskRedMax.TabIndex = 27;
-            trackBarClothMaskRedMax.ValueChanged += trackBarMaskRedMax_ValueChanged;
-            // 
-            // labelClothMaskGreenMaxValue
-            // 
-            labelClothMaskGreenMaxValue.Anchor = AnchorStyles.None;
-            labelClothMaskGreenMaxValue.AutoSize = true;
-            labelClothMaskGreenMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskGreenMaxValue.Location = new Point(348, 64);
-            labelClothMaskGreenMaxValue.Name = "labelClothMaskGreenMaxValue";
-            labelClothMaskGreenMaxValue.Size = new Size(17, 20);
-            labelClothMaskGreenMaxValue.TabIndex = 32;
-            labelClothMaskGreenMaxValue.Text = "0";
-            // 
-            // labelClothMaskBlueMaxValue
-            // 
-            labelClothMaskBlueMaxValue.Anchor = AnchorStyles.None;
-            labelClothMaskBlueMaxValue.AutoSize = true;
-            labelClothMaskBlueMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskBlueMaxValue.Location = new Point(515, 64);
-            labelClothMaskBlueMaxValue.Name = "labelClothMaskBlueMaxValue";
-            labelClothMaskBlueMaxValue.Size = new Size(17, 20);
-            labelClothMaskBlueMaxValue.TabIndex = 31;
-            labelClothMaskBlueMaxValue.Text = "0";
-            // 
-            // labelClothMaskGreen
-            // 
-            labelClothMaskGreen.Anchor = AnchorStyles.None;
-            labelClothMaskGreen.AutoSize = true;
-            labelClothMaskGreen.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskGreen.Location = new Point(231, 0);
-            labelClothMaskGreen.Name = "labelClothMaskGreen";
-            labelClothMaskGreen.Size = new Size(86, 20);
-            labelClothMaskGreen.TabIndex = 36;
-            labelClothMaskGreen.Text = "Mask Green";
-            // 
-            // labelClothMaskRed
-            // 
-            labelClothMaskRed.Anchor = AnchorStyles.None;
-            labelClothMaskRed.AutoSize = true;
-            labelClothMaskRed.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskRed.Location = new Point(71, 0);
-            labelClothMaskRed.Name = "labelClothMaskRed";
-            labelClothMaskRed.Size = new Size(73, 20);
-            labelClothMaskRed.TabIndex = 36;
-            labelClothMaskRed.Text = "Mask Red";
-            // 
-            // trackBarClothMaskRedMin
-            // 
-            trackBarClothMaskRedMin.Dock = DockStyle.Fill;
-            trackBarClothMaskRedMin.Location = new Point(45, 20);
-            trackBarClothMaskRedMin.Margin = new Padding(0);
-            trackBarClothMaskRedMin.Maximum = 255;
-            trackBarClothMaskRedMin.Name = "trackBarClothMaskRedMin";
-            trackBarClothMaskRedMin.Size = new Size(126, 36);
-            trackBarClothMaskRedMin.TabIndex = 19;
-            trackBarClothMaskRedMin.ValueChanged += trackBarMaskRedMin_ValueChanged;
-            // 
-            // labelClothMaskRedMaxValue
-            // 
-            labelClothMaskRedMaxValue.Anchor = AnchorStyles.None;
-            labelClothMaskRedMaxValue.AutoSize = true;
-            labelClothMaskRedMaxValue.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskRedMaxValue.Location = new Point(182, 64);
-            labelClothMaskRedMaxValue.Name = "labelClothMaskRedMaxValue";
-            labelClothMaskRedMaxValue.Size = new Size(17, 20);
-            labelClothMaskRedMaxValue.TabIndex = 30;
-            labelClothMaskRedMaxValue.Text = "0";
-            // 
-            // trackBarClothMaskBlueMax
-            // 
-            trackBarClothMaskBlueMax.Dock = DockStyle.Fill;
-            trackBarClothMaskBlueMax.Location = new Point(377, 56);
-            trackBarClothMaskBlueMax.Margin = new Padding(0);
-            trackBarClothMaskBlueMax.Maximum = 255;
-            trackBarClothMaskBlueMax.Name = "trackBarClothMaskBlueMax";
-            trackBarClothMaskBlueMax.Size = new Size(126, 37);
-            trackBarClothMaskBlueMax.TabIndex = 28;
-            trackBarClothMaskBlueMax.ValueChanged += trackBarMaskBlueMax_ValueChanged;
-            // 
-            // labelClothMaskMax
-            // 
-            labelClothMaskMax.Anchor = AnchorStyles.None;
-            labelClothMaskMax.AutoSize = true;
-            labelClothMaskMax.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskMax.Location = new Point(4, 64);
-            labelClothMaskMax.Name = "labelClothMaskMax";
-            labelClothMaskMax.Size = new Size(37, 20);
-            labelClothMaskMax.TabIndex = 35;
-            labelClothMaskMax.Text = "Max";
-            // 
-            // labelClothMaskMin
-            // 
-            labelClothMaskMin.Anchor = AnchorStyles.None;
-            labelClothMaskMin.AutoSize = true;
-            labelClothMaskMin.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelClothMaskMin.Location = new Point(5, 28);
-            labelClothMaskMin.Name = "labelClothMaskMin";
-            labelClothMaskMin.Size = new Size(34, 20);
-            labelClothMaskMin.TabIndex = 35;
-            labelClothMaskMin.Text = "Min";
-            // 
-            // trackBarClothMaskGreenMax
-            // 
-            trackBarClothMaskGreenMax.Dock = DockStyle.Fill;
-            trackBarClothMaskGreenMax.Location = new Point(211, 56);
-            trackBarClothMaskGreenMax.Margin = new Padding(0);
-            trackBarClothMaskGreenMax.Maximum = 255;
-            trackBarClothMaskGreenMax.Name = "trackBarClothMaskGreenMax";
-            trackBarClothMaskGreenMax.Size = new Size(126, 37);
-            trackBarClothMaskGreenMax.TabIndex = 29;
-            trackBarClothMaskGreenMax.ValueChanged += trackBarMaskGreenMax_ValueChanged;
             // 
             // tableLayoutPanel1
             // 
@@ -940,8 +675,6 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)invMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)appliedMaskPicBox).EndInit();
             ((System.ComponentModel.ISupportInitialize)allCandidatesPicBox).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskBlueMin).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMin).EndInit();
             tableLayoutPanelMain.ResumeLayout(false);
             tableLayoutPanelCueballMask.ResumeLayout(false);
             tableLayoutPanelCueballMask.PerformLayout();
@@ -953,12 +686,6 @@ namespace billiard_laser
             ((System.ComponentModel.ISupportInitialize)trackBarLaserMaskRedMin).EndInit();
             tableLayoutPanelCheckboxes.ResumeLayout(false);
             tableLayoutPanelCheckboxes.PerformLayout();
-            tableLayoutPanelClothMask.ResumeLayout(false);
-            tableLayoutPanelClothMask.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskRedMax).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskRedMin).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskBlueMax).EndInit();
-            ((System.ComponentModel.ISupportInitialize)trackBarClothMaskGreenMax).EndInit();
             tableLayoutPanel1.ResumeLayout(false);
             tableLayoutPanel1.PerformLayout();
             tableLayoutPanelDebugImages.ResumeLayout(false);
@@ -981,28 +708,11 @@ namespace billiard_laser
         private Label labelMaskApplied;
         private Label labelFilteredLaserCandidates;
         private Label labelAllLaserCandidates;
-        private TrackBar trackBarClothMaskBlueMin;
-        private TrackBar trackBarClothMaskGreenMin;
-        private Label labelClothMaskRedMinValue;
-        private Label labelClothMaskGreenMinValue;
-        private Label labelClothMaskBlueMinValue;
-        private TrackBar trackBarClothMaskGreenMax;
-        private TrackBar trackBarClothMaskBlueMax;
-        private TrackBar trackBarClothMaskRedMax;
-        private Label labelClothMaskGreenMaxValue;
-        private Label labelClothMaskBlueMaxValue;
-        private Label labelClothMaskRedMaxValue;
         private TableLayoutPanel tableLayoutPanelMain;
         private CheckBox checkBoxEnableTableBoundary;
         private CheckBox checkBoxEnableSharpen;
         private CheckBox checkBoxEnableBlurr;
         private TableLayoutPanel tableLayoutPanelCheckboxes;
-        private TableLayoutPanel tableLayoutPanelClothMask;
-        private Label labelClothMaskMax;
-        private Label labelClothMaskMin;
-        private Label labelClothMaskBlue;
-        private Label labelClothMaskGreen;
-        private Label labelClothMaskRed;
         private TableLayoutPanel tableLayoutPanelCueballMask;
         private Label labelLaserMaskBlue;
         private Label labelLaserMaskGreen;
@@ -1024,7 +734,6 @@ namespace billiard_laser
         private TableLayoutPanel tableLayoutPanel1;
         private Label label13;
         private Label label14;
-        private TrackBar trackBarClothMaskRedMin;
         private TableLayoutPanel tableLayoutPanelDebugImages;
         private Label label2;
         private Label label3;
@@ -1034,6 +743,5 @@ namespace billiard_laser
         private PictureBox originalImagePicBox;
         private PictureBox filteredCandidatesPicBox;
         private Label labelLaserMaskArea;
-        private Label labelClothMaskArea;
     }
 }

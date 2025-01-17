@@ -92,49 +92,6 @@ namespace billiard_laser
             trackBarLaserMaskGreenMax.Value = (int)laserDetector.UpperLaserMask.Green;
             trackBarLaserMaskBlueMax.Value = (int)laserDetector.UpperLaserMask.Blue;
 
-            //labels
-            labelClothMaskRedMinValue.Text = trackBarClothMaskRedMin.Value.ToString();
-            labelClothMaskGreenMinValue.Text = trackBarClothMaskGreenMin.Value.ToString();
-            labelClothMaskBlueMinValue.Text = trackBarClothMaskBlueMin.Value.ToString();
-
-            labelClothMaskRedMaxValue.Text = trackBarClothMaskRedMax.Value.ToString();
-            labelClothMaskGreenMaxValue.Text = trackBarClothMaskGreenMax.Value.ToString();
-            labelClothMaskBlueMaxValue.Text = trackBarClothMaskBlueMax.Value.ToString();
-        }
-        private void trackBarMaskRedMin_ValueChanged(object sender, EventArgs e)
-        {
-            labelClothMaskRedMinValue.Text = trackBarClothMaskRedMin.Value.ToString();
-            SetObjectDetectorSettings();
-        }
-
-        private void trackBarMaskGreenMin_ValueChanged(object sender, EventArgs e)
-        {
-            labelClothMaskGreenMinValue.Text = trackBarClothMaskGreenMin.Value.ToString();
-            SetObjectDetectorSettings();
-        }
-
-        private void trackBarMaskBlueMin_ValueChanged(object sender, EventArgs e)
-        {
-            labelClothMaskBlueMinValue.Text = trackBarClothMaskBlueMin.Value.ToString();
-            SetObjectDetectorSettings();
-        }
-
-        private void trackBarMaskRedMax_ValueChanged(object sender, EventArgs e)
-        {
-            labelClothMaskRedMaxValue.Text = trackBarClothMaskRedMax.Value.ToString();
-            SetObjectDetectorSettings();
-        }
-
-        private void trackBarMaskGreenMax_ValueChanged(object sender, EventArgs e)
-        {
-            labelClothMaskGreenMaxValue.Text = trackBarClothMaskGreenMax.Value.ToString();
-            SetObjectDetectorSettings();
-        }
-
-        private void trackBarMaskBlueMax_ValueChanged(object sender, EventArgs e)
-        {
-            labelClothMaskBlueMaxValue.Text = trackBarClothMaskBlueMax.Value.ToString();
-            SetObjectDetectorSettings();
         }
 
         private void trackBarLaserMaskRedMin_ValueChanged(object sender, EventArgs e)
