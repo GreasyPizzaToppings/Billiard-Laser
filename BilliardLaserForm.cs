@@ -2,13 +2,14 @@
 using System.ComponentModel;
 using System.Threading;
 using System.Windows.Controls;
+using System.Xml.Linq;
 
 namespace billiard_laser
 {
     public partial class BilliardLaserForm : Form
     {
         //video debugging form
-        private BallDetectionDebugForm debugForm;
+        private BallDetectionDebugForm ballDetectionDebugForm;
         private BallReplacementForm ballReplacementForm;
 
         //utility classes
@@ -178,8 +179,6 @@ namespace billiard_laser
         {
             try
             {
-                ballReplacementForm?.UpdateTableOverlay(frame.frame); //always send to ball replacer form if possible
-
                 if (CurrentPlaybackState == PlaybackState.Paused || currentInputType != InputType.Camera)
                 {
                     frame.Dispose();
@@ -296,7 +295,7 @@ namespace billiard_laser
                             using (var tempBitmap = new Bitmap(rawFrame.frame))
                             {
                                 debugStopwatch.Restart();
-                                UpdateDebugForm(tempBitmap);
+                                UpdateDebugForms(tempBitmap);
                                 debugStopwatch.Stop();
                             }
                         }
@@ -360,9 +359,6 @@ namespace billiard_laser
                         results = objectDetector.ProcessBallDetection(workingFrame.frame);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
-
-                        //testing laser detection with video. todo remove later
-                        ballReplacementForm?.UpdateTableOverlay(workingFrame.frame);
                     }
                     catch (Exception ex)
                     {
@@ -374,7 +370,7 @@ namespace billiard_laser
 
                 AddProcessedFrame(processedFrame);
 
-                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scroll and update pic box/dbg form
+                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scrolls and updates pic box and debug forms
 
                 Application.DoEvents(); //todo better way?
                 UpdateFpsLabel();
@@ -653,35 +649,39 @@ namespace billiard_laser
 
         private void btnShowDebugForm_Click(object sender, EventArgs e)
         {
-            if (debugForm == null || debugForm.IsDisposed)
+            if (ballDetectionDebugForm == null || ballDetectionDebugForm.IsDisposed)
             {
-                debugForm = new BallDetectionDebugForm(objectDetector);
+                ballDetectionDebugForm = new BallDetectionDebugForm(objectDetector);
 
-                debugForm.DebugFormClosed += DebugForm_FormClosed;
-                debugForm.Show();
+                ballDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
+                ballDetectionDebugForm.Show();
 
                 //init debug form with current (raw) selected rawFrame
                 if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
                 {
                     var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
-                    if (rawFrame != null) debugForm.ShowDebugImages(rawFrame.frame);
+                    if (rawFrame != null) ballDetectionDebugForm.ShowDebugImages(rawFrame.frame);
                     else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
                 }
             }
 
-            else debugForm.Focus();
+            else ballDetectionDebugForm.Focus();
         }
 
         private void DebugForm_FormClosed(object sender, EventArgs e)
         {
-            if (debugForm != null)
+            if (ballDetectionDebugForm != null)
             {
-                debugForm.Dispose();
-                debugForm = null;
+                ballDetectionDebugForm.Dispose();
+                ballDetectionDebugForm = null;
             }
         }
 
-        private void UpdateDebugForm(Bitmap rawImage) => debugForm?.ShowDebugImages(rawImage);
+        //if open, send our raw frame to the ball replacement and image processing debug forms
+        private void UpdateDebugForms(Bitmap rawImage) { 
+            ballDetectionDebugForm?.ShowDebugImages(rawImage);
+            ballReplacementForm?.UpdateTableOverlay(rawImage);
+        }
 
         #region Ball Replacement Form
 
