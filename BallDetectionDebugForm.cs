@@ -22,11 +22,33 @@ namespace billiard_laser
             initialisingControls = false;
         }
 
-        public void ShowDebugImages(Bitmap rawImage)
+        /// <summary>
+        /// show precalculated debug images
+        /// </summary>
+        /// <param name="images"></param>
+        public void ShowDebugImages(BallDetectionResults images)
+        {
+            if (images == null) return;
+
+            SetImage(originalImagePicBox, images.OriginalImage);
+            SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
+            SetImage(allContoursPicBox, images.AllBallsHighlighted);
+            SetImage(invMaskPicBox, images.TableMask);
+            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
+            SetImage(cueBallMaskPicBox, images.CueBallMask);
+            SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
+            SetImage(transformedImagePicBox, images.TransformedImage);
+        }
+
+        /// <summary>
+        /// calculate and show debug images
+        /// </summary>
+        /// <param name="rawImage"></param>
+        public void GetAndShowDebugImages(Bitmap rawImage)
         {
             BallDetectionResults images = ballDetector.ProcessBallDetection(rawImage);
-                        
-            
+            if (images == null) return;
+
             SetImage(originalImagePicBox, images.OriginalImage);
             SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
             SetImage(allContoursPicBox, images.AllBallsHighlighted);
@@ -66,16 +88,17 @@ namespace billiard_laser
             ballDetector.EnableSharpening = checkBoxEnableSharpen.Checked;
             ballDetector.EnableTableBoundary = checkBoxEnableTableBoundary.Checked;
 
-            PrintObjectDetectorSettings();
+            LogObjectDetectorSettings();
 
             //update images upon setting changes
-            if (originalImagePicBox.Image != null) ShowDebugImages((Bitmap)originalImagePicBox.Image);
+            if (originalImagePicBox.Image != null) GetAndShowDebugImages((Bitmap)originalImagePicBox.Image);
         }
 
-        private void PrintObjectDetectorSettings()
+        //todo make a part of the object detector base class
+        private void LogObjectDetectorSettings()
         {
             Console.WriteLine(
-              $"\nImage processing settings changed! TableObjectDetector Values:" +
+              $"\nImage processing settings changed! BallDetector Values:" +
               $"\nLower Cloth Mask RGB: {ballDetector.LowerClothMask}" +
               $"\nUpper Cloth Mask RGB: {ballDetector.UpperClothMask}" +
               $"\nLower Cb Mask RGB: {ballDetector.LowerCueBallMask}" +
