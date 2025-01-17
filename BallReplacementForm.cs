@@ -15,7 +15,7 @@ namespace billiard_laser
     {
         private Bitmap targetTableLayout;
         private ArduinoController arduinoController;
-        private LaserDetectionDebugForm debugForm;
+        private LaserDetectionDebugForm laserDetectionDebugForm;
 
         public CameraController cameraController;
 
@@ -133,10 +133,10 @@ namespace billiard_laser
 
         private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (debugForm != null)
+            if (laserDetectionDebugForm != null)
             {
-                debugForm.Dispose();
-                debugForm = null;
+                laserDetectionDebugForm.Dispose();
+                laserDetectionDebugForm = null;
             }
 
             BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
@@ -220,36 +220,36 @@ namespace billiard_laser
 
         private void btnShowDebugForm_Click(object sender, EventArgs e)
         {
-            if (debugForm == null || debugForm.IsDisposed)
+            if (laserDetectionDebugForm == null || laserDetectionDebugForm.IsDisposed)
             {
-                debugForm = new LaserDetectionDebugForm(new LaserDetector()); //todo do laser detection in this form
-                debugForm.DebugFormClosed += DebugForm_FormClosed;
-                debugForm.Show();
+                laserDetectionDebugForm = new LaserDetectionDebugForm(new LaserDetector());
+                laserDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
+                laserDetectionDebugForm.Show();
 
                 // Initialize debug form with current image if available
                 if (targetTableLayout != null)
                 {
-                    debugForm.ShowDebugImages(targetTableLayout);
+                    laserDetectionDebugForm.ShowDebugImages(targetTableLayout);
                 }
             }
             else
             {
-                debugForm.Focus();
+                laserDetectionDebugForm.Focus();
             }
         }
 
         private void DebugForm_FormClosed(object sender, EventArgs e)
         {
-            if (debugForm != null)
+            if (laserDetectionDebugForm != null)
             {
-                debugForm.Dispose();
-                debugForm = null;
+                laserDetectionDebugForm.Dispose();
+                laserDetectionDebugForm = null;
             }
         }
 
         private void UpdateDebugForm(Bitmap image)
         {
-            debugForm?.ShowDebugImages(image);
+            laserDetectionDebugForm?.ShowDebugImages(image);
         }
     }
 }
