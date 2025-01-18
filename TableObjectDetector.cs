@@ -14,7 +14,7 @@ using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 /// <summary>
 /// A set of general methods and properties for detecting objects on the billiard table
 /// </summary>
-public class TableObjectDetector
+public abstract class TableObjectDetector
 {
     //image manipulation settings
     public Boolean EnableBlur;
@@ -27,6 +27,8 @@ public class TableObjectDetector
         EnableSharpening = enableSharpening;
         EnableTableBoundary = enableTableBoundary;
     }
+
+    public abstract override string ToString();
 
     public static Bitmap SharpenImage(Bitmap image)
     {

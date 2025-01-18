@@ -114,7 +114,6 @@ public class LaserDetector : TableObjectDetector
     public LaserDetectionResults ProcessLaserDetection(Bitmap tableImage)
     {
         LaserDetectionResults laserDetectionResults = new LaserDetectionResults();
-        laserDetectionResults.OriginalImage = new Bitmap(tableImage);
 
         Bitmap workingImage = tableImage;
         Bitmap? transformedImage = null;
@@ -132,7 +131,7 @@ public class LaserDetector : TableObjectDetector
             workingImage = transformedImage;
         }
 
-        laserDetectionResults.TransformedImage = transformedImage != null ? new Bitmap(transformedImage) : null;
+        laserDetectionResults.WorkingImage = transformedImage != null ? new Bitmap(transformedImage) : new Bitmap(tableImage);
 
         using (var workingImageRgb = workingImage.ToImage<Rgb, byte>())
         {
@@ -176,6 +175,7 @@ public class LaserDetector : TableObjectDetector
                         }
                     }
                 }
+
 
                 // create image of all contours/candidates detected, regardless of size or brightness or location etc
                 laserDetectionResults.AllCandidatesHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
@@ -222,5 +222,21 @@ public class LaserDetector : TableObjectDetector
         }
 
         return laserDetectionResults;
+    }
+
+    public override string ToString()
+    {
+        return $"LaserDetector Settings:\n" +
+               $"  Blur: {EnableBlur}\n" +
+               $"  Sharpen: {EnableSharpening}\n" +
+               $"  TableBoundary: {EnableTableBoundary}\n" +
+               $"  Lower Laser Mask: RGB({LowerLaserMask.Red}, {LowerLaserMask.Green}, {LowerLaserMask.Blue})\n" +
+               $"  Upper Laser Mask: RGB({UpperLaserMask.Red}, {UpperLaserMask.Green}, {UpperLaserMask.Blue})\n" +
+               $"  Min Laser Area: {MinLaserArea}\n" +
+               $"  Max Laser Area: {MaxLaserArea}\n" +
+               $"  Max Movement/Sec: {MaxMovementPerSecond}\n" +
+               $"  Intensity Weight: {IntensityWeight}\n" +
+               $"  Distance Weight: {DistanceWeight}\n" +
+               $"  Tracking Timeout: {TrackingTimeout.TotalSeconds}s";
     }
 }
