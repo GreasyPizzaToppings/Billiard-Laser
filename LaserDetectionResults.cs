@@ -11,10 +11,9 @@ public class LaserDetectionResults : IDisposable
     public Bitmap? TransformedImage { get; set; }
     public Bitmap? LaserMask { get; set; }
     public Bitmap? LaserMaskApplied { get; set; }
-    public Bitmap? TableMask { get; set; }
-    public Bitmap? TableWithMaskApplied { get; set; }
     public Bitmap? AllCandidatesHighlighted { get; set; }
     public Bitmap? FilteredCandidatesHighlighted { get; set; }
+    public Bitmap? ScoredCandidatesHighlighted { get; set; }
     public Bitmap? LaserHighlighted { get; set; } //the chosen candidate
     public Laser? Laser { get; set; }
 
@@ -38,8 +37,6 @@ public class LaserDetectionResults : IDisposable
                 OriginalImage?.Dispose();
                 TransformedImage?.Dispose();
                 LaserMask?.Dispose();
-                TableMask?.Dispose();
-                TableWithMaskApplied?.Dispose();
                 AllCandidatesHighlighted?.Dispose();
                 LaserHighlighted?.Dispose();
 
@@ -47,8 +44,6 @@ public class LaserDetectionResults : IDisposable
                 OriginalImage = null;
                 TransformedImage = null;
                 LaserMask = null;
-                TableMask = null;
-                TableWithMaskApplied = null;
                 AllCandidatesHighlighted = null;
                 LaserHighlighted = null;
                 Laser = null;

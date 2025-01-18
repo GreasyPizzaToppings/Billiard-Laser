@@ -28,7 +28,8 @@ namespace billiard_laser
             Console.WriteLine(
                 $"Laser Position: ({laser.Location.X}, {laser.Location.Y})\n" +
                 $"Intensity: {laser.Intensity:F2}\n" +
-                $"Area: {laser.Area:F2}"
+                $"Area: {laser.Area:F2}\n" +
+                $"Confidence: {laser.Confidence:F2}\n"
             );
         }
 
@@ -44,8 +45,8 @@ namespace billiard_laser
             SetImage(originalImagePicBox, images.OriginalImage);
             SetImage(filteredCandidatesPicBox, images.FilteredCandidatesHighlighted);
             SetImage(allCandidatesPicBox, images.AllCandidatesHighlighted);
-            SetImage(invMaskPicBox, images.TableMask);
-            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
+            SetImage(scoredCandidatesPicBox, images.ScoredCandidatesHighlighted);
+            SetImage(appliedMaskPicBox, images.LaserMaskApplied);
             SetImage(laserMaskPicBox, images.LaserMask);
             SetImage(laserFoundPicBox, images.LaserHighlighted);
             SetImage(transformedImagePicBox, images.TransformedImage);
@@ -65,8 +66,8 @@ namespace billiard_laser
             SetImage(originalImagePicBox, images.OriginalImage);
             SetImage(filteredCandidatesPicBox, images.FilteredCandidatesHighlighted);
             SetImage(allCandidatesPicBox, images.AllCandidatesHighlighted);
-            SetImage(invMaskPicBox, images.TableMask);
-            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
+            SetImage(scoredCandidatesPicBox, images.ScoredCandidatesHighlighted);
+            SetImage(appliedMaskPicBox, images.LaserMaskApplied);
             SetImage(laserMaskPicBox, images.LaserMask);
             SetImage(laserFoundPicBox, images.LaserHighlighted);
             SetImage(transformedImagePicBox, images.TransformedImage);
@@ -189,7 +190,7 @@ namespace billiard_laser
             originalImagePicBox.Image?.Dispose();
             filteredCandidatesPicBox.Image?.Dispose();
             allCandidatesPicBox.Image?.Dispose();
-            invMaskPicBox.Image?.Dispose();
+            scoredCandidatesPicBox.Image?.Dispose();
             appliedMaskPicBox.Image?.Dispose();
             laserMaskPicBox.Image?.Dispose();
             laserFoundPicBox.Image?.Dispose();
