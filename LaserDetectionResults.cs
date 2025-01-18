@@ -7,6 +7,7 @@ public class LaserDetectionResults : IDisposable
 {
     private bool disposed = false;
 
+    public Bitmap? OriginalImage { get; set; }
     public Bitmap? WorkingImage { get; set; }
     public Bitmap? LaserMask { get; set; }
     public Bitmap? LaserMaskApplied { get; set; }

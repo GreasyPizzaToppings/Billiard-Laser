@@ -54,6 +54,9 @@ namespace billiard_laser
         /// <param name="images">The precalculated laser detection results</param>
         public void ShowDebugImages(LaserDetectionResults images)
         {
+            if (originalImage != null) originalImage.Dispose();
+            originalImage = new Bitmap(images.OriginalImage);
+
             DisplayDebugImages(images);
         }
 
