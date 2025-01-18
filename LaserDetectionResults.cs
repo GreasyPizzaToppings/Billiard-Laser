@@ -7,8 +7,7 @@ public class LaserDetectionResults : IDisposable
 {
     private bool disposed = false;
 
-    public Bitmap? OriginalImage { get; set; }
-    public Bitmap? TransformedImage { get; set; }
+    public Bitmap? WorkingImage { get; set; }
     public Bitmap? LaserMask { get; set; }
     public Bitmap? LaserMaskApplied { get; set; }
     public Bitmap? AllCandidatesHighlighted { get; set; }
@@ -34,15 +33,13 @@ public class LaserDetectionResults : IDisposable
             if (disposing)
             {
                 // Dispose managed resources
-                OriginalImage?.Dispose();
-                TransformedImage?.Dispose();
+                WorkingImage?.Dispose();
                 LaserMask?.Dispose();
                 AllCandidatesHighlighted?.Dispose();
                 LaserHighlighted?.Dispose();
 
                 // Set large objects to null to help the GC
-                OriginalImage = null;
-                TransformedImage = null;
+                WorkingImage = null;
                 LaserMask = null;
                 AllCandidatesHighlighted = null;
                 LaserHighlighted = null;
