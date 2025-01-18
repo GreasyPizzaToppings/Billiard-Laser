@@ -114,7 +114,6 @@ namespace billiard_laser
             if (originalImage != null) ShowDebugImages(ballDetector.ProcessBallDetection(originalImage));
         }
 
-        //todo make a part of the object detector base class
         private void LogObjectDetectorSettings()
         {
             Console.WriteLine(ballDetector);
