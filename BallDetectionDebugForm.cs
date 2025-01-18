@@ -7,6 +7,7 @@ namespace billiard_laser
         private bool initialisingControls = true;
         private BallDetector ballDetector;
         private bool disposed = false;
+        private Bitmap originalImage;
 
         public event EventHandler DebugFormClosed;
 
@@ -22,14 +23,28 @@ namespace billiard_laser
             initialisingControls = false;
         }
 
+        private void LogBallInfo(List<Ball> balls, Ball cueBall)
+        {
+            if (balls == null) return;
+
+            // Log detected balls info
+            Console.WriteLine($"Number of balls detected: {balls.Count}");
+            Console.WriteLine($"Cue ball detected: {(cueBall != null ? "Yes" : "No")}");
+
+            if (cueBall != null)
+            {
+                Console.WriteLine($"Cue ball position: {cueBall.Centre}");
+                Console.WriteLine($"Cue ball radius: {cueBall.Radius}");
+            }
+        }
+
         /// <summary>
-        /// show precalculated debug images
+        /// Shows the debug images from ball detection results in the UI
         /// </summary>
-        /// <param name="images"></param>
-        public void ShowDebugImages(BallDetectionResults images)
+        /// <param name="images">The ball detection results containing debug images</param>
+        private void DisplayDebugImages(BallDetectionResults images)
         {
             if (images == null) return;
-
             SetImage(originalImagePicBox, images.OriginalImage);
             SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
             SetImage(allContoursPicBox, images.AllBallsHighlighted);
@@ -38,25 +53,30 @@ namespace billiard_laser
             SetImage(cueBallMaskPicBox, images.CueBallMask);
             SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
             SetImage(transformedImagePicBox, images.TransformedImage);
+
+            LogBallInfo(images.Balls, images.CueBall);
         }
 
         /// <summary>
-        /// calculate and show debug images
+        /// Shows precalculated debug images
         /// </summary>
-        /// <param name="rawImage"></param>
+        /// <param name="images">The precalculated ball detection results</param>
+        public void ShowDebugImages(BallDetectionResults images)
+        {
+            DisplayDebugImages(images);
+        }
+
+        /// <summary>
+        /// Processes a raw image through ball detection and shows the debug images
+        /// </summary>
+        /// <param name="rawImage">The raw image to process</param>
         public void GetAndShowDebugImages(Bitmap rawImage)
         {
-            BallDetectionResults images = ballDetector.ProcessBallDetection(rawImage);
-            if (images == null) return;
+            if (originalImage != null) originalImage.Dispose();
+            originalImage = new Bitmap(rawImage);
 
-            SetImage(originalImagePicBox, images.OriginalImage);
-            SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
-            SetImage(allContoursPicBox, images.AllBallsHighlighted);
-            SetImage(invMaskPicBox, images.TableMask);
-            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
-            SetImage(cueBallMaskPicBox, images.CueBallMask);
-            SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
-            SetImage(transformedImagePicBox, images.TransformedImage);   
+            BallDetectionResults images = ballDetector.ProcessBallDetection(rawImage);
+            DisplayDebugImages(images);
         }
 
         private static void SetImage(PictureBox pictureBox, Image newImage)
@@ -91,22 +111,13 @@ namespace billiard_laser
             LogObjectDetectorSettings();
 
             //update images upon setting changes
-            if (originalImagePicBox.Image != null) GetAndShowDebugImages((Bitmap)originalImagePicBox.Image);
+            if (originalImage != null) ShowDebugImages(ballDetector.ProcessBallDetection(originalImage));
         }
 
         //todo make a part of the object detector base class
         private void LogObjectDetectorSettings()
         {
-            Console.WriteLine(
-              $"\nImage processing settings changed! BallDetector Values:" +
-              $"\nLower Cloth Mask RGB: {ballDetector.LowerClothMask}" +
-              $"\nUpper Cloth Mask RGB: {ballDetector.UpperClothMask}" +
-              $"\nLower Cb Mask RGB: {ballDetector.LowerCueBallMask}" +
-              $"\nUpper Cb Mask RGB: {ballDetector.UpperCueBallMask}" +
-              $"\nEnable Blur: {ballDetector.EnableBlur}" +
-              $"\nEnable Sharpening: {ballDetector.EnableSharpening}\n" +
-              $"\nEnable Table Boundary: {ballDetector.EnableTableBoundary}\n"
-            );
+            Console.WriteLine(ballDetector);
         }
 
         #region Trackbars/Sliders
@@ -237,6 +248,7 @@ namespace billiard_laser
             cueBallMaskPicBox.Image?.Dispose();
             cueBallFoundPicBox.Image?.Dispose();
             transformedImagePicBox.Image?.Dispose();
+            originalImage?.Dispose();
 
             ballDetector = null;
 

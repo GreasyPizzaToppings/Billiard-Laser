@@ -201,4 +201,15 @@ public class BallDetector : TableObjectDetector
         }
     }
 
+    public override string ToString()
+    {
+        return $"BallDetector Settings:\n" +
+               $"  Blur: {EnableBlur}\n" +
+               $"  Sharpen: {EnableSharpening}\n" +
+               $"  TableBoundary: {EnableTableBoundary}\n" +
+               $"  Lower Cloth Mask: RGB({LowerClothMask.Red}, {LowerClothMask.Green}, {LowerClothMask.Blue})\n" +
+               $"  Upper Cloth Mask: RGB({UpperClothMask.Red}, {UpperClothMask.Green}, {UpperClothMask.Blue})\n" +
+               $"  Lower CueBall Mask: RGB({LowerCueBallMask.Red}, {LowerCueBallMask.Green}, {LowerCueBallMask.Blue})\n" +
+               $"  Upper CueBall Mask: RGB({UpperCueBallMask.Red}, {UpperCueBallMask.Green}, {UpperCueBallMask.Blue})";
+    }
 }
