@@ -25,7 +25,7 @@ public class LaserDetector : TableObjectDetector
     {
     }
 
-    private Image<Rgb, byte> CreateCandidatesVisualization(Bitmap baseImage, List<Laser> candidates)
+    private Image<Rgb, byte> CreateFilteredCandidatesVisualization(Bitmap baseImage, List<Laser> candidates)
     {
         var image = baseImage.ToImage<Rgb, byte>();
         foreach (var candidate in candidates)
@@ -56,7 +56,7 @@ public class LaserDetector : TableObjectDetector
         return image;
     }
 
-    private Image<Rgb, byte> CreateFinalVisualization(Bitmap baseImage, Laser bestCandidate, Point? lastPosition)
+    private Image<Rgb, byte> HighlightBestLaserCandidate(Bitmap baseImage, Laser bestCandidate, Point? lastPosition)
     {
         var image = baseImage.ToImage<Rgb, byte>();
 
@@ -67,17 +67,6 @@ public class LaserDetector : TableObjectDetector
             10,
             new MCvScalar(0, 0, 255),
             2);
-
-        // Draw previous position if available
-        if (lastPosition.HasValue && lastPosition.Value != bestCandidate.Location)
-        {
-            CvInvoke.Circle(
-                image,
-                lastPosition.Value,
-                8,
-                new MCvScalar(255, 0, 0), // Red for previous position
-                1);
-        }
 
         return image;
     }
@@ -111,6 +100,37 @@ public class LaserDetector : TableObjectDetector
         return candidates;
     }
 
+    /// <summary>
+    /// Calculates the intensity value for a given contour in an image
+    /// </summary>
+    /// <param name="contour">The contour to analyze</param>
+    /// <param name="allContours">All contours in the image</param>
+    /// <param name="contourIndex">Index of the current contour in allContours</param>
+    /// <param name="workingImageRgb">The RGB image being analyzed</param>
+    /// <param name="imageSize">Size of the image</param>
+    /// <returns>The calculated intensity value for the contour</returns>
+    private double GetContourIntensity(VectorOfPoint contour, VectorOfVectorOfPoint allContours, int contourIndex,
+        Image<Rgb, byte> workingImageRgb, Size imageSize)
+    {
+        using (var mask = new Mat(imageSize, DepthType.Cv8U, 1))
+        {
+            mask.SetTo(new MCvScalar(0));
+            CvInvoke.DrawContours(mask, allContours, contourIndex, new MCvScalar(255), -1);
+
+            using (var roi = new Mat())
+            {
+                CvInvoke.BitwiseAnd(workingImageRgb, workingImageRgb, roi, mask);
+                var mean = CvInvoke.Mean(roi, mask);
+                return mean.V2; // Red channel intensity
+            }
+        }
+    }
+
+    /// <summary>
+    /// Given an image of the table, identify the laser and the stages of processing
+    /// </summary>
+    /// <param name="tableImage"></param>
+    /// <returns></returns>
     public LaserDetectionResults ProcessLaserDetection(Bitmap tableImage)
     {
         LaserDetectionResults laserDetectionResults = new LaserDetectionResults();
@@ -160,19 +180,8 @@ public class LaserDetector : TableObjectDetector
                         int centerY = (int)(moments.M01 / moments.M00);
                         Point location = new Point(centerX, centerY);
 
-                        using (var mask = new Mat(tableImage.Size, DepthType.Cv8U, 1))
-                        {
-                            mask.SetTo(new MCvScalar(0));
-                            CvInvoke.DrawContours(mask, allContoursFound, i, new MCvScalar(255), -1);
-
-                            using (var roi = new Mat())
-                            {
-                                CvInvoke.BitwiseAnd(workingImageRgb, workingImageRgb, roi, mask);
-                                var mean = CvInvoke.Mean(roi, mask);
-                                double intensity = mean.V2; // Red channel intensity
-                                candidates.Add(new Laser(location, intensity, area));
-                            }
-                        }
+                        double intensity = GetContourIntensity(contour, allContoursFound, i, workingImageRgb, tableImage.Size);
+                        candidates.Add(new Laser(location, intensity, area));
                     }
                 }
 
@@ -180,11 +189,12 @@ public class LaserDetector : TableObjectDetector
                 // create image of all contours/candidates detected, regardless of size or brightness or location etc
                 laserDetectionResults.AllCandidatesHighlighted = DrawContours(allContoursFound, tableImage.ToImage<Rgb, byte>());
                 
-                using (var filteredCandidatesImage = CreateCandidatesVisualization(workingImage, candidates))
+                using (var filteredCandidatesImage = CreateFilteredCandidatesVisualization(workingImage, candidates))
                 {
                     laserDetectionResults.FilteredCandidatesHighlighted = filteredCandidatesImage.ToBitmap();
                 }
 
+                //process candidates
                 if (candidates.Any())
                 {
                     var timeSinceLastDetection = DateTime.Now - lastDetectionTime;
@@ -209,7 +219,7 @@ public class LaserDetector : TableObjectDetector
                     laserDetectionResults.Laser = bestCandidate;
 
                     // Create final visualization
-                    using (var finalImage = CreateFinalVisualization(tableImage, bestCandidate, lastPosition))
+                    using (var finalImage = HighlightBestLaserCandidate(tableImage, bestCandidate, lastPosition))
                     {
                         laserDetectionResults.LaserHighlighted = finalImage.ToBitmap();
                     }
