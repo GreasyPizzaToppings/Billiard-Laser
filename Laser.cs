@@ -14,4 +14,13 @@ public class Laser
         Area = area;
         Confidence = 0;
     }
+
+    public override string ToString()
+    {
+        return $"Laser Info:\n" + 
+                $"Position: ({this.Location.X}, {this.Location.Y})\n" +
+                $"Intensity: {this.Intensity:F2}\n" +
+                $"Area: {this.Area:F2}\n" +
+                $"Confidence: {this.Confidence:F2}\n";
+    }
 }

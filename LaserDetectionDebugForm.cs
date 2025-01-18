@@ -26,12 +26,7 @@ namespace billiard_laser
         private void LogLaserInfo(Laser laser)
         {
             if (laser == null) return;
-            Console.WriteLine(
-                $"Laser Position: ({laser.Location.X}, {laser.Location.Y})\n" +
-                $"Intensity: {laser.Intensity:F2}\n" +
-                $"Area: {laser.Area:F2}\n" +
-                $"Confidence: {laser.Confidence:F2}\n"
-            );
+            Console.WriteLine(laser);
         }
 
 
