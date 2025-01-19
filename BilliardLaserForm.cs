@@ -182,6 +182,7 @@ namespace billiard_laser
             {
                 if (CurrentPlaybackState == PlaybackState.Paused || currentInputType != InputType.Camera)
                 {
+                    ballReplacementForm?.UpdateTableOverlay(frame.frame); //send to replacement form even if main form is not processing ball detection
                     frame.Dispose();
                     return;
                 }
