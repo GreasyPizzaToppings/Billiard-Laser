@@ -13,8 +13,6 @@ public class CameraController
     private bool isFlipped = false;
     private bool isMirrored = false;
     private OpenCvSharp.Size outputResolution;
-    private readonly object lockObject = new object();
-    private Bitmap resizedBitmap;
 
     public event EventHandler<VideoFrame> ReceivedFrame;
     public event EventHandler TransformationChanged; //for flip or mirror
@@ -113,68 +111,7 @@ public class CameraController
         }
     }
 
-    private unsafe void FastResize(Bitmap source, Bitmap destination)
-    {
-        BitmapData sourceData = source.LockBits(new Rectangle(0, 0, source.Width, source.Height),
-            ImageLockMode.ReadOnly, PixelFormat.Format24bppRgb);
-        BitmapData destData = destination.LockBits(new Rectangle(0, 0, destination.Width, destination.Height),
-            ImageLockMode.WriteOnly, PixelFormat.Format24bppRgb);
-
-        try
-        {
-            byte* sourcePtr = (byte*)sourceData.Scan0;
-            byte* destPtr = (byte*)destData.Scan0;
-
-            int sourceWidth = source.Width;
-            int sourceHeight = source.Height;
-            int destWidth = destination.Width;
-            int destHeight = destination.Height;
-
-            float xRatio = (float)sourceWidth / destWidth;
-            float yRatio = (float)sourceHeight / destHeight;
-
-            // Parallel processing for rows
-            Parallel.For(0, destHeight, destY =>
-            {
-                int srcY = (int)(destY * yRatio);
-                byte* destRow = destPtr + destY * destData.Stride;
-
-                for (int destX = 0; destX < destWidth; destX++)
-                {
-                    int srcX = (int)(destX * xRatio);
-                    byte* srcPixel = sourcePtr + srcY * sourceData.Stride + srcX * 3;
-                    byte* destPixel = destRow + destX * 3;
-
-                    // Copy RGB values
-                    destPixel[0] = srcPixel[0]; // B
-                    destPixel[1] = srcPixel[1]; // G
-                    destPixel[2] = srcPixel[2]; // R
-                }
-            });
-        }
-        finally
-        {
-            source.UnlockBits(sourceData);
-            destination.UnlockBits(destData);
-        }
-    }
-
     private Bitmap ResizeFrame(Bitmap original)
-    {
-        if (original.Width == OutputResolution.Width && original.Height == OutputResolution.Height)
-        {
-            return (Bitmap)original.Clone();
-        }
-
-        lock (lockObject)
-        {
-            FastResize(original, resizedBitmap);
-            return (Bitmap)resizedBitmap.Clone();
-        }
-    }
-
-
-    private Bitmap ResizeFrame1(Bitmap original)
     {
         if (original.Width == OutputResolution.Width && original.Height == OutputResolution.Height)
         {
