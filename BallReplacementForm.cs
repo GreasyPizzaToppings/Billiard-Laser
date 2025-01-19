@@ -37,7 +37,7 @@ namespace billiard_laser
             InitializeComponent();
             UpdateOpacityValueLabel();
             UpdateStepAmountValueLabel();
-            TargetTableLayout = targetTableLayout;
+            TargetTableLayout = new Bitmap(targetTableLayout);
             this.cameraController = cameraController;
 
             try
@@ -93,34 +93,34 @@ namespace billiard_laser
                     using (ImageAttributes imageAttributes = new ImageAttributes())
                     {
                         imageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-                        using (Graphics graphics = Graphics.FromImage(overlaidImage))
-                        {
-                            // Draw base table layout
-                            graphics.Clear(Color.Transparent);
-                            graphics.DrawImage(TargetTableLayout,
-                                new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                                0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
-                                GraphicsUnit.Pixel);
+                        Graphics graphics = Graphics.FromImage(overlaidImage);
+                        
+                        // Draw base table layout
+                        graphics.Clear(Color.Transparent);
+                        graphics.DrawImage(TargetTableLayout,
+                            new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                            0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
+                            GraphicsUnit.Pixel);
 
-                            // use highlighted laser iamge if detected
-                            if (laserResults?.LaserHighlighted != null)
-                            {
-                                graphics.DrawImage(laserResults.LaserHighlighted,
-                                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                                    0, 0, laserResults.LaserHighlighted.Width, laserResults.LaserHighlighted.Height,
-                                    GraphicsUnit.Pixel,
-                                    imageAttributes);
-                            }
-                                
-                            else {
-                                // else draw incoming image with lower opacity
-                                graphics.DrawImage(cameraImage,
-                                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                                    0, 0, cameraImage.Width, cameraImage.Height,
-                                    GraphicsUnit.Pixel,
-                                    imageAttributes);
-                            }
+                        // use highlighted laser iamge if detected
+                        if (laserResults?.LaserHighlighted != null)
+                        {
+                            graphics.DrawImage(laserResults.LaserHighlighted,
+                                new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                                0, 0, laserResults.LaserHighlighted.Width, laserResults.LaserHighlighted.Height,
+                                GraphicsUnit.Pixel,
+                                imageAttributes);
                         }
+                                
+                        else {
+                            // else draw incoming image with lower opacity
+                            graphics.DrawImage(cameraImage,
+                                new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                                0, 0, cameraImage.Width, cameraImage.Height,
+                                GraphicsUnit.Pixel,
+                                imageAttributes);
+                        }
+                        
                         SetImage(pictureBoxTable, overlaidImage);
                     }
                 }
@@ -164,6 +164,8 @@ namespace billiard_laser
 
             BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
 
+            arduinoController.Dispose();
+            arduinoController = null;
             targetTableLayout.Dispose();
             pictureBoxTable.Dispose();
         }

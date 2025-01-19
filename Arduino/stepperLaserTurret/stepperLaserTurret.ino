@@ -19,8 +19,8 @@ const int MiddlePoint = TotalSteps / 2; // Middle point of the motor
 const int PulseTime = 850; //<1200 pps
 int StepAmount = 100; // Default step amount
 
-const char HANDSHAKE_REQUEST = 'h';
-const char* HANDSHAKE_RESPONSE = "ARDUINO_LASER";
+const String HANDSHAKE_REQUEST = "h";
+const String HANDSHAKE_RESPONSE = "ARDUINO_LASER";
 
 void setup() {
   pinMode(StepX, OUTPUT);
@@ -33,6 +33,8 @@ void setup() {
 
   Serial.begin(9600);
   Serial.setTimeout(10);
+
+  digitalWrite(LaserPin, LOW); //laser off by default
 }
 
 // Parse the step amount from the received command
@@ -55,7 +57,6 @@ void loop() {
     String command = Serial.readStringUntil('\n'); // Read full command until newline
 
     //connection request from billiard laser
-    char command = Serial.read();
     if (command == HANDSHAKE_REQUEST) {
         Serial.println(HANDSHAKE_RESPONSE);
     }
