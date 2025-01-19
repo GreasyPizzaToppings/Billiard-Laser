@@ -57,7 +57,7 @@ public class ArduinoController : IDisposable
         }
     }
 
-    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 1500)
+    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 2000)
     {
         try
         {
@@ -78,7 +78,7 @@ public class ArduinoController : IDisposable
 
             serialPort.Open();
             
-            Thread.Sleep(250); // Allow Arduino to reset after connection
+            Thread.Sleep(500); // Allow Arduino to reset after connection
 
             // Send handshake request
             serialPort.WriteLine(HANDSHAKE_REQUEST);
