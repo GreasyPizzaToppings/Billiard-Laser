@@ -40,15 +40,26 @@ namespace billiard_laser
             TargetTableLayout = new Bitmap(targetTableLayout);
             this.cameraController = cameraController;
 
-            try
+            arduinoController = new ArduinoController();
+
+            // Handle the connection asynchronously
+            arduinoController.ConnectionTask.ContinueWith(task =>
             {
-                arduinoController = new ArduinoController();
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("Failed to connect to Arduino: " + ex.Message, "Connection Error",
-                    MessageBoxButtons.OK, MessageBoxIcon.Error);
-            }
+                if (task.IsFaulted)
+                {
+                    // Make sure we're on the UI thread for showing message box
+                    this.BeginInvoke(new Action(() =>
+                    {
+                        MessageBox.Show("Failed to connect to Arduino: " + task.Exception.InnerException.Message,
+                            "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }));
+                }
+
+                if (task.IsCompletedSuccessfully)
+                {
+                    MessageBox.Show("Arduino connected");
+                }
+            });
 
             laserDetector = new LaserDetector();
         }

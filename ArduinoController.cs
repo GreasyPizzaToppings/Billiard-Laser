@@ -16,33 +16,48 @@ public class ArduinoController : IDisposable
     private const string HANDSHAKE_REQUEST = "h";
     private const string EXPECTED_HANDSHAKE_RESPONSE = "ARDUINO_LASER";
     private bool laserOn = false;
+    private bool isHandshakeVerified = false;
 
+    private TaskCompletionSource<bool> connectionTaskSource;
+
+    public Task ConnectionTask => connectionTaskSource?.Task ?? Task.CompletedTask;
     public bool IsLaserOn { get => laserOn; }
-    public bool IsConnected { get => serialPort?.IsOpen ?? false; }
+    public bool IsConnected { get => isHandshakeVerified && (serialPort?.IsOpen ?? false); }
     public string PortName { get => serialPort?.PortName; }
 
     public ArduinoController()
     {
-        AutoConnect();
+        connectionTaskSource = new TaskCompletionSource<bool>();
+        
+        // Start async connection
+        Task.Run(AutoConnectAsync);
     }
 
-    public void AutoConnect()
+    private async Task AutoConnectAsync()
     {
-        string[] availablePorts = SerialPort.GetPortNames();
-
-        foreach (string port in availablePorts)
+        try
         {
-            if (TryConnect(port))
-            {
-                Console.WriteLine($"Successfully connected to Arduino on port {port}");
-                return;
-            }
-        }
+            string[] availablePorts = SerialPort.GetPortNames();
 
-        throw new Exception("Could not find Arduino device on any available port");
+            foreach (string port in availablePorts)
+            {
+                if (await Task.Run(() => TryConnect(port)))
+                {
+                    Console.WriteLine($"Successfully connected to Arduino on port {port}");
+                    connectionTaskSource.SetResult(true);
+                    return;
+                }
+            }
+
+            connectionTaskSource.SetException(new Exception("Could not find Arduino device on any available port"));
+        }
+        catch (Exception ex)
+        {
+            connectionTaskSource.SetException(ex);
+        }
     }
 
-    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 250)
+    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 1000)
     {
         try
         {
@@ -62,7 +77,8 @@ public class ArduinoController : IDisposable
             };
 
             serialPort.Open();
-            Thread.Sleep(100); // Allow Arduino to reset after connection
+            
+            Thread.Sleep(250); // Allow Arduino to reset after connection
 
             // Send handshake request
             serialPort.WriteLine(HANDSHAKE_REQUEST);
@@ -71,7 +87,10 @@ public class ArduinoController : IDisposable
             string response = serialPort.ReadLine().Trim();
 
             if (response == EXPECTED_HANDSHAKE_RESPONSE)
+            {
+                isHandshakeVerified = true;
                 return true;
+            }
 
             // If handshake failed, clean up
             serialPort.Close();
@@ -89,24 +108,18 @@ public class ArduinoController : IDisposable
                 serialPort.Dispose();
                 serialPort = null;
             }
+
+            isHandshakeVerified = false;
             return false;
         }
     }
 
-    public void Reconnect()
-    {
-        AutoConnect();
-    }
-
-    private void SendCommand(string command)
+    private async void SendCommand(string command)
     {
         try
         {
-            if (!IsConnected)
-            {
-                AutoConnect();
-            }
-            serialPort.WriteLine(command);
+            if (IsConnected) serialPort.WriteLine(command);
+            else Console.WriteLine("Arduino is not connected or the port is closed.");
         }
         catch (Exception ex)
         {
