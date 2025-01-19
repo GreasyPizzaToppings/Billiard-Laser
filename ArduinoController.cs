@@ -57,7 +57,7 @@ public class ArduinoController : IDisposable
         }
     }
 
-    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 1000)
+    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 1500)
     {
         try
         {
