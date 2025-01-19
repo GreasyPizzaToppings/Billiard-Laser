@@ -42,7 +42,7 @@ public class ArduinoController : IDisposable
         throw new Exception("Could not find Arduino device on any available port");
     }
 
-    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 2000)
+    private bool TryConnect(string portName, int baudRate = 9600, int timeout = 250)
     {
         try
         {
@@ -62,7 +62,7 @@ public class ArduinoController : IDisposable
             };
 
             serialPort.Open();
-            Thread.Sleep(500); // Allow Arduino to reset after connection
+            Thread.Sleep(100); // Allow Arduino to reset after connection
 
             // Send handshake request
             serialPort.WriteLine(HANDSHAKE_REQUEST);
