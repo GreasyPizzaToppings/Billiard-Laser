@@ -37,10 +37,19 @@ namespace billiard_laser
             InitializeComponent();
             UpdateOpacityValueLabel();
             UpdateStepAmountValueLabel();
-            this.TargetTableLayout = targetTableLayout;
+            TargetTableLayout = targetTableLayout;
             this.cameraController = cameraController;
 
-            arduinoController = new ArduinoController("COM4"); //TODO find better way to find what port to connect to
+            try
+            {
+                arduinoController = new ArduinoController();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("Failed to connect to Arduino: " + ex.Message, "Connection Error",
+                    MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+
             laserDetector = new LaserDetector();
         }
 

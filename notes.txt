@@ -1,9 +1,0 @@
-automatic COM port detection
-
-crashes when adjusting step amount
-
-downscale incoming camera images in ball replacement form. using native. 1fps!
-
-implement laser calibration/selection
-
-allow incoming camera frames when paused on main form for ball detection
