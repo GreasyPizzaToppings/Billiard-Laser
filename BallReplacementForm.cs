@@ -54,11 +54,6 @@ namespace billiard_laser
                             "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }));
                 }
-
-                if (task.IsCompletedSuccessfully)
-                {
-                    MessageBox.Show("Arduino connected");
-                }
             });
 
             laserDetector = new LaserDetector();
