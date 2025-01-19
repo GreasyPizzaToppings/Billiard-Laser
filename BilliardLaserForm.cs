@@ -102,7 +102,7 @@ namespace billiard_laser
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
             btnShowReplaceBallsForm.Enabled = false;
 
-            cameraController = new CameraController(cboCamera);
+            cameraController = new CameraController(cboCamera, outputVideoResolution);
             shotDetector = new ShotDetector();
             ballDetector = new BallDetector();
 

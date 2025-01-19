@@ -1,5 +1,6 @@
 ﻿using AForge.Video;
 using AForge.Video.DirectShow;
+using System.Drawing.Drawing2D;
 
 public class CameraController
 {
@@ -10,6 +11,7 @@ public class CameraController
     private int frameIndex = 0;
     private bool isFlipped = false;
     private bool isMirrored = false;
+    private OpenCvSharp.Size outputResolution;
 
     public event EventHandler<VideoFrame> ReceivedFrame;
     public event EventHandler TransformationChanged; //for flip or mirror
@@ -34,10 +36,21 @@ public class CameraController
         }
     }
 
-    public CameraController(ComboBox comboBox)
+    public OpenCvSharp.Size OutputResolution
+    {
+        get => outputResolution;
+        set
+        {
+            if (value.Width <= 0 || value.Height <= 0)
+                throw new ArgumentException("Resolution dimensions must be positive");
+            outputResolution = value;
+        }
+    }
+
+    public CameraController(ComboBox comboBox, OpenCvSharp.Size initialResolution)
     {
         this.comboBox = comboBox;
-
+        this.OutputResolution = initialResolution;
         PopulateCameraComboBox();
     }
 
@@ -76,15 +89,49 @@ public class CameraController
     {
         frameReceivedEvent.Set();
 
-        // Clone and transform the frame
         using (Bitmap originalFrame = (Bitmap)eventArgs.Frame.Clone())
         {
+            // First apply any transformations (flip/mirror)
             Bitmap transformedFrame = TransformFrame(originalFrame);
-            VideoFrame frame = new VideoFrame(transformedFrame, frameIndex);
-            frameIndex++;
 
-            ReceivedFrame?.Invoke(this, frame);
+            // Then resize to the desired output resolution
+            using (Bitmap resizedFrame = ResizeFrame(transformedFrame))
+            {
+                VideoFrame frame = new VideoFrame(resizedFrame, frameIndex);
+                frameIndex++;
+                ReceivedFrame?.Invoke(this, frame);
+            }
+
+            // Clean up the intermediate transformed frame
+            if (transformedFrame != originalFrame)
+            {
+                transformedFrame.Dispose();
+            }
         }
+    }
+
+    private Bitmap ResizeFrame(Bitmap original)
+    {
+        if (original.Width == OutputResolution.Width && original.Height == OutputResolution.Height)
+        {
+            return (Bitmap)original.Clone();
+        }
+
+        Bitmap resized = new Bitmap(OutputResolution.Width, OutputResolution.Height);
+
+        using (Graphics g = Graphics.FromImage(resized))
+        {
+            // Configure high quality scaling
+            g.InterpolationMode = InterpolationMode.HighQualityBicubic;
+            g.SmoothingMode = SmoothingMode.HighQuality;
+            g.PixelOffsetMode = PixelOffsetMode.HighQuality;
+            g.CompositingQuality = CompositingQuality.HighQuality;
+
+            // Draw the resized image
+            g.DrawImage(original, 0, 0, OutputResolution.Width, OutputResolution.Height);
+        }
+
+        return resized;
     }
 
     /// <summary>
