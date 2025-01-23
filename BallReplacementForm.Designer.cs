@@ -43,6 +43,7 @@
             btnFlipCamera = new Button();
             btnMirrorCamera = new Button();
             btnShowDebugForm = new Button();
+            btnCalibrateLaser = new Button();
             ((System.ComponentModel.ISupportInitialize)pictureBoxTable).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarCameraOpacity).BeginInit();
             ((System.ComponentModel.ISupportInitialize)trackBarLaserStepAmount).BeginInit();
@@ -57,6 +58,7 @@
             pictureBoxTable.SizeMode = PictureBoxSizeMode.Zoom;
             pictureBoxTable.TabIndex = 0;
             pictureBoxTable.TabStop = false;
+            pictureBoxTable.Click += pictureBoxTable_Click;
             // 
             // labelCameraOpacity
             // 
@@ -151,12 +153,12 @@
             // trackBarLaserStepAmount
             // 
             trackBarLaserStepAmount.Location = new Point(546, 668);
-            trackBarLaserStepAmount.Maximum = 500;
+            trackBarLaserStepAmount.Maximum = 400;
             trackBarLaserStepAmount.Minimum = 1;
             trackBarLaserStepAmount.Name = "trackBarLaserStepAmount";
             trackBarLaserStepAmount.Size = new Size(178, 45);
             trackBarLaserStepAmount.TabIndex = 61;
-            trackBarLaserStepAmount.Value = 65;
+            trackBarLaserStepAmount.Value = 20;
             trackBarLaserStepAmount.ValueChanged += trackBarLaserStepAmount_ValueChanged;
             // 
             // labelLaserStepAmount
@@ -208,7 +210,7 @@
             // btnShowDebugForm
             // 
             btnShowDebugForm.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
-            btnShowDebugForm.Location = new Point(958, 668);
+            btnShowDebugForm.Location = new Point(964, 669);
             btnShowDebugForm.Margin = new Padding(3, 2, 3, 2);
             btnShowDebugForm.Name = "btnShowDebugForm";
             btnShowDebugForm.Size = new Size(116, 33);
@@ -217,11 +219,24 @@
             btnShowDebugForm.UseVisualStyleBackColor = true;
             btnShowDebugForm.Click += btnShowDebugForm_Click;
             // 
+            // btnCalibrateLaser
+            // 
+            btnCalibrateLaser.Font = new Font("Segoe UI", 9F, FontStyle.Regular, GraphicsUnit.Point);
+            btnCalibrateLaser.Location = new Point(964, 630);
+            btnCalibrateLaser.Margin = new Padding(3, 2, 3, 2);
+            btnCalibrateLaser.Name = "btnCalibrateLaser";
+            btnCalibrateLaser.Size = new Size(116, 33);
+            btnCalibrateLaser.TabIndex = 67;
+            btnCalibrateLaser.Text = "Calibrate Laser";
+            btnCalibrateLaser.UseVisualStyleBackColor = true;
+            btnCalibrateLaser.Click += btnCalibrateLaser_Click;
+            // 
             // BallReplacementForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(1105, 712);
+            Controls.Add(btnCalibrateLaser);
             Controls.Add(btnShowDebugForm);
             Controls.Add(btnMirrorCamera);
             Controls.Add(btnFlipCamera);
@@ -264,5 +279,6 @@
         private Button btnFlipCamera;
         private Button btnMirrorCamera;
         private Button btnShowDebugForm;
+        private Button btnCalibrateLaser;
     }
 }

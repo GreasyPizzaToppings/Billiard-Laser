@@ -17,16 +17,24 @@ public class LaserDetector : TableObjectDetector
     private const int MaxPositionHistory = 5;
 
     private DateTime lastDetectionTime = DateTime.MinValue;
-    public double MaxMovementPerSecond = 500.0; // pixels per second
+    public double MaxMovementPerSecond = 400.0; // pixels per second
     public double IntensityWeight = 0.35;
     public double DistanceWeight = 0.65;
-    public TimeSpan TrackingTimeout = TimeSpan.FromSeconds(1); // Reset tracking if no detection for this long
+    //public TimeSpan TrackingTimeout = TimeSpan.FromSeconds(1); // Reset tracking if no detection for this long
 
     public LaserDetector(bool enableBlur = true, bool enableSharpening = false, bool enableTableBoundary = false)
         : base(enableBlur, enableSharpening, enableTableBoundary)
     {
     }
 
+    public void CalibrateLaserPosition(Point laserPosition) {
+        lastPositions.Clear();
+        for (int i = 1; i <= MaxPositionHistory; i++)
+        {
+            lastPositions.Enqueue(laserPosition);
+        }
+        lastDetectionTime = DateTime.Now;
+    }
 
     /// <summary>
     /// Given an image of the table, identify the laser and the stages of processing
@@ -102,10 +110,7 @@ public class LaserDetector : TableObjectDetector
                     var timeSinceLastDetection = DateTime.Now - lastDetectionTime;
 
                     // Reset tracking if too much time has passed
-                    if (timeSinceLastDetection > TrackingTimeout)
-                    {
-                        lastPositions.Clear();
-                    }
+                    // if (timeSinceLastDetection > TrackingTimeout) lastPositions.Clear();
 
                     candidates = ScoreCandidates(candidates, timeSinceLastDetection);
 
@@ -302,7 +307,7 @@ public class LaserDetector : TableObjectDetector
                $"  Max Movement/Sec: {MaxMovementPerSecond}\n" +
                $"  Intensity Weight: {IntensityWeight}\n" +
                $"  Distance Weight: {DistanceWeight}\n" +
-               $"  Tracking Timeout: {TrackingTimeout.TotalSeconds}s" +
+               //$"  Tracking Timeout: {TrackingTimeout.TotalSeconds}s" +
                $"  Position History Size: {MaxPositionHistory}";
     }
 }

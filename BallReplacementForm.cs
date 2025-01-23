@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.Devices;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -17,6 +18,7 @@ namespace billiard_laser
         private ArduinoController arduinoController;
         private LaserDetector laserDetector;
         private LaserDetectionDebugForm laserDetectionDebugForm;
+        private bool calibratingLaserPosition = false;
 
         public CameraController cameraController;
 
@@ -75,7 +77,7 @@ namespace billiard_laser
                 return;
             try
             {
-               
+
                 //if laser enabled, try and detect where our laser is on the table and highlight it
                 LaserDetectionResults? laserResults = null;
                 if (arduinoController.IsLaserOn)
@@ -100,7 +102,7 @@ namespace billiard_laser
                     {
                         imageAttributes.SetColorMatrix(colorMatrix, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
                         Graphics graphics = Graphics.FromImage(overlaidImage);
-                        
+
                         // Draw base table layout
                         graphics.Clear(Color.Transparent);
                         graphics.DrawImage(TargetTableLayout,
@@ -117,8 +119,9 @@ namespace billiard_laser
                                 GraphicsUnit.Pixel,
                                 imageAttributes);
                         }
-                                
-                        else {
+
+                        else
+                        {
                             // else draw incoming image with lower opacity
                             graphics.DrawImage(cameraImage,
                                 new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
@@ -126,11 +129,11 @@ namespace billiard_laser
                                 GraphicsUnit.Pixel,
                                 imageAttributes);
                         }
-                        
+
                         SetImage(pictureBoxTable, overlaidImage);
                     }
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -239,7 +242,7 @@ namespace billiard_laser
                 using (Graphics g = Graphics.FromImage(mirroredImage))
                 {
                     g.TranslateTransform(targetTableLayout.Width, 0);
-                    g.ScaleTransform(-1, 1); 
+                    g.ScaleTransform(-1, 1);
                     g.DrawImage(targetTableLayout, 0, 0);
                 }
 
@@ -276,6 +279,53 @@ namespace billiard_laser
                 laserDetectionDebugForm.Dispose();
                 laserDetectionDebugForm = null;
             }
+        }
+
+        /// <summary>
+        /// Let the user select where the laser pointer currently is and to track from there
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void btnCalibrateLaser_Click(object sender, EventArgs e)
+        {
+            MessageBox.Show("Click on the image at the point where the laser is.", "Laser Calibration Process", MessageBoxButtons.OK);
+
+            calibratingLaserPosition = true;
+
+        }
+
+        private void pictureBoxTable_Click(object sender, EventArgs e)
+        {
+            if (!calibratingLaserPosition) return;
+
+            // Get mouse position relative to the picturebox
+            MouseEventArgs mouseEvent = (MouseEventArgs)e;
+            Point clickPosition = mouseEvent.Location;
+
+            // Scale the click position to match the image's actual resolution
+            Point scaledPosition = ScalePointToTableResolution(clickPosition, pictureBoxTable);
+
+            // Reset the laser detector's position history and add the calibrated point
+            laserDetector.CalibrateLaserPosition(scaledPosition);
+
+            // Reset calibration mode
+            calibratingLaserPosition = false;
+
+            MessageBox.Show("Laser position calibrated successfully.", "Calibration Complete", MessageBoxButtons.OK);
+        }
+
+
+        private Point ScalePointToTableResolution(Point clickPoint, PictureBox picturebox)
+        {
+            if (targetTableLayout == null) return clickPoint;
+
+            float scaleX = (float)targetTableLayout.Width / picturebox.Width;
+            float scaleY = (float)targetTableLayout.Height / picturebox.Height;
+
+            return new Point(
+                (int)(clickPoint.X * scaleX),
+                (int)(clickPoint.Y * scaleY)
+            );
         }
     }
 }
