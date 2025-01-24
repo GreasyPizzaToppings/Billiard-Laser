@@ -58,6 +58,8 @@ namespace billiard_laser
                 }
             });
 
+            arduinoController.LaserOff();
+
             laserDetector = new LaserDetector();
         }
 
