@@ -78,7 +78,7 @@ public class ArduinoController : IDisposable
 
             serialPort.Open();
             
-            Thread.Sleep(timeout); // Allow Arduino to reset after connection
+            Thread.Sleep(500); // Allow Arduino to reset after connection
 
             // Send handshake request
             serialPort.WriteLine(HANDSHAKE_REQUEST);
