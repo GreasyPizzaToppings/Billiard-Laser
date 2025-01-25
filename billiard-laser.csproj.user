@@ -2,10 +2,16 @@
 <Project ToolsVersion="Current" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup />
   <ItemGroup>
+    <Compile Update="BallReplacementForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
     <Compile Update="BilliardLaserForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="ImageProcessingDebugForm.cs">
+    <Compile Update="BallDetectionDebugForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Update="LaserDetectionDebugForm.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

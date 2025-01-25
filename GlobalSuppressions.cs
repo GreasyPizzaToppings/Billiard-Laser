@@ -5,4 +5,4 @@
 
 using System.Diagnostics.CodeAnalysis;
 
-[assembly: SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "<Pending>", Scope = "member", Target = "~M:billiard_laser.BallDetector.SharpenImage(System.Drawing.Bitmap)~System.Drawing.Bitmap")]
+[assembly: SuppressMessage("Performance", "CA1814:Prefer jagged arrays over multidimensional", Justification = "<Pending>", Scope = "member", Target = "~M:billiard_laser.TableObjectDetector.SharpenImage(System.Drawing.Bitmap)~System.Drawing.Bitmap")]

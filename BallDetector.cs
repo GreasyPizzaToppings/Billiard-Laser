@@ -11,14 +11,9 @@ using Point = System.Drawing.Point;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 
-public class BallDetector
+public class BallDetector : TableObjectDetector
 {
     private Size imageSize = new Size(0, 0);
-
-    //image manipulation settings
-    public Boolean EnableBlur = false;
-    public Boolean EnableSharpening = false;
-    public Boolean EnableTableBoundary = false;
 
     //Default cloth mask
     public Rgb LowerClothMask = new Rgb(44, 107, 0); //todo: allow user to set default min/max masks
@@ -28,16 +23,18 @@ public class BallDetector
     public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
     public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
 
+    public BallDetector(bool enableBlur = false, bool enableSharpening = false, bool enableTableBoundary = false)
+        : base(enableBlur, enableSharpening, enableTableBoundary)
+    {
+    }
 
     /// <summary>
     /// Return all the balls and the stages of image processing
     /// </summary>
     /// <param name="tableImage">Image of the table</param>
     /// <returns></returns>
-    public ImageProcessingResults ProcessTableImage(Bitmap tableImage)
+    public BallDetectionResults ProcessBallDetection(Bitmap tableImage)
     {
-        imageSize = tableImage.Size;
-
         Bitmap workingImage = tableImage;
         Bitmap transformedImage = null;
 
@@ -58,8 +55,8 @@ public class BallDetector
 
         using (var allContoursFound = GetAllContours(tableWithMaskApplied))
         {
-            VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound) : null;
-            using (var filteredContoursFound = tableContour != null ? FilterContours(allContoursFound, tableContour) : FilterContours(allContoursFound))
+            VectorOfPoint? tableContour = EnableTableBoundary ? GetTableContour(allContoursFound, tableImage.Size) : null;
+            using (var filteredContoursFound = tableContour != null ? FilterBallContours(allContoursFound, tableContour) : FilterBallContours(allContoursFound))
             {
                 Ball cueball = FindCueBall(OnlyBalls(workingImage, filteredContoursFound));
 
@@ -77,7 +74,7 @@ public class BallDetector
 
                 tableContour?.Dispose();
 
-                return new ImageProcessingResults
+                return new BallDetectionResults
                 {
                     OriginalImage = tableImage,
                     TransformedImage = transformedImage,
@@ -143,111 +140,13 @@ public class BallDetector
     {
         Mat result = new Mat(Image.Size, DepthType.Cv8U, 3);
         result.SetTo(new MCvScalar(0, 0, 0));
-        for(int i = 0; i < FilteredContours.Size; i++)CvInvoke.DrawContours(result, FilteredContours, i, new MCvScalar(255, 255, 255),-1);
+        for (int i = 0; i < FilteredContours.Size; i++) CvInvoke.DrawContours(result, FilteredContours, i, new MCvScalar(255, 255, 255), -1);
         Bitmap test = ApplyMask(Image, result.ToBitmap());
         //on the image, we apply filtered contours
         //how do we apply filteredcontours on the image? 
         //whatever is inside the filteredcontours, we only show those in the image. 
         return test;
     }
-
-    private static Bitmap SharpenImage(Bitmap image)
-    {
-        // Define the kernel
-        int[,] kernel = {
-            { -1, -1, -1 },
-            { -1, 9, -1 },
-            { -1, -1, -1 }
-         };
-
-        Convolution filter = new Convolution(kernel);
-        return filter.Apply(image);
-    }
-
-    //Emgu CV bitmap to Mat doesn't convert some bitmaps properly so I had to implement this method. 
-    private static Mat BitmapToMat(Bitmap bitmap, Mat mat, DepthType depthType = DepthType.Cv8U)
-    {
-        BitmapData bmpData = bitmap.LockBits(
-            new Rectangle(0, 0, bitmap.Width, bitmap.Height),
-            ImageLockMode.ReadOnly,
-            PixelFormat.Format24bppRgb);
-
-        CvInvoke.CvtColor(
-            new Mat(bmpData.Height, bmpData.Width, depthType, 3, bmpData.Scan0, bmpData.Stride),
-            mat,
-            ColorConversion.Rgb2Rgba);
-
-        bitmap.UnlockBits(bmpData);
-        return mat;
-    }
-
-    private static Bitmap BlurImage(Bitmap inputImage)
-    {
-        using (Mat transformed = new Mat())
-        using (var blurredImage = new Mat())
-        {
-            BitmapToMat(inputImage, transformed);
-            CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
-            return blurredImage.ToBitmap();
-        }
-    }
-
-    private static Bitmap ApplyMask(Bitmap inputImage, Bitmap tableMask)
-    {
-        using (Mat maskedObjects = new Mat())
-        using (Mat inputMat = new Mat())
-        using (Mat outputMat = new Mat())
-        {
-            Emgu.CV.CvInvoke.BitwiseAnd(BitmapToMat(inputImage, inputMat), BitmapToMat(tableMask, outputMat), maskedObjects);
-            return maskedObjects.ToBitmap();
-        }
-    }
-
-    /// <summary>
-    /// get the mask image for the table to remove the cloth
-    /// </summary>
-    /// <param name="tableImage">Image of the table to mask</param>
-    /// <returns></returns>
-    private static Bitmap GetMaskImage(Bitmap tableImage, Rgb LowerMaskRgb, Rgb UpperMaskRgb)
-    {
-        using (Mat imageMat = BitmapExtension.ToMat(tableImage))
-        using (Mat hsv = new Mat())
-        using (Mat mask = new Mat())
-        using (Mat kernel = Emgu.CV.CvInvoke.GetStructuringElement(Emgu.CV.CvEnum.ElementShape.Rectangle, new System.Drawing.Size(5, 5), new Point(-1, -1)))
-        using (Mat maskClosing = new Mat())
-        using (Mat maskInv = new Mat())
-        {
-            Emgu.CV.CvInvoke.CvtColor(imageMat, hsv, ColorConversion.Bgr2Hsv);
-
-            ScalarArray LowerMaskValue = new ScalarArray(new MCvScalar(LowerMaskRgb.Red, LowerMaskRgb.Green, LowerMaskRgb.Blue));
-            ScalarArray UpperMaskValue = new ScalarArray(new MCvScalar(UpperMaskRgb.Red, UpperMaskRgb.Green, UpperMaskRgb.Blue));
-            Emgu.CV.CvInvoke.InRange(hsv, LowerMaskValue, UpperMaskValue, mask);
-
-            Emgu.CV.CvInvoke.MorphologyEx(mask, maskClosing, MorphOp.Close, kernel, new Point(-1, -1), 1, Emgu.CV.CvEnum.BorderType.Reflect, new MCvScalar());
-
-            Emgu.CV.CvInvoke.Threshold(maskClosing, maskInv, 5, 255, ThresholdType.BinaryInv);
-            return maskInv.ToBitmap();
-        }
-    }
-
-
-    /// <summary>
-    /// Find what Emgu thinks are edges
-    /// </summary>
-    /// <param name="tableMask"></param>
-    /// <returns></returns>
-    private static VectorOfVectorOfPoint GetAllContours(Bitmap tableMask)
-    {
-        VectorOfVectorOfPoint contours = new VectorOfVectorOfPoint();
-        using (Mat hierarchy = new Mat())
-        using (Mat outputMat = new Mat())
-        {
-            CvInvoke.CvtColor(BitmapExtension.ToMat(tableMask), outputMat, ColorConversion.Bgr2Gray);
-            Emgu.CV.CvInvoke.FindContours(outputMat, contours, hierarchy, RetrType.Tree, ChainApproxMethod.ChainApproxSimple);
-            return contours;
-        }
-    }
-
 
     /// <summary>
     /// Remove the contours unlikely to be a ball
@@ -256,7 +155,7 @@ public class BallDetector
     /// <param name="min_s"></param>
     /// <param name="max_s"></param>
     /// <returns></returns>
-    private static VectorOfVectorOfPoint FilterContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
+    private static VectorOfVectorOfPoint FilterBallContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
     {
         using (VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint())
         {
@@ -302,75 +201,15 @@ public class BallDetector
         }
     }
 
-
-    /// <summary>
-    /// Check if a Contour is completely inside another Contour.
-    /// </summary>
-    /// <param name="innerContour">The Contour that is being checked if it is inside the outer Contour.</param>
-    /// <param name="outerContour">The Contour that is being checked to contain the inner Contour.</param>
-    /// <returns>True if the inner Contour is completely inside the outer Contour, false otherwise.</returns>
-    private static bool IsContourInside(VectorOfPoint innerContour, VectorOfPoint outerContour)
+    public override string ToString()
     {
-        for (int i = 0; i < innerContour.Size; i++)
-        {
-            Point point = innerContour[i];
-            double result = CvInvoke.PointPolygonTest(outerContour, point, false);
-            if (result < 0) return false;
-        }
-        return true;
-    }
-
-    /// <summary>
-    /// Given all contours found in the image, find the table Contour
-    /// </summary>
-    /// <param name="contours"></param>
-    /// <returns>VectorOfPoint Contour with points if found, empty VectorOfPoint if not found</returns>
-    private VectorOfPoint GetTableContour(VectorOfVectorOfPoint allContours)
-    {
-        double imageArea = this.imageSize.Width * this.imageSize.Height;
-        double maxArea = 0;
-        int maxIndex = -1;
-
-        //find the biggest Contour that isnt the whole frame or close to it. 90% and under seems to work
-        for (int i = 0; i < allContours.Size; i++)
-        {
-            VectorOfPoint Contour = allContours[i];
-            double area = CvInvoke.ContourArea(Contour);
-
-            if (area < (imageArea * 0.90) && area > maxArea)
-            {
-                maxArea = area;
-                maxIndex = i;
-            }
-        }
-
-        if (maxIndex == -1)
-        {
-            Console.WriteLine("No valid table Contour found.");
-            return new VectorOfPoint();
-        }
-
-        return allContours[maxIndex]; //table
-    }
-
-
-    /// <summary>
-    /// Draw the contours as they are exactly
-    /// </summary>
-    /// <param name="ctrs"></param>
-    /// <param name="img"></param>
-    /// <returns></returns>
-    private static Bitmap DrawContours(VectorOfVectorOfPoint ctrs, Image<Rgb, byte> img)
-    {
-        using (Image<Rgb, byte> output = img.Copy())
-        {
-            for (int i = 0; i < ctrs.Size; i++)
-            {
-                VectorOfPoint Contour = ctrs[i];
-                CvInvoke.DrawContours(output, new VectorOfVectorOfPoint(Contour), -1, new MCvScalar(244, 0, 250), 2);
-            }
-
-            return output.ToBitmap();
-        }
+        return $"BallDetector Settings:\n" +
+               $"  Blur: {EnableBlur}\n" +
+               $"  Sharpen: {EnableSharpening}\n" +
+               $"  TableBoundary: {EnableTableBoundary}\n" +
+               $"  Lower Cloth Mask: RGB({LowerClothMask.Red}, {LowerClothMask.Green}, {LowerClothMask.Blue})\n" +
+               $"  Upper Cloth Mask: RGB({UpperClothMask.Red}, {UpperClothMask.Green}, {UpperClothMask.Blue})\n" +
+               $"  Lower CueBall Mask: RGB({LowerCueBallMask.Red}, {LowerCueBallMask.Green}, {LowerCueBallMask.Blue})\n" +
+               $"  Upper CueBall Mask: RGB({UpperCueBallMask.Red}, {UpperCueBallMask.Green}, {UpperCueBallMask.Blue})";
     }
 }
