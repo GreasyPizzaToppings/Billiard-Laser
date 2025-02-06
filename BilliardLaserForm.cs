@@ -30,9 +30,8 @@ namespace billiard_laser
         private OpenCvSharp.Size outputVideoResolution = p300;
 
         //frames
-        private BindingList<int> processedFrameIndices = new BindingList<int>();
-        private Queue<VideoFrame> rawFrames = new Queue<VideoFrame>();
-        private Queue<VideoFrame> processedFrames = new Queue<VideoFrame>();
+        private FrameQueueManager<VideoFrame> rawFrames;
+        private FrameQueueManager<VideoFrame> processedFrames;
         private const int maxFrames = 1000; //testing
 
         //flags
@@ -109,7 +108,10 @@ namespace billiard_laser
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
 
-            listBoxProcessedFrames.DataSource = processedFrameIndices;
+            rawFrames = new FrameQueueManager<VideoFrame>(maxFrames: maxFrames);
+            processedFrames = new FrameQueueManager<VideoFrame>(maxFrames: maxFrames);
+
+            listBoxProcessedFrames.DataSource = processedFrames.FrameIndices;
         }
 
         //before loading camera
@@ -187,13 +189,6 @@ namespace billiard_laser
                     return;
                 }
 
-                if (rawFrames.Count > maxFrames)
-                {
-                    var oldFrame = rawFrames.Dequeue();
-                    oldFrame.Dispose();
-                    Console.WriteLine("raw frames count exceed maxframes, disposing old frame");
-                }
-
                 rawFrames.Enqueue(frame);
                 ProcessFrame(frame);
             }
@@ -210,7 +205,7 @@ namespace billiard_laser
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void btnLoadVideo_Click(object sender, EventArgs e)
+        private async void btnLoadVideo_Click(object sender, EventArgs e)
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Filter = "Video Files (*.mp4;*.avi;*.mkv)|*.mp4;*.avi;*.mkv";
@@ -219,10 +214,28 @@ namespace billiard_laser
             if (openFileDialog.ShowDialog() == DialogResult.OK)
             {
                 SetStateLoadVideo();
-                VideoProcessor.EnqueueVideoFrames(openFileDialog.FileName, outputVideoResolution, rawFrames, maxFrames);
 
-                //loaded
-                CurrentPlaybackState = PlaybackState.Ready;
+                try
+                {
+                    videoCancellationTokenSource = new CancellationTokenSource();
+                    CancellationToken cancellationToken = videoCancellationTokenSource.Token;
+                    await VideoFrameLoader.LoadFramesAsync(openFileDialog.FileName, outputVideoResolution, rawFrames, cancellationToken);
+                    
+                    if (cancellationToken.IsCancellationRequested)
+                    {
+                        throw new OperationCanceledException(); //break, dont set to ready state
+                    }
+                    
+                    CurrentPlaybackState = PlaybackState.Ready;
+                }
+                catch (OperationCanceledException)
+                {
+                    Console.WriteLine("Video loading was cancelled");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error loading video: {ex.Message}");       
+                }
             }
         }
 
@@ -283,13 +296,13 @@ namespace billiard_laser
         {
             if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
             {
-                var processedFrame = processedFrames.FirstOrDefault(f => f.index == selectedIndex);
+                var processedFrame = processedFrames.GetFrame(selectedIndex);
                 if (processedFrame != null && processedFrame.frame != null)
                 {
                     btnShowReplaceBallsForm.Enabled = true; //there are now balls to replace
                     UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
 
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    var rawFrame = rawFrames.GetFrame(selectedIndex);
                     if (rawFrame != null && rawFrame.frame != null)
                     {
                         try
@@ -316,15 +329,8 @@ namespace billiard_laser
 
         private void ResetFrameQueuesState(bool clearRawFrames = true)
         {
-            if (clearRawFrames)
-            {
-                VideoProcessor.DequeueVideoFrames(rawFrames);
-                rawFrames.Clear();
-            }
-
-            VideoProcessor.DequeueVideoFrames(processedFrames);
+            if (clearRawFrames) rawFrames.Clear();
             processedFrames.Clear();
-            processedFrameIndices.Clear();
             btnShowReplaceBallsForm.Enabled = false;
         }
 
@@ -373,8 +379,7 @@ namespace billiard_laser
                 }
                 else processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
 
-                AddProcessedFrame(processedFrame);
-
+                processedFrames.Enqueue(processedFrame);
                 listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scrolls and updates pic box and debug forms
 
                 Application.DoEvents(); //todo better way?
@@ -392,34 +397,6 @@ namespace billiard_laser
                 results?.Dispose();
                 stopwatch.Stop();
                 debugStopwatch.Stop();
-            }
-        }
-
-        /// <summary>
-        /// Handles adding new processed frame and the listbox for it
-        /// </summary>
-        /// <param name="newFrame"></param>
-        private void AddProcessedFrame(VideoFrame newFrame)
-        {
-            if (newFrame == null) return;
-
-            try
-            {
-                // Remove oldest frame if at capacity
-                if (processedFrames.Count >= maxFrames)
-                {
-                    var oldFrame = processedFrames.Dequeue();
-                    oldFrame?.Dispose();
-                    processedFrameIndices.RemoveAt(0);
-                }
-
-                // Add new frame
-                processedFrames.Enqueue(newFrame);
-                processedFrameIndices.Add(newFrame.index);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error managing frame queue: {ex.Message}");
             }
         }
 
@@ -627,23 +604,11 @@ namespace billiard_laser
             CurrentPlaybackState = PlaybackState.Ready;
             cameraController.StopCameraCapture();
 
-            processedFrameIndices.Clear();
-
             videoCancellationTokenSource?.Cancel();
             videoCancellationTokenSource?.Dispose();
 
-            // Dispose of all frames in the queues
-            while (rawFrames.Count > 0)
-            {
-                var frame = rawFrames.Dequeue();
-                frame.frame.Dispose();
-            }
-
-            while (processedFrames.Count > 0)
-            {
-                var frame = processedFrames.Dequeue();
-                frame.frame.Dispose();
-            }
+            rawFrames.Dispose();
+            processedFrames.Dispose();
 
             if (pictureBoxImage.Image != null)
             {
@@ -664,7 +629,7 @@ namespace billiard_laser
                 //init debug form with current (raw) selected rawFrame
                 if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
                 {
-                    var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                    var rawFrame = rawFrames.GetFrame(selectedIndex);
                     if (rawFrame != null) ballDetectionDebugForm.GetAndShowDebugImages(rawFrame.frame);
                     else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
                 }
@@ -707,7 +672,7 @@ namespace billiard_laser
         {
             if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
             {
-                var rawFrame = rawFrames.FirstOrDefault(f => f.index == selectedIndex);
+                var rawFrame = rawFrames.GetFrame(selectedIndex);
 
                 if (rawFrame != null)
                 {
