@@ -41,14 +41,14 @@ public class FrameQueueManager<T> where T : IDisposable
 
             frames.Enqueue(frame);
 
-            // Add index if frame has one
+            // Add Index if frame has one
             if (frame is VideoFrame videoFrame)
-                frameIndices.Add(videoFrame.index);
+                frameIndices.Add(videoFrame.Index);
         }
     }
 
     /// <summary>
-    /// Attempts to get a frame at a specific index without removing it
+    /// Attempts to get a frame at a specific Index without removing it
     /// </summary>
     public T GetFrame(int index)
     {
@@ -56,7 +56,7 @@ public class FrameQueueManager<T> where T : IDisposable
         {
             return frames.FirstOrDefault(f =>
                 f is VideoFrame videoFrame &&
-                videoFrame.index == index);
+                videoFrame.Index == index);
         }
     }
 

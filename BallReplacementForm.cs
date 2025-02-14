@@ -68,14 +68,14 @@ namespace billiard_laser
         /// </summary>
         /// <param name="image"></param>
 
-        public void UpdateTableOverlay(Bitmap cameraImage)
+        public void UpdateTableOverlay(VideoFrame cameraFrame)
         {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => UpdateTableOverlay(cameraImage)));
+                Invoke(new Action(() => UpdateTableOverlay(cameraFrame)));
                 return;
             }
-            if (cameraImage == null || TargetTableLayout == null)
+            if (cameraFrame == null || TargetTableLayout == null)
                 return;
             try
             {
@@ -84,10 +84,10 @@ namespace billiard_laser
                 LaserDetectionResults? laserResults = null;
                 if (arduinoController.IsLaserOn)
                 {
-                    laserResults = laserDetector.ProcessLaserDetection(cameraImage);
+                    laserResults = laserDetector.ProcessLaserDetection(cameraFrame.frame);
                     laserDetectionDebugForm?.ShowDebugImages(laserResults);
                 }
-                else laserDetectionDebugForm?.GetAndShowDebugImages(cameraImage); //allow laser detection/debugging anyway if form is open and our laser isnt on for testing purposes
+                else laserDetectionDebugForm?.GetAndShowDebugImages(cameraFrame.frame); //allow laser detection/debugging anyway if form is open and our laser isnt on for testing purposes
 
                 using (Bitmap overlaidImage = new Bitmap(TargetTableLayout.Width, TargetTableLayout.Height))
                 {
@@ -125,9 +125,9 @@ namespace billiard_laser
                         else
                         {
                             // else draw incoming image with lower opacity
-                            graphics.DrawImage(cameraImage,
+                            graphics.DrawImage(cameraFrame.frame,
                                 new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                                0, 0, cameraImage.Width, cameraImage.Height,
+                                0, 0, cameraFrame.frame.Width, cameraFrame.frame.Height,
                                 GraphicsUnit.Pixel,
                                 imageAttributes);
                         }

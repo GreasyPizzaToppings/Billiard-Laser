@@ -4,14 +4,35 @@ using Emgu.CV.Util;
 using System;
 using System.Drawing;
 using System.Linq;
+using Accord.IO;
 
 public class Ball : IDisposable
 {
     private VectorOfPoint _contour;
     private readonly object _lock = new();
     private bool _disposed = false; // To detect redundant calls
+    private Point? _center = null;
+    private double? _area = null;
+    
+    public double Area
+    {
+        get
+        {
+            lock (_lock)
+            {
+                if (!_area.HasValue)
+                {
+                    if (_contour == null || _disposed || _contour.Size <= 1) return 0;
+                    _area = CvInvoke.ContourArea(_contour);
+                }
+                return _area.Value;
+            }
+        }
+    }
 
+    public double Confidence { get; set; }
     public VectorOfPoint Contour
+    
     {
         get
         {
@@ -22,23 +43,39 @@ public class Ball : IDisposable
         }
     }
 
-    public Ball(VectorOfPoint contour)
-    {
-        _contour = new VectorOfPoint(contour.ToArray());
-    }
-
     public Point Centre
     {
         get
         {
             lock (_lock)
             {
-                if (_contour == null || _contour.Size == 0) return new Point(0, 0);
-
-                var points = _contour.ToArray();
-                int centrex = (int)points.Average(point => point.X);
-                int centrey = (int)points.Average(point => point.Y);
-                return new Point(centrex, centrey);
+                if (!_center.HasValue)
+                {
+                    if (_contour == null || _contour.Size == 0)
+                    {
+                        return Point.Empty;
+                    }
+                    
+                    if (_contour.Size == 1)
+                    {
+                        // If only one point, that point is the center
+                        var points = _contour.ToArray();
+                        _center = points[0];
+                    }
+                    else
+                    {
+                        var moments = CvInvoke.Moments(_contour);
+                        if (Math.Abs(moments.M00) < double.Epsilon)
+                        {
+                            return Point.Empty;
+                        }
+                        _center = new Point(
+                            (int)(moments.M10 / moments.M00),
+                            (int)(moments.M01 / moments.M00)
+                        );
+                    }
+                }
+                return _center.Value;
             }
         }
     }
@@ -49,14 +86,13 @@ public class Ball : IDisposable
         {
             lock (_lock)
             {
-                if (_contour == null || _contour.Size == 0) return 0;
+                if (_contour == null || _contour.Size <= 1) return 0;
 
                 var points = _contour.ToArray();
                 double radius = 0;
-                Point center = Centre;
                 foreach (var point in points)
                 {
-                    double distance = Math.Sqrt(Math.Pow(point.X - center.X, 2) + Math.Pow(point.Y - center.Y, 2));
+                    double distance = Math.Sqrt(Math.Pow(point.X - Centre.X, 2) + Math.Pow(point.Y - Centre.Y, 2));
                     if (distance > radius)
                     {
                         radius = distance;
@@ -65,6 +101,23 @@ public class Ball : IDisposable
                 return radius;
             }
         }
+    }
+
+    /// <summary>
+    /// Create a ball object
+    /// </summary>
+    /// <param name="contour"></param>
+    /// <exception cref="ArgumentNullException">Cannot create ball with no contour</exception>
+    public Ball(VectorOfPoint contour)
+    {
+        if (contour == null || contour.Size == 0)
+        {
+            throw new ArgumentNullException(nameof(contour));
+        }
+
+        //deep copy to avoid contour disposal
+        _contour = new VectorOfPoint();
+        _contour.Push(contour);
     }
 
     public Bitmap Draw(Bitmap baseImage)

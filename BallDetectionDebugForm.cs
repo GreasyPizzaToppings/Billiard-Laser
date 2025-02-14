@@ -7,7 +7,7 @@ namespace billiard_laser
         private bool initialisingControls = true;
         private BallDetector ballDetector;
         private bool disposed = false;
-        private Bitmap originalImage;
+        private VideoFrame originalFrame; //store the current base table frame to allow for ball detector settings to change and get new results
 
         public event EventHandler DebugFormClosed;
 
@@ -42,10 +42,14 @@ namespace billiard_laser
         /// Shows the debug images from ball detection results in the UI
         /// </summary>
         /// <param name="images">The ball detection results containing debug images</param>
-        private void DisplayDebugImages(BallDetectionResults images)
+        public void DisplayDebugImages(BallDetectionResults images)
         {
             if (images == null) return;
-            SetImage(originalImagePicBox, images.OriginalImage);
+
+            if (originalFrame != null) originalFrame.Dispose();
+            originalFrame = images.OriginalFrame.Clone();
+
+            SetImage(originalImagePicBox, images.OriginalFrame.frame);
             SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
             SetImage(allContoursPicBox, images.AllBallsHighlighted);
             SetImage(invMaskPicBox, images.TableMask);
@@ -58,25 +62,12 @@ namespace billiard_laser
         }
 
         /// <summary>
-        /// Shows precalculated debug images
-        /// </summary>
-        /// <param name="images">The precalculated ball detection results</param>
-        public void ShowDebugImages(BallDetectionResults images)
-        {
-            DisplayDebugImages(images);
-        }
-
-        /// <summary>
         /// Processes a raw image through ball detection and shows the debug images
         /// </summary>
         /// <param name="rawImage">The raw image to process</param>
-        public void GetAndShowDebugImages(Bitmap rawImage)
+        public void GetAndShowDebugImages(VideoFrame frame)
         {
-            if (originalImage != null) originalImage.Dispose();
-            originalImage = new Bitmap(rawImage);
-
-            BallDetectionResults images = ballDetector.ProcessBallDetection(rawImage);
-            DisplayDebugImages(images);
+            DisplayDebugImages(ballDetector.ProcessBallDetection(frame));
         }
 
         private static void SetImage(PictureBox pictureBox, Image newImage)
@@ -111,7 +102,7 @@ namespace billiard_laser
             LogObjectDetectorSettings();
 
             //update images upon setting changes
-            if (originalImage != null) ShowDebugImages(ballDetector.ProcessBallDetection(originalImage));
+            if (originalFrame != null) GetAndShowDebugImages(originalFrame);
         }
 
         private void LogObjectDetectorSettings()
@@ -247,7 +238,7 @@ namespace billiard_laser
             cueBallMaskPicBox.Image?.Dispose();
             cueBallFoundPicBox.Image?.Dispose();
             transformedImagePicBox.Image?.Dispose();
-            originalImage?.Dispose();
+            originalFrame?.Dispose();
 
             ballDetector = null;
 

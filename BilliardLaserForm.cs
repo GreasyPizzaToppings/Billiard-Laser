@@ -3,6 +3,7 @@ using System.ComponentModel;
 using System.Threading;
 using System.Windows.Controls;
 using System.Xml.Linq;
+using Accord.IO;
 
 namespace billiard_laser
 {
@@ -184,7 +185,7 @@ namespace billiard_laser
             {
                 if (CurrentPlaybackState == PlaybackState.Paused || currentInputType != InputType.Camera)
                 {
-                    ballReplacementForm?.UpdateTableOverlay(frame.frame); //send to replacement form even if main form is not processing ball detection
+                    ballReplacementForm?.UpdateTableOverlay(frame); //send to replacement form even if main form is not processing ball detection
                     frame.Dispose();
                     return;
                 }
@@ -307,12 +308,9 @@ namespace billiard_laser
                     {
                         try
                         {
-                            using (var tempBitmap = new Bitmap(rawFrame.frame))
-                            {
-                                debugStopwatch.Restart();
-                                UpdateDebugForms(tempBitmap);
-                                debugStopwatch.Stop();
-                            }
+                            debugStopwatch.Restart();
+                            UpdateDebugForms(rawFrame);
+                            debugStopwatch.Stop();   
                         }
                         catch (ArgumentException)
                         {
@@ -359,25 +357,25 @@ namespace billiard_laser
 
             try
             {
-                using var workingFrame = new VideoFrame(new Bitmap(rawFrame.frame), rawFrame.index);
+                using var workingFrame = rawFrame.Clone();
 
                 if (DetectingBalls)
                 {
                     try
                     {
-                        results = ballDetector.ProcessBallDetection(workingFrame.frame);
-                        processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.index);
+                        results = ballDetector.ProcessBallDetection(workingFrame);
+                        processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.Index, workingFrame.FrameRate);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
 
-                        ballDetectionDebugForm?.ShowDebugImages(results); //use precalced images to avoid recalculating the same images for debug when playing
+                        ballDetectionDebugForm?.DisplayDebugImages(results); //use precalced images to avoid recalculating the same images for debug when playing
                     }
                     catch (Exception ex)
                     {
                         Console.WriteLine($"Error during ball detection: {ex.Message}");
-                        processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
+                        processedFrame = workingFrame.Clone();
                     }
                 }
-                else processedFrame = new VideoFrame(new Bitmap(workingFrame.frame), workingFrame.index);
+                else processedFrame = workingFrame.Clone();
 
                 processedFrames.Enqueue(processedFrame);
                 listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; //scrolls and updates pic box and debug forms
@@ -411,7 +409,9 @@ namespace billiard_laser
             oldImage?.Dispose();
         }
 
-        //display average fps @ resolution
+        /// <summary>
+        /// display average fps @ resolution. reads currently running stopwatches
+        /// </summary>
         private void UpdateFpsLabel()
         {
             if (InvokeRequired)
@@ -630,7 +630,7 @@ namespace billiard_laser
                 if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
                 {
                     var rawFrame = rawFrames.GetFrame(selectedIndex);
-                    if (rawFrame != null) ballDetectionDebugForm.GetAndShowDebugImages(rawFrame.frame);
+                    if (rawFrame != null) ballDetectionDebugForm.GetAndShowDebugImages(rawFrame);
                     else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
                 }
             }
@@ -648,13 +648,13 @@ namespace billiard_laser
         }
 
         //if open, send our raw frame to the ball replacement and image processing debug forms
-        private void UpdateDebugForms(Bitmap rawImage) {
+        private void UpdateDebugForms(VideoFrame originalFrame) {
             if (CurrentPlaybackState != PlaybackState.Playing)
             {
-                ballDetectionDebugForm?.GetAndShowDebugImages(rawImage);
+                ballDetectionDebugForm?.GetAndShowDebugImages(originalFrame);
             }
             
-            ballReplacementForm?.UpdateTableOverlay(rawImage);
+            ballReplacementForm?.UpdateTableOverlay(originalFrame);
         }
 
         #region Ball Replacement Form

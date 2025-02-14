@@ -25,7 +25,7 @@
 
     public void ProcessFrame(Ball cueBall, VideoFrame frame)
     {
-        //Console.WriteLine($"\nShot Detector: Frame {frame.index}\n" +
+        //Console.WriteLine($"\nShot Detector: Frame {frame.Index}\n" +
             //$"Cueball contour length: {cueBall.Contour.ToArray().Length}\n");
 
         //invalid cue ball

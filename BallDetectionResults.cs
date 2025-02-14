@@ -10,7 +10,7 @@ public class BallDetectionResults : IDisposable
     private bool disposed = false;
 
     //images generated
-    public Bitmap? OriginalImage { get; set; }
+    public VideoFrame? OriginalFrame { get; set; }
     public Bitmap? TransformedImage { get; set; }
     public Bitmap? CueBallMask { get; set; }
     public Bitmap? CueBallHighlighted { get; set; }
@@ -37,7 +37,7 @@ public class BallDetectionResults : IDisposable
             if (disposing)
             {
                 // Dispose managed resources
-                OriginalImage?.Dispose();
+                OriginalFrame?.Dispose();
                 TransformedImage?.Dispose();
                 CueBallMask?.Dispose();
                 CueBallHighlighted?.Dispose();
@@ -57,7 +57,7 @@ public class BallDetectionResults : IDisposable
                 }
 
                 // Set large objects to null to help the GC
-                OriginalImage = null;
+                OriginalFrame = null;
                 TransformedImage = null;
                 CueBallMask = null;
                 CueBallHighlighted = null;
