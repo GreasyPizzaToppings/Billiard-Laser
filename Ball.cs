@@ -107,7 +107,7 @@ public class Ball : IDisposable
     /// Create a ball object
     /// </summary>
     /// <param name="contour"></param>
-    /// <exception cref="ArgumentNullException">Cannot create ball with no contour</exception>
+    /// <exception cref="ArgumentNullException">contour is null or has no points</exception>
     public Ball(VectorOfPoint contour)
     {
         if (contour == null || contour.Size == 0)
@@ -119,6 +119,8 @@ public class Ball : IDisposable
         _contour = new VectorOfPoint();
         _contour.Push(contour);
     }
+
+    public Ball() { }
 
     public Bitmap Draw(Bitmap baseImage)
     {
@@ -145,6 +147,15 @@ public class Ball : IDisposable
                 }
             }
         }
+    }
+
+    public override string ToString()
+    {
+        return $"Ball:\n" +
+            $"Centre Position: ({this.Centre.X}, {this.Centre.Y})\n" +
+            $"Radius: {this.Radius:F2}\n" +
+            $"Area: {this.Area:F2}\n" +
+            $"Confidence: {this.Confidence:F2}\n";
     }
 
     // Protected implementation of Dispose pattern.

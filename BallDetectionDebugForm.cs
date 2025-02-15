@@ -5,13 +5,13 @@ namespace billiard_laser
     public partial class BallDetectionDebugForm : Form, IDisposable
     {
         private bool initialisingControls = true;
-        private BallDetector ballDetector;
+        private CueBallDetector ballDetector;
         private bool disposed = false;
         private VideoFrame originalFrame; //store the current base table frame to allow for ball detector settings to change and get new results
 
         public event EventHandler DebugFormClosed;
 
-        public BallDetectionDebugForm(BallDetector ballDetector)
+        public BallDetectionDebugForm(CueBallDetector ballDetector)
         {
             this.ballDetector = ballDetector;
             this.FormClosed += ImageProcessingDebugForm_FormClosed;
@@ -23,42 +23,27 @@ namespace billiard_laser
             initialisingControls = false;
         }
 
-        private void LogBallInfo(List<Ball> balls, Ball cueBall)
-        {
-            if (balls == null) return;
-
-            // Log detected balls info
-            Console.WriteLine($"Number of balls detected: {balls.Count}");
-            Console.WriteLine($"Cue ball detected: {(cueBall != null ? "Yes" : "No")}");
-
-            if (cueBall != null)
-            {
-                Console.WriteLine($"Cue ball position: {cueBall.Centre}");
-                Console.WriteLine($"Cue ball radius: {cueBall.Radius}");
-            }
-        }
-
         /// <summary>
         /// Shows the debug images from ball detection results in the UI
         /// </summary>
         /// <param name="images">The ball detection results containing debug images</param>
-        public void DisplayDebugImages(BallDetectionResults images)
+        public void DisplayDebugImages(CueBallDetectionResults images)
         {
             if (images == null) return;
 
             if (originalFrame != null) originalFrame.Dispose();
             originalFrame = images.OriginalFrame.Clone();
 
-            SetImage(originalImagePicBox, images.OriginalFrame.frame);
-            SetImage(filteredContoursPicBox, images.FilteredBallsHighlighted);
-            SetImage(allContoursPicBox, images.AllBallsHighlighted);
-            SetImage(invMaskPicBox, images.TableMask);
-            SetImage(appliedMaskPicBox, images.TableWithMaskApplied);
+            SetImage(workingImagePicBox, images.WorkingImage);
+            SetImage(tableMaskAppliedPicBox, images.TableMaskApplied);
             SetImage(cueBallMaskPicBox, images.CueBallMask);
+            SetImage(cueBallMaskAppliedPicBox, images.CueBallMaskApplied);
+            SetImage(allContoursPicBox, images.AllContoursHighlighted);
+            SetImage(cueBallCandidatesPicBox, images.CueBallCandidatesHighlighted);
+            SetImage(scoredCandidatesPicBox, images.ScoredCandidatesHighlighted);
             SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
-            SetImage(transformedImagePicBox, images.TransformedImage);
 
-            LogBallInfo(images.Balls, images.CueBall);
+            //LogInfo(images);
         }
 
         /// <summary>
@@ -67,7 +52,13 @@ namespace billiard_laser
         /// <param name="rawImage">The raw image to process</param>
         public void GetAndShowDebugImages(VideoFrame frame)
         {
-            DisplayDebugImages(ballDetector.ProcessBallDetection(frame));
+            DisplayDebugImages(ballDetector.GetCueBallResults(frame));
+        }
+
+        private void LogInfo(CueBallDetectionResults images) {
+            Console.WriteLine($"Frame: {images.OriginalFrame.Index}\n");
+            if (images.CueBall != null) Console.WriteLine(images.CueBall.ToString());
+            else Console.WriteLine($"Cueball not found");
         }
 
         private static void SetImage(PictureBox pictureBox, Image newImage)
@@ -230,16 +221,16 @@ namespace billiard_laser
 
         private void ImageProcessingDebugForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            originalImagePicBox.Image?.Dispose();
-            filteredContoursPicBox.Image?.Dispose();
-            allContoursPicBox.Image?.Dispose();
-            invMaskPicBox.Image?.Dispose();
-            appliedMaskPicBox.Image?.Dispose();
+            workingImagePicBox.Image?.Dispose();
+            tableMaskAppliedPicBox.Image?.Dispose();
             cueBallMaskPicBox.Image?.Dispose();
+            cueBallMaskAppliedPicBox.Image?.Dispose();
+            allContoursPicBox.Image?.Dispose();
+            cueBallCandidatesPicBox.Image?.Dispose();
+            scoredCandidatesPicBox.Image?.Dispose();
             cueBallFoundPicBox.Image?.Dispose();
-            transformedImagePicBox.Image?.Dispose();
+            
             originalFrame?.Dispose();
-
             ballDetector = null;
 
             DebugFormClosed?.Invoke(this, EventArgs.Empty);

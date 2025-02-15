@@ -16,7 +16,7 @@ namespace billiard_laser
         //utility classes
         private CameraController cameraController;
         private ShotDetector shotDetector;
-        private BallDetector ballDetector;
+        private CueBallDetector ballDetector;
 
         //selection of output resolutions
         private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(355, 200);
@@ -104,7 +104,7 @@ namespace billiard_laser
 
             cameraController = new CameraController(cboCamera, outputVideoResolution);
             shotDetector = new ShotDetector();
-            ballDetector = new BallDetector();
+            ballDetector = new CueBallDetector();
 
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
             cameraController.ReceivedFrame += CameraController_ReceivedFrame;
@@ -317,10 +317,7 @@ namespace billiard_laser
                             Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
                         }
                     }
-                    else
-                    {
-                        Console.WriteLine("Raw frame was null. Not sending to debug form!");
-                    }
+                    else Console.WriteLine("Raw frame was null. Not sending to debug form!");
                 }
             }
         }
@@ -353,7 +350,7 @@ namespace billiard_laser
             stopwatch.Restart();
 
             VideoFrame processedFrame = null;
-            BallDetectionResults results = null;
+            CueBallDetectionResults results = null;
 
             try
             {
@@ -363,7 +360,7 @@ namespace billiard_laser
                 {
                     try
                     {
-                        results = ballDetector.ProcessBallDetection(workingFrame);
+                        results = ballDetector.GetCueBallResults(workingFrame);
                         processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.Index, workingFrame.FrameRate);
                         shotDetector.ProcessFrame(results.CueBall, processedFrame);
 
@@ -649,11 +646,7 @@ namespace billiard_laser
 
         //if open, send our raw frame to the ball replacement and image processing debug forms
         private void UpdateDebugForms(VideoFrame originalFrame) {
-            if (CurrentPlaybackState != PlaybackState.Playing)
-            {
-                ballDetectionDebugForm?.GetAndShowDebugImages(originalFrame);
-            }
-            
+            if (CurrentPlaybackState != PlaybackState.Playing) ballDetectionDebugForm?.GetAndShowDebugImages(originalFrame);
             ballReplacementForm?.UpdateTableOverlay(originalFrame);
         }
 
