@@ -17,7 +17,7 @@ public class Laser
 
     public override string ToString()
     {
-        return $"Laser Info:\n" + 
+        return $"Laser:\n" + 
                 $"Position: ({this.Location.X}, {this.Location.Y})\n" +
                 $"Intensity: {this.Intensity:F2}\n" +
                 $"Area: {this.Area:F2}\n" +

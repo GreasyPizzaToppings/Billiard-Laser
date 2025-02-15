@@ -30,11 +30,11 @@ namespace billiard_laser
         private void InitializeComponent()
         {
             scoredCandidatesPicBox = new PictureBox();
-            allContoursPicBox = new PictureBox();
+            allCandidatesPicBox = new PictureBox();
             labelWorkingImage = new Label();
             labelScoredCandidates = new Label();
-            labelFilteredLaserCandidates = new Label();
-            labelAllContours = new Label();
+            labelFilteredCandidates = new Label();
+            labelAllCandidates = new Label();
             tableLayoutPanelMain = new TableLayoutPanel();
             tableLayoutPanelCueballMask = new TableLayoutPanel();
             labelLaserMaskArea = new Label();
@@ -67,10 +67,10 @@ namespace billiard_laser
             label2 = new Label();
             workingImagePicBox = new PictureBox();
             laserMaskPicBox = new PictureBox();
-            label3 = new Label();
+            labelLaserFound = new Label();
             laserFoundPicBox = new PictureBox();
             ((System.ComponentModel.ISupportInitialize)scoredCandidatesPicBox).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)allContoursPicBox).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)allCandidatesPicBox).BeginInit();
             tableLayoutPanelMain.SuspendLayout();
             tableLayoutPanelCueballMask.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)trackBarLaserMaskBlueMax).BeginInit();
@@ -99,16 +99,16 @@ namespace billiard_laser
             scoredCandidatesPicBox.TabIndex = 1;
             scoredCandidatesPicBox.TabStop = false;
             // 
-            // allContoursPicBox
+            // allCandidatesPicBox
             // 
-            allContoursPicBox.Dock = DockStyle.Fill;
-            allContoursPicBox.Location = new Point(830, 30);
-            allContoursPicBox.Margin = new Padding(0);
-            allContoursPicBox.Name = "allContoursPicBox";
-            allContoursPicBox.Size = new Size(417, 226);
-            allContoursPicBox.SizeMode = PictureBoxSizeMode.Zoom;
-            allContoursPicBox.TabIndex = 4;
-            allContoursPicBox.TabStop = false;
+            allCandidatesPicBox.Dock = DockStyle.Fill;
+            allCandidatesPicBox.Location = new Point(830, 30);
+            allCandidatesPicBox.Margin = new Padding(0);
+            allCandidatesPicBox.Name = "allCandidatesPicBox";
+            allCandidatesPicBox.Size = new Size(417, 226);
+            allCandidatesPicBox.SizeMode = PictureBoxSizeMode.Zoom;
+            allCandidatesPicBox.TabIndex = 4;
+            allCandidatesPicBox.TabStop = false;
             // 
             // labelWorkingImage
             // 
@@ -132,27 +132,27 @@ namespace billiard_laser
             labelScoredCandidates.TabIndex = 8;
             labelScoredCandidates.Text = "Scored Laser Candidates";
             // 
-            // labelFilteredLaserCandidates
+            // labelFilteredCandidates
             // 
-            labelFilteredLaserCandidates.Anchor = AnchorStyles.None;
-            labelFilteredLaserCandidates.AutoSize = true;
-            labelFilteredLaserCandidates.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelFilteredLaserCandidates.Location = new Point(120, 261);
-            labelFilteredLaserCandidates.Name = "labelFilteredLaserCandidates";
-            labelFilteredLaserCandidates.Size = new Size(175, 20);
-            labelFilteredLaserCandidates.TabIndex = 10;
-            labelFilteredLaserCandidates.Text = "Filtered Laser Candidates";
+            labelFilteredCandidates.Anchor = AnchorStyles.None;
+            labelFilteredCandidates.AutoSize = true;
+            labelFilteredCandidates.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelFilteredCandidates.Location = new Point(120, 261);
+            labelFilteredCandidates.Name = "labelFilteredCandidates";
+            labelFilteredCandidates.Size = new Size(175, 20);
+            labelFilteredCandidates.TabIndex = 10;
+            labelFilteredCandidates.Text = "Filtered Laser Candidates";
             // 
-            // labelAllContours
+            // labelAllCandidates
             // 
-            labelAllContours.Anchor = AnchorStyles.None;
-            labelAllContours.AutoSize = true;
-            labelAllContours.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            labelAllContours.Location = new Point(993, 5);
-            labelAllContours.Name = "labelAllContours";
-            labelAllContours.Size = new Size(90, 20);
-            labelAllContours.TabIndex = 11;
-            labelAllContours.Text = "All Contours";
+            labelAllCandidates.Anchor = AnchorStyles.None;
+            labelAllCandidates.AutoSize = true;
+            labelAllCandidates.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelAllCandidates.Location = new Point(967, 5);
+            labelAllCandidates.Name = "labelAllCandidates";
+            labelAllCandidates.Size = new Size(143, 20);
+            labelAllCandidates.TabIndex = 11;
+            labelAllCandidates.Text = "All Laser Candidates";
             // 
             // tableLayoutPanelMain
             // 
@@ -518,16 +518,16 @@ namespace billiard_laser
             tableLayoutPanelDebugImages.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 33.3333321F));
             tableLayoutPanelDebugImages.ColumnStyles.Add(new ColumnStyle(SizeType.Absolute, 20F));
             tableLayoutPanelDebugImages.Controls.Add(filteredCandidatesPicBox, 0, 3);
-            tableLayoutPanelDebugImages.Controls.Add(labelFilteredLaserCandidates, 0, 2);
+            tableLayoutPanelDebugImages.Controls.Add(labelFilteredCandidates, 0, 2);
             tableLayoutPanelDebugImages.Controls.Add(labelWorkingImage, 0, 0);
             tableLayoutPanelDebugImages.Controls.Add(label2, 1, 0);
             tableLayoutPanelDebugImages.Controls.Add(workingImagePicBox, 0, 1);
             tableLayoutPanelDebugImages.Controls.Add(laserMaskPicBox, 1, 1);
-            tableLayoutPanelDebugImages.Controls.Add(labelAllContours, 2, 0);
-            tableLayoutPanelDebugImages.Controls.Add(allContoursPicBox, 2, 1);
+            tableLayoutPanelDebugImages.Controls.Add(labelAllCandidates, 2, 0);
+            tableLayoutPanelDebugImages.Controls.Add(allCandidatesPicBox, 2, 1);
             tableLayoutPanelDebugImages.Controls.Add(labelScoredCandidates, 1, 2);
             tableLayoutPanelDebugImages.Controls.Add(scoredCandidatesPicBox, 1, 3);
-            tableLayoutPanelDebugImages.Controls.Add(label3, 2, 2);
+            tableLayoutPanelDebugImages.Controls.Add(labelLaserFound, 2, 2);
             tableLayoutPanelDebugImages.Controls.Add(laserFoundPicBox, 2, 3);
             tableLayoutPanelDebugImages.Dock = DockStyle.Fill;
             tableLayoutPanelDebugImages.Location = new Point(0, 0);
@@ -584,16 +584,16 @@ namespace billiard_laser
             laserMaskPicBox.TabIndex = 37;
             laserMaskPicBox.TabStop = false;
             // 
-            // label3
+            // labelLaserFound
             // 
-            label3.Anchor = AnchorStyles.None;
-            label3.AutoSize = true;
-            label3.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
-            label3.Location = new Point(994, 261);
-            label3.Name = "label3";
-            label3.Size = new Size(88, 20);
-            label3.TabIndex = 34;
-            label3.Text = "Laser Found";
+            labelLaserFound.Anchor = AnchorStyles.None;
+            labelLaserFound.AutoSize = true;
+            labelLaserFound.Font = new Font("Segoe UI", 11F, FontStyle.Regular, GraphicsUnit.Point);
+            labelLaserFound.Location = new Point(994, 261);
+            labelLaserFound.Name = "labelLaserFound";
+            labelLaserFound.Size = new Size(88, 20);
+            labelLaserFound.TabIndex = 34;
+            labelLaserFound.Text = "Laser Found";
             // 
             // laserFoundPicBox
             // 
@@ -618,7 +618,7 @@ namespace billiard_laser
             Text = "Laser Detection Image Debugging";
             FormClosed += ImageProcessingDebugForm_FormClosed;
             ((System.ComponentModel.ISupportInitialize)scoredCandidatesPicBox).EndInit();
-            ((System.ComponentModel.ISupportInitialize)allContoursPicBox).EndInit();
+            ((System.ComponentModel.ISupportInitialize)allCandidatesPicBox).EndInit();
             tableLayoutPanelMain.ResumeLayout(false);
             tableLayoutPanelCueballMask.ResumeLayout(false);
             tableLayoutPanelCueballMask.PerformLayout();
@@ -643,13 +643,13 @@ namespace billiard_laser
 
         #endregion
         private PictureBox scoredCandidatesPicBox;
-        private PictureBox allContoursPicBox;
+        private PictureBox allCandidatesPicBox;
         private Label labelOriginalImage;
         private Label labelWorkingImage;
         private Label labelScoredCandidates;
         private Label labelMaskApplied;
-        private Label labelFilteredLaserCandidates;
-        private Label labelAllContours;
+        private Label labelFilteredCandidates;
+        private Label labelAllCandidates;
         private TableLayoutPanel tableLayoutPanelMain;
         private CheckBox checkBoxEnableTableBoundary;
         private CheckBox checkBoxEnableSharpen;
@@ -678,7 +678,7 @@ namespace billiard_laser
         private Label label14;
         private TableLayoutPanel tableLayoutPanelDebugImages;
         private Label label2;
-        private Label label3;
+        private Label labelLaserFound;
         private PictureBox laserFoundPicBox;
         private PictureBox laserMaskPicBox;
         private PictureBox filteredCandidatesPicBox;

@@ -39,7 +39,7 @@ namespace billiard_laser
             if (images == null) return;
 
             SetImage(filteredCandidatesPicBox, images.FilteredCandidatesHighlighted);
-            SetImage(allContoursPicBox, images.AllCandidatesHighlighted);
+            SetImage(allCandidatesPicBox, images.AllCandidatesHighlighted);
             SetImage(scoredCandidatesPicBox, images.ScoredCandidatesHighlighted);
             SetImage(laserMaskPicBox, images.LaserMask);
             SetImage(laserFoundPicBox, images.LaserHighlighted);
@@ -179,7 +179,7 @@ namespace billiard_laser
         private void ImageProcessingDebugForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             filteredCandidatesPicBox.Image?.Dispose();
-            allContoursPicBox.Image?.Dispose();
+            allCandidatesPicBox.Image?.Dispose();
             scoredCandidatesPicBox.Image?.Dispose();
             laserMaskPicBox.Image?.Dispose();
             laserFoundPicBox.Image?.Dispose();

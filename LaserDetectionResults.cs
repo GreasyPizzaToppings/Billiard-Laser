@@ -1,6 +1,4 @@
-﻿using System;
-
-/// <summary>
+﻿/// <summary>
 /// Stores the results of the image processing for laser detection
 /// </summary>
 public class LaserDetectionResults : IDisposable
@@ -34,15 +32,23 @@ public class LaserDetectionResults : IDisposable
             if (disposing)
             {
                 // Dispose managed resources
+                OriginalImage?.Dispose();
                 WorkingImage?.Dispose();
                 LaserMask?.Dispose();
+                LaserMaskApplied?.Dispose();
                 AllCandidatesHighlighted?.Dispose();
+                FilteredCandidatesHighlighted?.Dispose();
+                ScoredCandidatesHighlighted?.Dispose();
                 LaserHighlighted?.Dispose();
 
                 // Set large objects to null to help the GC
+                OriginalImage = null;
                 WorkingImage = null;
                 LaserMask = null;
+                LaserMaskApplied = null;
                 AllCandidatesHighlighted = null;
+                FilteredCandidatesHighlighted = null;
+                ScoredCandidatesHighlighted = null;
                 LaserHighlighted = null;
                 Laser = null;
             }
