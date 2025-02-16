@@ -9,7 +9,7 @@ public class Shot : IDisposable
     private List<VideoFrame> _frames = new List<VideoFrame>();
 
     public void AddFrame(VideoFrame frame) => _frames.Add(frame.Clone()); //create copy of frame to avoid disposing the original frame
-    public VideoFrame GetFrameCopy (int index) => new VideoFrame(_frames[index].frame, _frames[index].Index);
+    public VideoFrame GetFrameCopy(int index) => _frames[index].Clone();
     public int FrameCount => _frames.Count;
 
     /// <summary>
@@ -69,7 +69,7 @@ public class Shot : IDisposable
         return $"{startFrame} - {endFrame}";
     }
 
-    private static double CalculateDistance(PointF point1, PointF point2)
+    public static double CalculateDistance(PointF point1, PointF point2)
     {
         double dx = point2.X - point1.X;
         double dy = point2.Y - point1.Y;
@@ -82,5 +82,14 @@ public class Shot : IDisposable
         {
             frame.Dispose();
         }
+    }
+
+    public Shot Clone()
+    {
+        var clone = new Shot();
+        clone.cueBallPath = new List<PointF>(cueBallPath);
+        
+        foreach (var frame in _frames) clone.AddFrame(frame);
+        return clone;
     }
 }
