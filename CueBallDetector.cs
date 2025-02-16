@@ -11,13 +11,12 @@ using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 public class CueBallDetector : TableObjectDetector
 {
     //tracking parameters
-    private Point? lastVelocity = null;
-    private int lastDetectionFrameNumber = -1;
+    private int lastDetectedCbFrameIndex = -1; //frame index of the last detected cueball
+
+    private Queue<Ball> detectedCueBalls = new(); //last N detected cueballs
+    public int CueBallHistoryCount = 5; //use the last N cue ball detections to aid in detecting the next one
+    public double MaxSpeed = 2000;
     private const double MaxAccelerationPerSecond = 20000; // pixels/second^2
-    private Queue<(Ball, int)> lastCueBalls = new(); //last detected cueballs and their rawFrame indexes
-    
-    public int MaxPositionHistory = 3; //use the last N cue ball detections to aid in detecting the next one
-    public double MaxMovementPerSecond = 3000;
     public double AreaWeight = 0.3;
     public double DistanceWeight = 0.4;
     public double VelocityWeight = 0.3;
@@ -25,12 +24,12 @@ public class CueBallDetector : TableObjectDetector
     public static double MaxBallArea = 100;
 
     //Default cloth mask
-    public Rgb LowerClothMask = new Rgb(44, 107, 0); //todo: allow user to set default min/max masks
+    public Rgb LowerClothMask = new Rgb(38, 107, 0); //todo: allow user to set default min/max masks
     public Rgb UpperClothMask = new Rgb(64, 255, 255);
 
     //Default cueball mask
-    public Rgb LowerCueBallMask = new Rgb(0, 0, 160);
-    public Rgb UpperCueBallMask = new Rgb(50, 90, 255);
+    public Rgb LowerCueBallMask = new Rgb(28, 0, 165);
+    public Rgb UpperCueBallMask = new Rgb(80, 175, 255);
 
 
     public CueBallDetector(bool enableBlur = false, bool enableSharpening = false, bool enableTableBoundary = false)
@@ -45,7 +44,7 @@ public class CueBallDetector : TableObjectDetector
     /// <returns></returns>
     public CueBallDetectionResults GetCueBallResults(VideoFrame rawFrame)
     {
-        Bitmap workingImage = new Bitmap(rawFrame.frame);
+        Bitmap workingImage = new(rawFrame.frame);
 
         if (EnableSharpening) workingImage = SharpenImage(workingImage);
         if (EnableBlur) workingImage = BlurImage(workingImage);
@@ -83,110 +82,93 @@ public class CueBallDetector : TableObjectDetector
     /// <returns></returns>
     private CueBallDetectionResults ProcessCueBallDetection(VideoFrame frame, Emgu.CV.Util.VectorOfVectorOfPoint filteredBallContours)
     {
-        //remove everything from image except the balls
-        Mat onlyBallsMask = new Mat(frame.frame.Size, DepthType.Cv8U, 3);
+        using var onlyBallsMask = new Mat(frame.frame.Size, DepthType.Cv8U, 3);
         onlyBallsMask.SetTo(new MCvScalar(0, 0, 0));
-        for (int i = 0; i < filteredBallContours.Size; i++) CvInvoke.DrawContours(onlyBallsMask, filteredBallContours, i, new MCvScalar(255, 255, 255), -1);
-        Bitmap onlyBallsImage = ApplyMask(frame.frame, onlyBallsMask.ToBitmap());
-
-        Bitmap cueballMask = GetMaskImage(onlyBallsImage, LowerCueBallMask, UpperCueBallMask);
-
+        for (int i = 0; i < filteredBallContours.Size; i++) 
+            CvInvoke.DrawContours(onlyBallsMask, filteredBallContours, i, new MCvScalar(255, 255, 255), -1);
+        
+        using var onlyBallsImage = ApplyMask(frame.frame, onlyBallsMask.ToBitmap());
+        using var cueballMask = GetMaskImage(onlyBallsImage, LowerCueBallMask, UpperCueBallMask);
         using var maskInv = new Mat();
         using var tableMat = new Mat();
+        
         CvInvoke.Threshold(BitmapToMat(cueballMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
-        Bitmap cueballMaskApplied = ApplyMask(onlyBallsImage, maskInv.ToBitmap());
-
+        using var cueballMaskApplied = ApplyMask(onlyBallsImage, maskInv.ToBitmap());
         using var allCueBallContoursFound = GetAllContours(cueballMaskApplied);
+        
+        int framesDelta = lastDetectedCbFrameIndex >= 0 ? frame.Index - lastDetectedCbFrameIndex : 1;
+        TimeSpan timeDelta = TimeSpan.FromSeconds(((double)framesDelta / frame.FrameRate));
+
         var candidates = new List<Ball>();
-
-        for (int i = 0; i < allCueBallContoursFound.Size; i++)
+        try
         {
-            var contour = new VectorOfPoint();
-            contour.Push(allCueBallContoursFound[i]);
-            candidates.Add(new Ball(contour));
-        }
-
-        using var frameImage = frame.frame.ToImage<Rgb, byte>();
-        CueBallDetectionResults results = new CueBallDetectionResults
-        {
-            CueBallCandidatesHighlighted = DrawContours(allCueBallContoursFound, frameImage),
-            CueBallMask = cueballMask,
-            CueBallMaskApplied = cueballMaskApplied
-        };
-
-        if (candidates.Any())
-        {
-            int framesDelta = lastDetectionFrameNumber >= 0 ? frame.Index - lastDetectionFrameNumber : 1; //use 1 rawFrame at least to avoid 0 delta time
-            if (framesDelta > MaxPositionHistory) lastCueBalls.Clear(); //reset tracking if we havent found the cueball in a while
-            TimeSpan timeDelta = TimeSpan.FromSeconds(((double)framesDelta / frame.FrameRate));
-
-            ScoreCandidates(candidates, timeDelta);
-
-            var bestCandidate = candidates.OrderByDescending(c => c.Confidence).First();
-
-            if (bestCandidate.Confidence > 0)
+            // Create and initialize candidates with their stats
+            for (int i = 0; i < allCueBallContoursFound.Size; i++)
             {
-                // Calculate and log tracking stats
-                Point? avgPos = GetAveragePosition();
-                if (avgPos.HasValue)
+                using var contour = new VectorOfPoint();
+                contour.Push(allCueBallContoursFound[i]);
+                var candidate = new Ball(contour);
+
+                if (detectedCueBalls.Any())
                 {
-                    // Calculate current velocity
-                    Point currentVelocity = new Point(
-                        (int)((bestCandidate.Centre.X - avgPos.Value.X) / timeDelta.TotalSeconds),
-                        (int)((bestCandidate.Centre.Y - avgPos.Value.Y) / timeDelta.TotalSeconds)
+                    var lastBall = detectedCueBalls.Last();
+
+                    candidate.Velocity = new Point(
+                        (int)((candidate.Centre.X - lastBall.Centre.X) / timeDelta.TotalSeconds),
+                        (int)((candidate.Centre.Y - lastBall.Centre.Y) / timeDelta.TotalSeconds)
                     );
 
-                    // Calculate distance moved
-                    double distanceMoved = Math.Sqrt(
-                        Math.Pow(bestCandidate.Centre.X - avgPos.Value.X, 2) +
-                        Math.Pow(bestCandidate.Centre.Y - avgPos.Value.Y, 2)
+                    candidate.Speed = Math.Sqrt(
+                        Math.Pow(candidate.Velocity.X, 2) +
+                        Math.Pow(candidate.Velocity.Y, 2)
                     );
 
-                    // Calculate velocity magnitude
-                    double currentSpeed = Math.Sqrt(
-                        Math.Pow(currentVelocity.X, 2) +
-                        Math.Pow(currentVelocity.Y, 2)
-                    );
-
-                    // Calculate acceleration if we have previous velocity
-                    string accelerationInfo = "N/A";
-                    if (lastVelocity.HasValue)
-                    {
-                        double previousSpeed = Math.Sqrt(
-                            Math.Pow(lastVelocity.Value.X, 2) +
-                            Math.Pow(lastVelocity.Value.Y, 2)
-                        );
-
-                        double acceleration = (currentSpeed - previousSpeed) / timeDelta.TotalSeconds
-                        accelerationInfo = $"{acceleration:F1} px/s²";
-                    }
-
-                    Console.WriteLine(
-                        $"\nCueBall Stats:\n" +
-                        $"  Position: ({bestCandidate.Centre.X}, {bestCandidate.Centre.Y})\n" +
-                        $"  Distance Moved: {distanceMoved:F1} px\n" +
-                        $"  Time Delta: {timeDelta.ToString():F3} s\n" +
-                        $"  Current Speed: {currentSpeed:F1} px/s\n" +
-                        $"  Velocity: ({currentVelocity.X:F1}, {currentVelocity.Y:F1}) px/s\n" +
-                        $"  Acceleration: {accelerationInfo}\n" +
-                        $"  Confidence: {bestCandidate.Confidence:F3}\n" +
-                        $"  Area: {bestCandidate.Area:F1} px²"
-                    );
-
-                    lastVelocity = currentVelocity;
+                    candidate.Acceleration = (candidate.Speed - lastBall.Speed) / timeDelta.TotalSeconds;
+                    
+                    candidate.Displacement = Math.Sqrt(
+                        Math.Pow(candidate.Centre.X - lastBall.Centre.X, 2) +
+                        Math.Pow(candidate.Centre.Y - lastBall.Centre.Y, 2));
                 }
 
-                lastCueBalls.Enqueue((bestCandidate, frame.Index));
-                while (lastCueBalls.Count > MaxPositionHistory) lastCueBalls.Dequeue();
-                lastDetectionFrameNumber = frame.Index;
-
-                results.CueBall = bestCandidate;
+                candidates.Add(candidate);
             }
-        }
 
-        results.CueBallHighlighted = results.CueBall != null ? results.CueBall.Draw(new Bitmap(frame.frame)) : new Bitmap(frame.frame);
-        results.ScoredCandidatesHighlighted = GetScoredCandidatesImage(frame.frame, candidates);
-        return results;
+            using var frameImage = frame.frame.ToImage<Rgb, byte>();
+            var results = new CueBallDetectionResults
+            {
+                CueBallCandidatesHighlighted = DrawContours(allCueBallContoursFound, frameImage),
+                CueBallMask = new Bitmap(cueballMask),
+                CueBallMaskApplied = new Bitmap(cueballMaskApplied)
+            };
+
+            if (candidates.Any())
+            {
+                if (framesDelta > CueBallHistoryCount) while (detectedCueBalls.Count > 0) detectedCueBalls.Dequeue().Dispose();
+
+                ScoreCandidates(candidates, timeDelta);
+                var bestCandidate = candidates.OrderByDescending(c => c.Confidence).First();
+
+                if (bestCandidate.Confidence > 0)
+                {
+                    Console.WriteLine($"Frame: {frame.Index}\n" + bestCandidate.ToString());
+
+                    detectedCueBalls.Enqueue(bestCandidate.Clone());
+                    while (detectedCueBalls.Count > CueBallHistoryCount) detectedCueBalls.Dequeue().Dispose();
+                    
+                    lastDetectedCbFrameIndex = frame.Index;
+                    results.CueBall = bestCandidate.Clone();
+                }
+            }
+            else Console.WriteLine($"Frame: {frame.Index}\nNo cueball found.");
+
+            results.CueBallHighlighted = results.CueBall != null 
+                ? results.CueBall.Draw(new Bitmap(frame.frame)) 
+                : new Bitmap(frame.frame);
+            results.ScoredCandidatesHighlighted = GetScoredCandidatesImage(frame.frame, candidates);
+            
+            return results;
+        }
+        finally { foreach (var candidate in candidates) candidate.Dispose(); }
     }
 
     /// <summary>
@@ -198,9 +180,7 @@ public class CueBallDetector : TableObjectDetector
     {
         if (!candidates.Any()) return;
 
-        Point? averagePosition = GetAveragePosition();
-        double averageArea = GetAverageArea();
-        double deltaTime = timeSinceLastDetection.TotalSeconds;
+        double deltaTime = Math.Abs(timeSinceLastDetection.TotalSeconds); //absolute value to allow playing video back/debugging
 
         foreach (var candidate in candidates)
         {
@@ -208,47 +188,23 @@ public class CueBallDetector : TableObjectDetector
             double velocityScore = 1.0;
             double areaScore = 1.0;
 
-            if (averagePosition.HasValue)
+            // invalid distance travelled
+            double maxDistance = MaxSpeed * deltaTime;
+            if (candidate.Displacement > maxDistance)
             {
-                // Calculate distance score with more aggressive penalty
-                double maxDistance = MaxMovementPerSecond * deltaTime;
-                double distanceTravelled = Math.Sqrt(
-                    Math.Pow(candidate.Centre.X - averagePosition.Value.X, 2) +
-                    Math.Pow(candidate.Centre.Y - averagePosition.Value.Y, 2));
+                candidate.Confidence = -1;
+                continue;
+            }
 
-                // Immediately reject if movement is physically impossible
-                if (distanceTravelled > maxDistance)
-                {
-                    candidate.Confidence = -1;
-                    continue;
-                }
-
-                // More aggressive distance penalty using exponential falloff
-                if (maxDistance < double.Epsilon) distanceScore = (distanceTravelled < double.Epsilon) ? 1.0 : 0.0;
-                else distanceScore = Math.Exp(-2.0 * distanceTravelled / maxDistance);
-
-                // Calculate velocity score if we have enough history
-                if (lastVelocity.HasValue && deltaTime > 0)
-                {
-                    // Current velocity vector
-                    Point currentVelocity = new Point(
-                        (int)((candidate.Centre.X - averagePosition.Value.X) / deltaTime),
-                        (int)((candidate.Centre.Y - averagePosition.Value.Y) / deltaTime)
-                    );
-
-                    // Calculate acceleration
-                    double acceleration = Math.Sqrt(
-                        Math.Pow(currentVelocity.X - lastVelocity.Value.X, 2) +
-                        Math.Pow(currentVelocity.Y - lastVelocity.Value.Y, 2)
-                    ) / deltaTime;
-
-                    // Immediately reject if movement is physically impossible
-                    if (acceleration > MaxAccelerationPerSecond)
-                    {
-                        candidate.Confidence = -1;
-                        continue;
-                    }
-                }
+            // More aggressive distance penalty using exponential falloff
+            if (maxDistance < double.Epsilon) distanceScore = (candidate.Displacement < double.Epsilon) ? 1.0 : 0.0;
+            else distanceScore = Math.Exp(-2.0 * candidate.Displacement / maxDistance);
+            
+            // invalid acceleration
+            if (Math.Abs(candidate.Acceleration) > MaxAccelerationPerSecond)
+            {
+                candidate.Confidence = -1;
+                continue;
             }
 
             // invalid area
@@ -258,13 +214,11 @@ public class CueBallDetector : TableObjectDetector
             }
 
             // Calculate area score
+            double averageArea = GetAverageArea();
             if (averageArea > double.Epsilon)
             {
-                // Calculate how much the area deviates from the average (as a ratio)
-                double areaDeviation = Math.Abs(candidate.Area - averageArea) / averageArea;
-                
-                // Use exponential decay to score - closer to average = closer to 1.0
-                areaScore = Math.Exp(-areaDeviation);
+                double areaDeviation = Math.Abs(candidate.Area - averageArea) / averageArea; // Calculate how much the area deviates from the average (as a ratio)
+                areaScore = Math.Exp(-areaDeviation); // Use exponential decay to score - closer to average = closer to 1.0
             }
             else
             {
@@ -285,81 +239,7 @@ public class CueBallDetector : TableObjectDetector
         }
     }
 
-    private Point? GetAveragePosition()
-    {
-        if (lastCueBalls.Count == 0) return null;
-
-        int sumX = 0;
-        int sumY = 0;
-        foreach (var ball in lastCueBalls)
-        {
-            sumX += ball.Item1.Centre.X;
-            sumY += ball.Item1.Centre.Y;
-        }
-
-        return new Point(
-            sumX / lastCueBalls.Count,
-            sumY / lastCueBalls.Count
-        );
-    }
-
-    private double GetAverageArea()
-    {
-        if (lastCueBalls.Count == 0) return 0;
-
-        double sumArea = 0;
-        foreach (var ball in lastCueBalls) sumArea += ball.Item1.Area;
-        return sumArea / lastCueBalls.Count;
-    }
-
-    /// <summary>
-    /// Remove the contours unlikely to be a ball
-    /// </summary>
-    /// <param name="contours"></param>
-    /// <param name="min_s"></param>
-    /// <param name="max_s"></param>
-    /// <returns></returns>
-    private static VectorOfVectorOfPoint FilterBallContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
-    {
-        using (VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint())
-        {
-            // Show table contour if enabled
-            if (tableContour != null)
-            {
-                using VectorOfPoint tableCopy = new VectorOfPoint(tableContour.ToArray());
-                filteredContours.Push(tableCopy);
-            }
-
-            for (int i = 0; i < contours.Size; i++)
-            {
-                using VectorOfPoint contour = contours[i];
-                // Filter out contours that are not inside the table contour
-                if (tableContour != null && !IsContourInside(contour, tableContour))
-                    continue;
-
-                RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
-                float w = rotRect.Size.Width;
-                float h = rotRect.Size.Height;
-
-                // Allows some ball-speed to be detected (elongated ball shape)
-                if ((h > w * 5) || (w > h * 5))
-                    continue;
-
-                // Filter out balls with very small area or too big areas
-                double area = CvInvoke.ContourArea(contour);
-                if ((area < MinBallArea) || (area > MaxBallArea))
-                    continue;
-
-                using VectorOfPoint contourCopy = new VectorOfPoint(contour.ToArray());
-                filteredContours.Push(contourCopy);
-            }
-
-            // Create a copy of the filtered contours to return
-            return new VectorOfVectorOfPoint(filteredContours.ToArrayOfArray());
-        }
-    }
-
-    private Bitmap GetScoredCandidatesImage(Bitmap baseImage, List<Ball> candidates)
+    private static Bitmap GetScoredCandidatesImage(Bitmap baseImage, List<Ball> candidates)
     {
         using var image = baseImage.ToImage<Rgb, byte>();
         foreach (var candidate in candidates)
@@ -375,6 +255,80 @@ public class CueBallDetector : TableObjectDetector
         return image.ToBitmap();
     }
 
+    //todo decide to keep/use this or remove it
+    private Point? GetAveragePosition()
+    {
+        if (detectedCueBalls.Count == 0) return null;
+
+        int sumX = 0;
+        int sumY = 0;
+        foreach (var ball in detectedCueBalls)
+        {
+            sumX += ball.Centre.X;
+            sumY += ball.Centre.Y;
+        }
+
+        return new Point(
+            sumX / detectedCueBalls.Count,
+            sumY / detectedCueBalls.Count
+        );
+    }
+
+    private double GetAverageArea()
+    {
+        if (detectedCueBalls.Count == 0) return 0;
+
+        double sumArea = 0;
+        foreach (var ball in detectedCueBalls) sumArea += ball.Area;
+        return sumArea / detectedCueBalls.Count;
+    }
+
+    /// <summary>
+    /// Remove the contours unlikely to be a ball
+    /// </summary>
+    /// <param name="contours"></param>
+    /// <param name="min_s"></param>
+    /// <param name="max_s"></param>
+    /// <returns></returns>
+    private static VectorOfVectorOfPoint FilterBallContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
+    {
+        using VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
+        
+        // Show table contour if enabled
+        if (tableContour != null)
+        {
+            using VectorOfPoint tableCopy = new VectorOfPoint(tableContour.ToArray());
+            filteredContours.Push(tableCopy);
+        }
+
+        for (int i = 0; i < contours.Size; i++)
+        {
+            using VectorOfPoint contour = contours[i];
+            // Filter out contours that are not inside the table contour
+            if (tableContour != null && !IsContourInside(contour, tableContour))
+                continue;
+
+            RotatedRect rotRect = CvInvoke.MinAreaRect(contour);
+            float w = rotRect.Size.Width;
+            float h = rotRect.Size.Height;
+
+            // Allows some ball-speed to be detected (elongated ball shape)
+            if ((h > w * 5) || (w > h * 5))
+                continue;
+
+            // Filter out balls with very small area or too big areas
+            double area = CvInvoke.ContourArea(contour);
+            if ((area < MinBallArea) || (area > MaxBallArea))
+                continue;
+
+            using VectorOfPoint contourCopy = new VectorOfPoint(contour.ToArray());
+            filteredContours.Push(contourCopy);
+        }
+
+        // Create a copy of the filtered contours to return
+        return new VectorOfVectorOfPoint(filteredContours.ToArrayOfArray());
+    }
+
     public override string ToString()
     {
         return $"CueBallDetector Settings:\n" +
@@ -387,12 +341,12 @@ public class CueBallDetector : TableObjectDetector
                $"  Upper CueBall Mask: RGB({UpperCueBallMask.Red}, {UpperCueBallMask.Green}, {UpperCueBallMask.Blue})\n" +
                $"  Min Ball Area: {MinBallArea}\n" +
                $"  Max Ball Area: {MaxBallArea}\n" +
-               $"  Max Movement/Sec: {MaxMovementPerSecond}\n" +
+               $"  Max Movement/Sec: {MaxSpeed}\n" +
                $"  Intensity Weight: {AreaWeight}\n" +
                $"  Distance Weight: {DistanceWeight}\n" +
-               $"  Position History Size: {MaxPositionHistory}\n" +
+               $"  Position History Size: {CueBallHistoryCount}\n" +
                $"  Velocity Weight: {VelocityWeight}\n" +
                $"  Max Acceleration: {MaxAccelerationPerSecond}\n" +
-               $"  Last Frame Number Processed: {lastDetectionFrameNumber}";
+               $"  Last Frame Number Processed: {lastDetectedCbFrameIndex}";
     }
 }
