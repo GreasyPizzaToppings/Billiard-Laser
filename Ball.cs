@@ -11,9 +11,13 @@ public class Ball : IDisposable
     private VectorOfPoint _contour;
     private readonly object _lock = new();
     private bool _disposed = false; // To detect redundant calls
-    private Point? _center = null;
+    private Point? _centre = null;
     private double? _area = null;
-    
+    private Point? _velocity;
+    private double? _speed;
+    private double? _acceleration;
+    private double? _displacement;
+
     public double Area
     {
         get
@@ -49,7 +53,7 @@ public class Ball : IDisposable
         {
             lock (_lock)
             {
-                if (!_center.HasValue)
+                if (!_centre.HasValue)
                 {
                     if (_contour == null || _contour.Size == 0)
                     {
@@ -60,7 +64,7 @@ public class Ball : IDisposable
                     {
                         // If only one point, that point is the center
                         var points = _contour.ToArray();
-                        _center = points[0];
+                        _centre = points[0];
                     }
                     else
                     {
@@ -69,13 +73,13 @@ public class Ball : IDisposable
                         {
                             return Point.Empty;
                         }
-                        _center = new Point(
+                        _centre = new Point(
                             (int)(moments.M10 / moments.M00),
                             (int)(moments.M01 / moments.M00)
                         );
                     }
                 }
-                return _center.Value;
+                return _centre.Value;
             }
         }
     }
@@ -101,6 +105,31 @@ public class Ball : IDisposable
                 return radius;
             }
         }
+    }
+
+
+    public double Displacement
+    {
+        get => _displacement ?? 0;
+        set => _displacement = value;
+    }
+
+    public Point Velocity 
+    { 
+        get => _velocity ?? Point.Empty;
+        set => _velocity = value;
+    }
+
+    public double Speed
+    {
+        get => _speed ?? 0;
+        set => _speed = value;
+    }
+
+    public double Acceleration
+    {
+        get => _acceleration ?? 0;
+        set => _acceleration = value;
     }
 
     /// <summary>
@@ -153,9 +182,39 @@ public class Ball : IDisposable
     {
         return $"Ball:\n" +
             $"Centre Position: ({this.Centre.X}, {this.Centre.Y})\n" +
+            $"Displacement: {this.Displacement:F2}\n" +
+            $"Velocity: ({this.Velocity.X}, {this.Velocity.Y})\n" +
+            $"Speed: {this.Speed:F2}\n" +
+            $"Acceleration: {this.Acceleration:F2}\n" +
             $"Radius: {this.Radius:F2}\n" +
             $"Area: {this.Area:F2}\n" +
             $"Confidence: {this.Confidence:F2}\n";
+    }
+
+    public Ball Clone()
+    {
+        lock (_lock)
+        {
+            var clone = new Ball();
+            
+            // Deep copy the contour if it exists
+            if (_contour != null)
+            {
+                clone._contour = new VectorOfPoint();
+                clone._contour.Push(_contour);
+            }
+
+            // Copy all other properties
+            clone._centre = _centre;
+            clone._area = _area;
+            clone._velocity = _velocity;
+            clone._speed = _speed;
+            clone._acceleration = _acceleration;
+            clone._displacement = _displacement;
+            clone.Confidence = Confidence;
+
+            return clone;
+        }
     }
 
     // Protected implementation of Dispose pattern.
