@@ -45,21 +45,37 @@ namespace billiard_laser
             arduinoController = new ArduinoController();
 
             // Handle the connection asynchronously
-            arduinoController.ConnectionTask.ContinueWith(task =>
+            arduinoController?.ConnectionTask?.ContinueWith(task =>
             {
                 if (task.IsFaulted)
                 {
-                    // Make sure we're on the UI thread for showing message box
-                    this.BeginInvoke(new Action(() =>
+                    // Only try to show message box if form is available
+                    if (!IsDisposed)
                     {
-                        MessageBox.Show("Failed to connect to Arduino: " + task.Exception.InnerException.Message,
-                            "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }));
+                        try
+                        {
+                            this.BeginInvoke(new Action(() =>
+                            {
+                                MessageBox.Show("Failed to connect to Arduino: " + task.Exception.InnerException.Message,
+                                    "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            }));
+                        }
+                        catch (InvalidOperationException)
+                        {
+                            // Form was disposed between our check and the BeginInvoke
+                            Console.WriteLine("Could not show Arduino error - form was disposed");
+                        }
+                    }
+                    else
+                    {
+                        // Log the error since we can't show it to the user
+                        Console.WriteLine("Arduino connection failed but form was disposed: " + 
+                            task.Exception.InnerException.Message);
+                    }
                 }
-            });
+            }, TaskScheduler.Default);
 
-            arduinoController.LaserOff();
-
+            arduinoController?.LaserOff();
             laserDetector = new LaserDetector();
         }
 
