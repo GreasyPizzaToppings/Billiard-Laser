@@ -39,8 +39,8 @@ namespace billiard_laser
         private bool replayInProgress = false;
         private bool loadedVideoStarted = false;
 
-        private PlaybackState playbackState;
-        private InputType currentInputType;
+        private PlaybackController.PlaybackState playbackState;
+        private MediaInputType currentInputType;
 
         //fps
         private Stopwatch stopwatch = new Stopwatch();
@@ -53,7 +53,9 @@ namespace billiard_laser
 
         private CancellationTokenSource? videoCancellationTokenSource;
 
-        public bool DetectingBalls
+        private readonly PlaybackController playbackController;
+
+        private bool DetectingBalls
         {
             get => checkBoxDetectBalls.Checked;
             set
@@ -67,26 +69,17 @@ namespace billiard_laser
             }
         }
 
-        private PlaybackState CurrentPlaybackState
+        private PlaybackController.PlaybackState CurrentPlaybackState
         {
             get => playbackState;
             set
             {
                 playbackState = value;
-                UpdateMediaControlsState();
+                playbackController.State = value;
             }
         }
 
-        private enum PlaybackState
-        {
-            Loading,
-            Ready,
-            Playing,
-            Paused,
-            Finished
-        }
-
-        private enum InputType
+        private enum MediaInputType
         {
             Video,
             Camera
@@ -95,6 +88,11 @@ namespace billiard_laser
         public BilliardLaserForm()
         {
             InitializeComponent();
+
+            playbackController = new PlaybackController(btnPlayPause, btnNextFrame, btnLastFrame);
+            playbackController.PlaybackStateChanged += state => playbackState = state;
+            playbackController.NextFrameRequested += (s, e) => ShowNextFrame();
+            playbackController.LastFrameRequested += (s, e) => ShowPreviousFrame();
 
             // initialise core components
             cameraController = new CameraController(cboCamera, outputVideoResolution);
@@ -129,8 +127,8 @@ namespace billiard_laser
             loadedVideoStarted = false;
             UpdateFpsLabel();
 
-            currentInputType = InputType.Camera;
-            CurrentPlaybackState = PlaybackState.Loading;
+            currentInputType = MediaInputType.Camera;
+            CurrentPlaybackState = PlaybackController.PlaybackState.Loading;
         }
 
         //before loading video
@@ -149,8 +147,8 @@ namespace billiard_laser
             loadedVideoStarted = false;
             UpdateFpsLabel();
 
-            currentInputType = InputType.Video;
-            CurrentPlaybackState = PlaybackState.Loading;
+            currentInputType = MediaInputType.Video;
+            CurrentPlaybackState = PlaybackController.PlaybackState.Loading;
         }
 
         //before playing video
@@ -167,21 +165,21 @@ namespace billiard_laser
             loadedVideoStarted = true;
             UpdateFpsLabel();
 
-            currentInputType = InputType.Video;
-            CurrentPlaybackState = PlaybackState.Playing;
+            currentInputType = MediaInputType.Video;
+            CurrentPlaybackState = PlaybackController.PlaybackState.Playing;
         }
 
         private void btnStartCameraInput_Click(object sender, EventArgs e)
         {
             SetStateLoadCamera();
-            if (cameraController.StartCameraCapture()) CurrentPlaybackState = PlaybackState.Playing;
+            if (cameraController.StartCameraCapture()) CurrentPlaybackState = PlaybackController.PlaybackState.Playing;
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
             try
             {
-                if (CurrentPlaybackState == PlaybackState.Paused || currentInputType != InputType.Camera)
+                if (CurrentPlaybackState == PlaybackController.PlaybackState.Paused || currentInputType != MediaInputType.Camera)
                 {
                     ballReplacementForm?.UpdateTableOverlay(frame); //send to replacement form even if main form is not processing ball detection
                     frame.Dispose();
@@ -225,7 +223,7 @@ namespace billiard_laser
                         throw new OperationCanceledException(); //break, dont set to ready state
                     }
 
-                    CurrentPlaybackState = PlaybackState.Ready;
+                    CurrentPlaybackState = PlaybackController.PlaybackState.Ready;
                 }
                 catch (OperationCanceledException)
                 {
@@ -257,7 +255,7 @@ namespace billiard_laser
                 return;
             }
 
-            CurrentPlaybackState = PlaybackState.Finished;
+            CurrentPlaybackState = PlaybackController.PlaybackState.Finished;
             loadedVideoStarted = false;
         }
 
@@ -273,7 +271,7 @@ namespace billiard_laser
             var indices = rawFrames.FrameIndices.Cast<int>().ToList(); // create a snapshot of indices to avoid collection being modified
             foreach (int index in indices)
             {
-                while (CurrentPlaybackState == PlaybackState.Paused) await Task.Delay(100, cancellationToken);
+                while (CurrentPlaybackState == PlaybackController.PlaybackState.Paused) await Task.Delay(100, cancellationToken);
                 if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException();
 
                 ProcessFrame(rawFrames.GetFrame(index));
@@ -437,7 +435,7 @@ namespace billiard_laser
 
         private async Task ReplayShotWithBallPath(Shot shot, int replayFPS)
         {
-            if (replayInProgress || CurrentPlaybackState == PlaybackState.Playing)
+            if (replayInProgress || CurrentPlaybackState == PlaybackController.PlaybackState.Playing)
                 return;
 
             replayInProgress = true;
@@ -474,83 +472,14 @@ namespace billiard_laser
 
         #region Media Contols
 
-        private void UpdateMediaControlsState()
-        {
-            if (InvokeRequired)
-            {
-                Invoke(new Action(UpdateMediaControlsState));
-                return;
-            }
-
-            switch (CurrentPlaybackState)
-            {
-                case PlaybackState.Loading:
-                    btnPlayPause.Text = PLAY_ICON;
-                    btnPlayPause.Enabled = false;
-                    btnNextFrame.Enabled = false;
-                    btnLastFrame.Enabled = false;
-                    break;
-
-                case PlaybackState.Ready:
-                    btnPlayPause.Text = PLAY_ICON;
-                    btnPlayPause.Enabled = true;
-                    btnNextFrame.Enabled = false;
-                    btnLastFrame.Enabled = false;
-                    break;
-
-                case PlaybackState.Playing:
-                    btnPlayPause.Text = PAUSE_ICON;
-                    btnPlayPause.Enabled = true;
-                    btnNextFrame.Enabled = false;
-                    btnLastFrame.Enabled = false;
-                    break;
-
-                case PlaybackState.Paused:
-                    btnPlayPause.Text = PLAY_ICON;
-                    btnPlayPause.Enabled = true;
-                    btnNextFrame.Enabled = true;
-                    btnLastFrame.Enabled = true;
-                    break;
-
-                case PlaybackState.Finished:
-                    btnPlayPause.Text = PLAY_ICON;
-                    btnPlayPause.Enabled = true; //can replay
-                    btnNextFrame.Enabled = true;
-                    btnLastFrame.Enabled = true;
-                    break;
-            }
-        }
-
-        //go back a rawFrame
-        private void btnLastFrame_Click(object sender, EventArgs e)
-        {
-            if (listBoxProcessedFrames.SelectedIndex > 0) listBoxProcessedFrames.SelectedIndex -= 1;
-        }
-
-        //go forward a rawFrame
-        private void btnNextFrame_Click(object sender, EventArgs e)
-        {
-            if (listBoxProcessedFrames.SelectedIndex < (listBoxProcessedFrames.Items.Count - 1)) listBoxProcessedFrames.SelectedIndex += 1;
-        }
-
-        /// <summary>
-        /// Start to play the loaded video and allow it to be paused/resumed on demand
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
         private void btnPlayPause_Click(object sender, EventArgs e)
         {
-            if (currentInputType == InputType.Video && !loadedVideoStarted)
+            if (currentInputType == MediaInputType.Video && !loadedVideoStarted)
             {
                 StartLoadedVideo();
                 return;
             }
-
-
-            // Toggle between Play and Pause states
-            CurrentPlaybackState = (CurrentPlaybackState == PlaybackState.Playing)
-                ? PlaybackState.Paused
-                : PlaybackState.Playing;
+            playbackController.TogglePlayPause();
         }
 
         #endregion
@@ -587,7 +516,7 @@ namespace billiard_laser
                 if (rawFrames.GetFrame(frameIndex) is VideoFrame rawFrame)
                 {
                     debugStopwatch.Restart();
-                    if (CurrentPlaybackState != PlaybackState.Playing)
+                    if (CurrentPlaybackState != PlaybackController.PlaybackState.Playing)
                         ballDetectionDebugForm?.GetAndShowDebugImages(rawFrame);
                     ballReplacementForm?.UpdateTableOverlay(rawFrame);
                     debugStopwatch.Stop();
@@ -638,6 +567,18 @@ namespace billiard_laser
             ballDetector.Dispose();
             rawFrames.Dispose();
             processedFrames.Dispose();
+        }
+
+        private void ShowNextFrame()
+        {
+            if (listBoxProcessedFrames.SelectedIndex < listBoxProcessedFrames.Items.Count - 1)
+                listBoxProcessedFrames.SelectedIndex++;
+        }
+
+        private void ShowPreviousFrame()
+        {
+            if (listBoxProcessedFrames.SelectedIndex > 0)
+                listBoxProcessedFrames.SelectedIndex--;
         }
     }
 }

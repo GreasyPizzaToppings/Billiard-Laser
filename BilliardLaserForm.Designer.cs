@@ -123,7 +123,6 @@ namespace billiard_laser
             btnLastFrame.TabIndex = 42;
             btnLastFrame.Text = "Last Frame";
             btnLastFrame.UseVisualStyleBackColor = true;
-            btnLastFrame.Click += btnLastFrame_Click;
             // 
             // btnNextFrame
             // 
@@ -136,7 +135,6 @@ namespace billiard_laser
             btnNextFrame.TabIndex = 43;
             btnNextFrame.Text = "Next Frame";
             btnNextFrame.UseVisualStyleBackColor = true;
-            btnNextFrame.Click += btnNextFrame_Click;
             // 
             // btnPlayPause
             // 
