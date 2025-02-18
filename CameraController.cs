@@ -3,8 +3,9 @@ using AForge.Video.DirectShow;
 using System.Drawing.Drawing2D;
 using System.Drawing.Imaging;
 
-public class CameraController
+public class CameraController : IDisposable
 {
+    private bool disposed = false;
     private FilterInfoCollection filterInfoCollection;
     private VideoCaptureDevice videoCaptureDevice;
     private ComboBox comboBox;
@@ -206,5 +207,31 @@ private void PopulateCameraComboBox()
                 frameIndex = 0;
             }
         }
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposed)
+        {
+            if (disposing)
+            {
+                StopCameraCapture();
+                frameReceivedEvent.Dispose();
+                ReceivedFrame = null;
+                TransformationChanged = null;
+            }
+            disposed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~CameraController()
+    {
+        Dispose(false);
     }
 }

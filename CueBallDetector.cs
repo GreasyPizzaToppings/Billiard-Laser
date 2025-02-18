@@ -8,8 +8,9 @@ using Point = System.Drawing.Point;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
 
-public class CueBallDetector : TableObjectDetector
+public class CueBallDetector : TableObjectDetector, IDisposable
 {
+    private bool disposed = false;
     //tracking parameters
     private int lastDetectedCbFrameIndex = -1; //frame index of the last detected cueball
 
@@ -290,7 +291,7 @@ public class CueBallDetector : TableObjectDetector
     /// <param name="min_s"></param>
     /// <param name="max_s"></param>
     /// <returns></returns>
-    private static VectorOfVectorOfPoint FilterBallContours(VectorOfVectorOfPoint contours, VectorOfPoint tableContour = null, double min_s = 5, double max_s = 50)
+    private static VectorOfVectorOfPoint FilterBallContours(VectorOfVectorOfPoint contours, VectorOfPoint? tableContour = null, double min_s = 5, double max_s = 50)
     {
         using VectorOfVectorOfPoint filteredContours = new VectorOfVectorOfPoint();
         
@@ -348,5 +349,33 @@ public class CueBallDetector : TableObjectDetector
                $"  Velocity Weight: {VelocityWeight}\n" +
                $"  Max Acceleration: {MaxAccelerationPerSecond}\n" +
                $"  Last Frame Number Processed: {lastDetectedCbFrameIndex}";
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposed)
+        {
+            if (disposing)
+            {
+                // dispose all balls in the queue
+                while (detectedCueBalls.Count > 0)
+                {
+                    var ball = detectedCueBalls.Dequeue();
+                    ball.Dispose();
+                }
+            }
+            disposed = true;
+        }
+    }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    ~CueBallDetector()
+    {
+        Dispose(false);
     }
 }
