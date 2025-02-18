@@ -6,7 +6,6 @@ namespace billiard_laser
     {
         private bool initialisingControls = true;
         private CueBallDetector? ballDetector;
-        private bool disposed = false;
         private VideoFrame? originalFrame; //store the current base table frame to allow for ball detector settings to change and get new results
 
         public event EventHandler? DebugFormClosed;
@@ -32,7 +31,7 @@ namespace billiard_laser
             if (images == null) return;
 
             originalFrame?.Dispose();
-            originalFrame = images?.OriginalFrame?.Clone();
+            originalFrame = images.OriginalFrame?.Clone();
 
             SetImage(workingImagePicBox, images.WorkingImage);
             SetImage(tableMaskAppliedPicBox, images.TableMaskApplied);
@@ -50,7 +49,7 @@ namespace billiard_laser
         /// <param name="rawImage">The raw image to process</param>
         public void GetAndShowDebugImages(VideoFrame frame) => DisplayDebugImages(ballDetector?.GetCueBallResults(frame));
 
-        private static void SetImage(PictureBox pictureBox, Image newImage)
+        private static void SetImage(PictureBox pictureBox, Image? newImage)
         {
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
@@ -143,7 +142,7 @@ namespace billiard_laser
             }
         }
 
-        private void ImageProcessingDebugForm_FormClosed(object sender, FormClosedEventArgs e)
+        private void ImageProcessingDebugForm_FormClosed(object? sender, FormClosedEventArgs e)
         {
             workingImagePicBox.Image?.Dispose();
             tableMaskAppliedPicBox.Image?.Dispose();

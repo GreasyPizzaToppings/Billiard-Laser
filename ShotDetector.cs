@@ -30,7 +30,7 @@ public class ShotDetector : IDisposable
 
     public void ResetState()
     {
-        if (currentShot != null) currentShot.Dispose();
+        currentShot?.Dispose();
         currentShot = new Shot();
 
         isTrackingShot = false;
@@ -41,7 +41,7 @@ public class ShotDetector : IDisposable
         recentFrames.Clear();
     }
 
-    public void ProcessFrame(Ball cueBall, VideoFrame frame)
+    public void ProcessFrame(Ball? cueBall, VideoFrame frame)
     {
         if (disposed) throw new ObjectDisposedException(nameof(ShotDetector));
         if (!IsValidBall(cueBall)) return;

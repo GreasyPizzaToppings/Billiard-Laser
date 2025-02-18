@@ -5,7 +5,7 @@ using System.Threading;
 
 public class ArduinoController : IDisposable
 {
-    private SerialPort serialPort;
+    private SerialPort? serialPort;
     private const string LASER_OFF = "0";
     private const string LASER_ON = "1";
     private const string LEFT = "l";
@@ -23,7 +23,7 @@ public class ArduinoController : IDisposable
     public Task ConnectionTask => connectionTaskSource?.Task ?? Task.CompletedTask;
     public bool IsLaserOn { get => laserOn; }
     public bool IsConnected { get => isHandshakeVerified && (serialPort?.IsOpen ?? false); }
-    public string PortName { get => serialPort?.PortName; }
+    public string PortName { get => serialPort?.PortName ?? "None"; }
 
     public ArduinoController()
     {
@@ -118,7 +118,7 @@ public class ArduinoController : IDisposable
     {
         try
         {
-            if (IsConnected) serialPort.WriteLine(command);
+            if (IsConnected) serialPort?.WriteLine(command);
             else Console.WriteLine("Arduino is not connected or the port is closed.");
         }
         catch (Exception ex)
@@ -147,7 +147,7 @@ public class ArduinoController : IDisposable
         SendCommand(STEPAMOUNT + amount.ToString());
         if (IsConnected)
         {
-            Console.WriteLine(serialPort.ReadLine()); //response
+            Console.WriteLine(serialPort?.ReadLine()); //response
         }
     }
 

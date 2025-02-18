@@ -15,9 +15,9 @@ namespace billiard_laser
     public partial class BallReplacementForm : Form
     {
         private Bitmap targetTableLayout;
-        private ArduinoController arduinoController;
+        private ArduinoController? arduinoController;
         private LaserDetector laserDetector;
-        private LaserDetectionDebugForm laserDetectionDebugForm;
+        private LaserDetectionDebugForm? laserDetectionDebugForm;
         private bool calibratingLaserPosition = false;
 
         public CameraController cameraController;
@@ -28,21 +28,23 @@ namespace billiard_laser
             set
             {
                 targetTableLayout = value;
-                SetImage(pictureBoxTable, TargetTableLayout);
+                SetImage(pictureBoxTable, targetTableLayout);
             }
         }
 
-        public event EventHandler BallReplacementFormClosed;
+        public event EventHandler? BallReplacementFormClosed;
 
         public BallReplacementForm(Bitmap targetTableLayout, CameraController cameraController)
         {
+            ArgumentNullException.ThrowIfNull(targetTableLayout);
+
             InitializeComponent();
             UpdateOpacityValueLabel();
             UpdateStepAmountValueLabel();
-            TargetTableLayout = new Bitmap(targetTableLayout);
+            
             this.cameraController = cameraController;
-
             arduinoController = new ArduinoController();
+            TargetTableLayout = new Bitmap(targetTableLayout);
 
             // Handle the connection asynchronously
             arduinoController?.ConnectionTask?.ContinueWith(task =>
@@ -56,7 +58,7 @@ namespace billiard_laser
                         {
                             this.BeginInvoke(new Action(() =>
                             {
-                                MessageBox.Show("Failed to connect to Arduino: " + task.Exception.InnerException.Message,
+                                MessageBox.Show("Failed to connect to Arduino: " + task?.Exception?.InnerException?.Message,
                                     "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                             }));
                         }
@@ -70,7 +72,7 @@ namespace billiard_laser
                     {
                         // Log the error since we can't show it to the user
                         Console.WriteLine("Arduino connection failed but form was disposed: " + 
-                            task.Exception.InnerException.Message);
+                            task?.Exception?.InnerException?.Message);
                     }
                 }
             }, TaskScheduler.Default);
@@ -84,26 +86,26 @@ namespace billiard_laser
         /// </summary>
         /// <param name="image"></param>
 
-        public void UpdateTableOverlay(VideoFrame cameraFrame)
+        public void UpdateTableOverlay(VideoFrame newFrame)
         {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => UpdateTableOverlay(cameraFrame)));
+                Invoke(new Action(() => UpdateTableOverlay(newFrame)));
                 return;
             }
-            if (cameraFrame == null || TargetTableLayout == null)
+            if (newFrame == null || newFrame.frame == null)
                 return;
             try
             {
 
                 //if laser enabled, try and detect where our laser is on the table and highlight it
                 LaserDetectionResults? laserResults = null;
-                if (arduinoController.IsLaserOn)
+                if (arduinoController?.IsLaserOn ?? false)
                 {
-                    laserResults = laserDetector.ProcessLaserDetection(cameraFrame.frame);
-                    laserDetectionDebugForm?.ShowDebugImages(laserResults);
+                    laserResults = laserDetector.ProcessLaserDetection(newFrame.frame);
+                    laserDetectionDebugForm?.DisplayDebugImages(laserResults);
                 }
-                else laserDetectionDebugForm?.GetAndShowDebugImages(cameraFrame.frame); //allow laser detection/debugging anyway if form is open and our laser isnt on for testing purposes
+                else laserDetectionDebugForm?.GetAndShowDebugImages(newFrame.frame); //allow laser detection/debugging anyway if form is open and our laser isnt on for testing purposes
 
                 using (Bitmap overlaidImage = new Bitmap(TargetTableLayout.Width, TargetTableLayout.Height))
                 {
@@ -141,9 +143,9 @@ namespace billiard_laser
                         else
                         {
                             // else draw incoming image with lower opacity
-                            graphics.DrawImage(cameraFrame.frame,
+                            graphics.DrawImage(newFrame.frame,
                                 new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                                0, 0, cameraFrame.frame.Width, cameraFrame.frame.Height,
+                                0, 0, newFrame.frame.Width, newFrame.frame.Height,
                                 GraphicsUnit.Pixel,
                                 imageAttributes);
                         }
@@ -183,49 +185,45 @@ namespace billiard_laser
 
         private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            if (laserDetectionDebugForm != null)
-            {
-                laserDetectionDebugForm.Dispose();
-                laserDetectionDebugForm = null;
-            }
-
-            BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
-
-            arduinoController.Dispose();
+            laserDetectionDebugForm?.Dispose();
+            laserDetectionDebugForm = null;
+            arduinoController?.Dispose();
             arduinoController = null;
             targetTableLayout.Dispose();
             pictureBoxTable.Dispose();
+
+            BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
         }
 
         private void btnLaserUp_Click(object sender, EventArgs e)
         {
-            arduinoController.MoveUp();
+            arduinoController?.MoveUp();
         }
 
         private void btnLaserLeft_Click(object sender, EventArgs e)
         {
-            arduinoController.MoveLeft();
+            arduinoController?.MoveLeft();
         }
 
         private void btnLaserDown_Click(object sender, EventArgs e)
         {
-            arduinoController.MoveDown();
+            arduinoController?.MoveDown();
         }
 
         private void btnLaserRight_Click(object sender, EventArgs e)
         {
-            arduinoController.MoveRight();
+            arduinoController?.MoveRight();
         }
 
         private void btnLaserEnableToggle_Click(object sender, EventArgs e)
         {
-            arduinoController.ToggleLaser();
+            arduinoController?.ToggleLaser();
         }
 
         private void trackBarLaserStepAmount_ValueChanged(object sender, EventArgs e)
         {
             UpdateStepAmountValueLabel();
-            arduinoController.SetStepAmount(trackBarLaserStepAmount.Value);
+            arduinoController?.SetStepAmount(trackBarLaserStepAmount.Value);
         }
 
         private void btnFlipCamera_Click(object sender, EventArgs e)
@@ -246,7 +244,6 @@ namespace billiard_laser
                 // Update the property which will handle disposal of old image
                 TargetTableLayout = flippedImage;
             }
-
         }
 
         private void btnMirrorCamera_Click(object sender, EventArgs e)
@@ -256,7 +253,7 @@ namespace billiard_laser
             // Mirror the reference image
             if (targetTableLayout != null)
             {
-                Bitmap mirroredImage = new Bitmap(targetTableLayout.Width, targetTableLayout.Height);
+                Bitmap mirroredImage = new(targetTableLayout.Width, targetTableLayout.Height);
                 using (Graphics g = Graphics.FromImage(mirroredImage))
                 {
                     g.TranslateTransform(targetTableLayout.Width, 0);
@@ -266,7 +263,6 @@ namespace billiard_laser
 
                 // Update the property which will handle disposal of old image
                 TargetTableLayout = mirroredImage;
-
             }
         }
 
@@ -277,12 +273,7 @@ namespace billiard_laser
                 laserDetectionDebugForm = new LaserDetectionDebugForm(laserDetector);
                 laserDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
                 laserDetectionDebugForm.Show();
-
-                // Initialize debug form with current image if available
-                if (targetTableLayout != null)
-                {
-                    laserDetectionDebugForm.GetAndShowDebugImages(targetTableLayout);
-                }
+                laserDetectionDebugForm.GetAndShowDebugImages(targetTableLayout);
             }
             else
             {
@@ -290,13 +281,10 @@ namespace billiard_laser
             }
         }
 
-        private void DebugForm_FormClosed(object sender, EventArgs e)
+        private void DebugForm_FormClosed(object? sender, EventArgs e)
         {
-            if (laserDetectionDebugForm != null)
-            {
-                laserDetectionDebugForm.Dispose();
-                laserDetectionDebugForm = null;
-            }
+            laserDetectionDebugForm?.Dispose();
+            laserDetectionDebugForm = null;
         }
 
         /// <summary>
@@ -309,7 +297,6 @@ namespace billiard_laser
             MessageBox.Show("Click on the image at the point where the laser is.", "Laser Calibration Process", MessageBoxButtons.OK);
 
             calibratingLaserPosition = true;
-
         }
 
         private void pictureBoxTable_Click(object sender, EventArgs e)
@@ -320,13 +307,9 @@ namespace billiard_laser
             MouseEventArgs mouseEvent = (MouseEventArgs)e;
             Point clickPosition = mouseEvent.Location;
 
-            // Scale the click position to match the image's actual resolution
             Point scaledPosition = ScalePointToTableResolution(clickPosition, pictureBoxTable);
-
-            // Reset the laser detector's position history and add the calibrated point
             laserDetector.CalibrateLaserPosition(scaledPosition);
 
-            // Reset calibration mode
             calibratingLaserPosition = false;
 
             MessageBox.Show("Laser position calibrated successfully.", "Calibration Complete", MessageBoxButtons.OK);
