@@ -91,25 +91,46 @@ public class CameraController : IDisposable
     {
         frameReceivedEvent.Set();
 
-        // only clone if we need to transform or resize
-        Bitmap workingFrame = (isFlipped || isMirrored || 
-            eventArgs.Frame.Width != OutputResolution.Width || 
-            eventArgs.Frame.Height != OutputResolution.Height) 
-            ? (Bitmap)eventArgs.Frame.Clone() 
-            : eventArgs.Frame;
-        
+        // clone the original frame immediately since AForge will reuse it
+        using Bitmap originalFrame = (Bitmap)eventArgs.Frame.Clone();
+        Bitmap? workingFrame = null;
+
         try
         {
-            if (isFlipped || isMirrored) workingFrame = TransformFrame(workingFrame);
-            if (workingFrame.Width != OutputResolution.Width || workingFrame.Height != OutputResolution.Height)
-                workingFrame = ResizeFrame(workingFrame);
+            // determine if we need transformations
+            bool needsTransform = isFlipped || isMirrored;
+            bool needsResize = originalFrame.Width != OutputResolution.Width || 
+                              originalFrame.Height != OutputResolution.Height;
+
+            workingFrame = originalFrame;
+
+            if (needsTransform)
+            {
+                var transformedFrame = TransformFrame(workingFrame);
+                if (workingFrame != originalFrame) workingFrame.Dispose();
+                workingFrame = transformedFrame;
+            }
+
+            if (needsResize)
+            {
+                var resizedFrame = ResizeFrame(workingFrame);
+                if (workingFrame != originalFrame) workingFrame.Dispose();
+                workingFrame = resizedFrame;
+            }
 
             ReceivedFrame?.Invoke(this, new VideoFrame(workingFrame, frameIndex++));
+            workingFrame.Dispose();
+            workingFrame = null;
         }
-        finally 
+        catch (Exception ex)
         {
-            // only dispose if we created a new bitmap
-            if (workingFrame != eventArgs.Frame) workingFrame.Dispose();
+            Console.WriteLine($"Error processing camera frame: {ex.Message}");
+        }
+        finally
+        {
+            // dispose working frame if we still own it (error case)
+            if (workingFrame != null && workingFrame != originalFrame)
+                workingFrame.Dispose();
         }
     }
 

@@ -10,6 +10,7 @@ using CvInvoke = Emgu.CV.CvInvoke;
 using Point = System.Drawing.Point;
 using ThresholdType = Emgu.CV.CvEnum.ThresholdType;
 using VectorOfPoint = Emgu.CV.Util.VectorOfPoint;
+using System.Runtime.InteropServices;
 
 /// <summary>
 /// A set of general methods and properties for detecting objects on the billiard table
@@ -30,17 +31,18 @@ public abstract class TableObjectDetector
 
     public abstract override string ToString();
 
-    public static Bitmap SharpenImage(Bitmap image)
+    public static void SharpenImage(Mat image)
     {
-        // Define the kernel
-        int[,] kernel = {
-            { -1, -1, -1 },
-            { -1, 9, -1 },
-            { -1, -1, -1 }
-         };
-
-        Convolution filter = new Convolution(kernel);
-        return filter.Apply(image);
+        float[,] kernelData = new float[,]
+        {
+            {-1, -1, -1},
+            {-1,  9, -1},
+            {-1, -1, -1}
+        };
+        
+        using var kernel = new Mat(3, 3, DepthType.Cv32F, 1);
+        Marshal.Copy(kernelData.Cast<float>().ToArray(), 0, kernel.DataPointer, 9);
+        CvInvoke.Filter2D(image, image, kernel, new Point(-1, -1));
     }
 
     //Emgu CV bitmap to Mat doesn't convert some bitmaps properly so I had to implement this method. 
@@ -60,15 +62,9 @@ public abstract class TableObjectDetector
         return mat;
     }
 
-    public static Bitmap BlurImage(Bitmap inputImage)
+    public static void BlurImage(Mat image)
     {
-        using (Mat transformed = new Mat())
-        using (var blurredImage = new Mat())
-        {
-            BitmapToMat(inputImage, transformed);
-            CvInvoke.GaussianBlur(transformed, blurredImage, new System.Drawing.Size(5, 5), 0, 0, Emgu.CV.CvEnum.BorderType.Default);
-            return blurredImage.ToBitmap();
-        }
+        CvInvoke.GaussianBlur(image, image, new System.Drawing.Size(5, 5), 0, 0, BorderType.Default);
     }
 
     /// <summary>

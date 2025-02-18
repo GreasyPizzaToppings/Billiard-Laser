@@ -41,6 +41,8 @@ namespace billiard_laser
             SetImage(cueBallCandidatesPicBox, images.CueBallCandidatesHighlighted);
             SetImage(scoredCandidatesPicBox, images.ScoredCandidatesHighlighted);
             SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
+
+            images.Dispose();
         }
 
         /// <summary>

@@ -45,10 +45,15 @@ public class CueBallDetector : TableObjectDetector, IDisposable
     /// <returns></returns>
     public CueBallDetectionResults GetCueBallResults(VideoFrame rawFrame)
     {
-        Bitmap workingImage = new(rawFrame.frame);
+        Bitmap workingImage = new Bitmap(rawFrame.frame);
+        using var workingMat = new Mat();
+        BitmapToMat(workingImage, workingMat);
 
-        if (EnableSharpening) workingImage = SharpenImage(workingImage);
-        if (EnableBlur) workingImage = BlurImage(workingImage);
+        if (EnableSharpening) SharpenImage(workingMat);
+        if (EnableBlur) BlurImage(workingMat);
+
+        workingImage.Dispose();
+        workingImage = workingMat.ToBitmap();
 
         Bitmap tableMaskApplied = ApplyMask(workingImage, GetMaskImage(workingImage, LowerClothMask, UpperClothMask));
 
@@ -88,13 +93,15 @@ public class CueBallDetector : TableObjectDetector, IDisposable
         for (int i = 0; i < filteredBallContours.Size; i++) 
             CvInvoke.DrawContours(onlyBallsMask, filteredBallContours, i, new MCvScalar(255, 255, 255), -1);
         
-        using var onlyBallsImage = ApplyMask(frame.frame, onlyBallsMask.ToBitmap());
+        using var onlyBallsMaskBitmap = onlyBallsMask.ToBitmap();
+        using var onlyBallsImage = ApplyMask(frame.frame, onlyBallsMaskBitmap);
         using var cueballMask = GetMaskImage(onlyBallsImage, LowerCueBallMask, UpperCueBallMask);
         using var maskInv = new Mat();
         using var tableMat = new Mat();
         
         CvInvoke.Threshold(BitmapToMat(cueballMask, tableMat), maskInv, 5, 255, ThresholdType.BinaryInv);
-        using var cueballMaskApplied = ApplyMask(onlyBallsImage, maskInv.ToBitmap());
+        using var maskInvBitmap = maskInv.ToBitmap();
+        using var cueballMaskApplied = ApplyMask(onlyBallsImage, maskInvBitmap);
         using var allCueBallContoursFound = GetAllContours(cueballMaskApplied);
         
         int framesDelta = lastDetectedCbFrameIndex >= 0 ? frame.Index - lastDetectedCbFrameIndex : 1;

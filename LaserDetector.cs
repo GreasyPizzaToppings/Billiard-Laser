@@ -3,8 +3,10 @@ using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Emgu.CV;
 
-public class LaserDetector : TableObjectDetector
+public class LaserDetector : TableObjectDetector, IDisposable
 {
+    private bool disposed = false;
+
     //laser detection masks
     public Rgb LowerLaserMask = new Rgb(42, 145, 52);
     public Rgb UpperLaserMask = new Rgb(97, 255, 220);
@@ -47,22 +49,15 @@ public class LaserDetector : TableObjectDetector
         laserDetectionResults.OriginalImage = new Bitmap(tableImage);
 
         Bitmap workingImage = new Bitmap(tableImage);
-        Bitmap? transformedImage = null;
+        using var workingMat = new Mat();
+        BitmapToMat(workingImage, workingMat);
 
-        // Apply image transformations if enabled
-        if (EnableSharpening)
-        {
-            transformedImage = SharpenImage(workingImage);
-            workingImage = transformedImage;
-        }
+        if (EnableSharpening) SharpenImage(workingMat);
+        if (EnableBlur) BlurImage(workingMat);
 
-        if (EnableBlur)
-        {
-            transformedImage = BlurImage(workingImage);
-            workingImage = transformedImage;
-        }
-
-        laserDetectionResults.WorkingImage = transformedImage != null ? new Bitmap(transformedImage) : new Bitmap(tableImage);
+        workingImage.Dispose();
+        workingImage = workingMat.ToBitmap();
+        laserDetectionResults.WorkingImage = new Bitmap(workingImage);
 
         using (var workingImageRgb = workingImage.ToImage<Rgb, byte>())
         {
@@ -310,4 +305,24 @@ public class LaserDetector : TableObjectDetector
                //$"  Tracking Timeout: {TrackingTimeout.TotalSeconds}s" +
                $"  Position History Size: {MaxPositionHistory}";
     }
+
+    public void Dispose()
+    {
+        Dispose(true);
+        GC.SuppressFinalize(this);
+    }
+
+    protected virtual void Dispose(bool disposing)
+    {
+        if (!disposed)
+        {
+            if (disposing)
+            {
+                lastPositions?.Clear();
+            }
+            disposed = true;
+        }
+    }
+
+    ~LaserDetector() => Dispose(false);
 }

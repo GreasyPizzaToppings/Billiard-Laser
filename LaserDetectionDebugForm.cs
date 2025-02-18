@@ -6,7 +6,6 @@ namespace billiard_laser
     {
         private bool initialisingControls = true;
         private LaserDetector laserDetector;
-        private bool disposed = false;
         private Bitmap? originalImage;
 
         public event EventHandler? DebugFormClosed;
@@ -14,7 +13,6 @@ namespace billiard_laser
         public LaserDetectionDebugForm(LaserDetector laserDetector)
         {
             this.laserDetector = laserDetector;
-            this.FormClosed += ImageProcessingDebugForm_FormClosed;
 
             InitializeComponent();
             InitMaskTrackbars();
@@ -42,6 +40,8 @@ namespace billiard_laser
             SetImage(workingImagePicBox, images.WorkingImage);
 
             Console.WriteLine(images.Laser);
+
+            images.Dispose();
         }
 
         /// <summary>
@@ -128,6 +128,8 @@ namespace billiard_laser
 
         private void ImageProcessingDebugForm_FormClosed(object? sender, FormClosedEventArgs e)
         {
+            if (components != null) components.Dispose();
+
             filteredCandidatesPicBox.Image?.Dispose();
             allCandidatesPicBox.Image?.Dispose();
             scoredCandidatesPicBox.Image?.Dispose();
@@ -136,7 +138,7 @@ namespace billiard_laser
             workingImagePicBox.Image?.Dispose();
             originalImage?.Dispose();
 
-            laserDetector = null;
+            laserDetector?.Dispose();
 
             DebugFormClosed?.Invoke(this, EventArgs.Empty);
         }
