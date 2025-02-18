@@ -8,7 +8,7 @@ using Accord.IO;
 
 public class Ball : IDisposable
 {
-    private VectorOfPoint _contour;
+    private VectorOfPoint? _contour;
     private readonly object _lock = new();
     private bool _disposed = false; // To detect redundant calls
     private Point? _centre = null;
@@ -26,7 +26,7 @@ public class Ball : IDisposable
             {
                 if (!_area.HasValue)
                 {
-                    if (_contour == null || _disposed || _contour.Size <= 1) return 0;
+                    if (_contour?.Size <= 1) return 0;
                     _area = CvInvoke.ContourArea(_contour);
                 }
                 return _area.Value;
@@ -35,14 +35,14 @@ public class Ball : IDisposable
     }
 
     public double Confidence { get; set; }
+
     public VectorOfPoint Contour
-    
     {
         get
         {
             lock (_lock)
             {
-                return new VectorOfPoint(_contour.ToArray());
+                return new VectorOfPoint(_contour?.ToArray());
             }
         }
     }
@@ -55,12 +55,12 @@ public class Ball : IDisposable
             {
                 if (!_centre.HasValue)
                 {
-                    if (_contour == null || _contour.Size == 0)
+                    if (_contour?.Size == 0)
                     {
                         return Point.Empty;
                     }
                     
-                    if (_contour.Size == 1)
+                    if (_contour?.Size == 1)
                     {
                         // If only one point, that point is the center
                         var points = _contour.ToArray();
@@ -149,7 +149,7 @@ public class Ball : IDisposable
         _contour.Push(contour);
     }
 
-    public Ball() { }
+    private Ball() { }
 
     public Bitmap Draw(Bitmap baseImage)
     {
