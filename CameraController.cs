@@ -7,7 +7,7 @@ public class CameraController : IDisposable
 {
     private bool disposed = false;
     private FilterInfoCollection filterInfoCollection;
-    private VideoCaptureDevice videoCaptureDevice;
+    private VideoCaptureDevice? videoCaptureDevice;
     private ComboBox comboBox;
     private ManualResetEvent frameReceivedEvent = new ManualResetEvent(false);
     private int frameIndex = 0;
@@ -15,8 +15,8 @@ public class CameraController : IDisposable
     private bool isMirrored = false;
     private OpenCvSharp.Size outputResolution;
 
-    public event EventHandler<VideoFrame> ReceivedFrame;
-    public event EventHandler TransformationChanged; //for flip or mirror
+    public event EventHandler<VideoFrame>? ReceivedFrame;
+    public event EventHandler? TransformationChanged; //for flip or mirror
 
     public bool IsFlipped
     {
@@ -91,34 +91,30 @@ public class CameraController : IDisposable
     {
         frameReceivedEvent.Set();
 
-        using (Bitmap originalFrame = (Bitmap)eventArgs.Frame.Clone())
+        // only clone if we need to transform or resize
+        Bitmap workingFrame = (isFlipped || isMirrored || 
+            eventArgs.Frame.Width != OutputResolution.Width || 
+            eventArgs.Frame.Height != OutputResolution.Height) 
+            ? (Bitmap)eventArgs.Frame.Clone() 
+            : eventArgs.Frame;
+        
+        try
         {
-            // First apply any transformations (flip/mirror)
-            Bitmap transformedFrame = TransformFrame(originalFrame);
+            if (isFlipped || isMirrored) workingFrame = TransformFrame(workingFrame);
+            if (workingFrame.Width != OutputResolution.Width || workingFrame.Height != OutputResolution.Height)
+                workingFrame = ResizeFrame(workingFrame);
 
-            // Then resize to the desired output resolution
-            using (Bitmap resizedFrame = ResizeFrame(transformedFrame))
-            {
-                VideoFrame frame = new VideoFrame(resizedFrame, frameIndex);
-                frameIndex++;
-                ReceivedFrame?.Invoke(this, frame);
-            }
-
-            // Clean up the intermediate transformed frame
-            if (transformedFrame != originalFrame)
-            {
-                transformedFrame.Dispose();
-            }
+            ReceivedFrame?.Invoke(this, new VideoFrame(workingFrame, frameIndex++));
+        }
+        finally 
+        {
+            // only dispose if we created a new bitmap
+            if (workingFrame != eventArgs.Frame) workingFrame.Dispose();
         }
     }
 
     private Bitmap ResizeFrame(Bitmap original)
     {
-        if (original.Width == OutputResolution.Width && original.Height == OutputResolution.Height)
-        {
-            return (Bitmap)original.Clone();
-        }
-
         Bitmap resized = new Bitmap(OutputResolution.Width, OutputResolution.Height);
 
         using (Graphics g = Graphics.FromImage(resized))
@@ -143,9 +139,6 @@ public class CameraController : IDisposable
     /// <returns></returns>
     private Bitmap TransformFrame(Bitmap original)
     {
-        if (!IsFlipped && !IsMirrored)
-            return (Bitmap)original.Clone();
-
         Bitmap transformed = new Bitmap(original.Width, original.Height);
 
         using (Graphics g = Graphics.FromImage(transformed))
@@ -172,7 +165,7 @@ public class CameraController : IDisposable
         return transformed;
     }
 
-private void PopulateCameraComboBox()
+    private void PopulateCameraComboBox()
     {
         filterInfoCollection = new FilterInfoCollection(FilterCategory.VideoInputDevice);
         foreach (FilterInfo Device in filterInfoCollection)
