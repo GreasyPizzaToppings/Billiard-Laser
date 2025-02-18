@@ -10,8 +10,8 @@ namespace billiard_laser
     public partial class BilliardLaserForm : Form
     {
         //video debugging form
-        private BallDetectionDebugForm ballDetectionDebugForm;
-        private BallReplacementForm ballReplacementForm;
+        private BallDetectionDebugForm? ballDetectionDebugForm;
+        private BallReplacementForm? ballReplacementForm;
 
         //utility classes
         private CameraController cameraController;
@@ -33,7 +33,7 @@ namespace billiard_laser
         //frames
         private FrameQueueManager<VideoFrame> rawFrames;
         private FrameQueueManager<VideoFrame> processedFrames;
-        private const int maxFrames = 1000; //testing
+        private const int maxFrames = 1500; //testing
 
         //flags
         private bool replayInProgress = false;
@@ -51,7 +51,7 @@ namespace billiard_laser
         private const string PAUSE_ICON = "⏸";
         private const string PLAY_ICON = "⏵";
 
-        private CancellationTokenSource videoCancellationTokenSource;
+        private CancellationTokenSource? videoCancellationTokenSource;
 
         public bool DetectingBalls
         {
@@ -272,53 +272,27 @@ namespace billiard_laser
             videoCancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = videoCancellationTokenSource.Token;
 
-            // Create a local copy of the frames to avoid enumeration modification issues
-            var framesCopy = rawFrames.ToList();
-
-            foreach (VideoFrame rawFrame in framesCopy)
+            var indices = rawFrames.FrameIndices.Cast<int>().ToList(); // create a snapshot of indices to avoid collection being modified
+            foreach (int index in indices)
             {
-                while (CurrentPlaybackState == PlaybackState.Paused)
-                {
-                    await Task.Delay(100, cancellationToken);
-                }
+                while (CurrentPlaybackState == PlaybackState.Paused) await Task.Delay(100, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException();
 
-                if (cancellationToken.IsCancellationRequested)
-                {
-                    // The playback has been stopped, break out of the loop
-                    throw new OperationCanceledException();
-                }
-
-                ProcessFrame(rawFrame);
+                ProcessFrame(rawFrames.GetFrame(index));
             }
         }
 
         //display a selected processed frame of the video and send to debug form if its open
         private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
-            {
-                var processedFrame = processedFrames.GetFrame(selectedIndex);
-                if (processedFrame != null && processedFrame.frame != null)
-                {
-                    btnShowReplaceBallsForm.Enabled = true; //there are now balls to replace
-                    UpdatePictureBoxImage(new Bitmap(processedFrame.frame));
+            if (listBoxProcessedFrames.SelectedItem is not int selectedIndex) return;
 
-                    var rawFrame = rawFrames.GetFrame(selectedIndex);
-                    if (rawFrame != null && rawFrame.frame != null)
-                    {
-                        try
-                        {
-                            debugStopwatch.Restart();
-                            UpdateDebugForms(rawFrame);
-                            debugStopwatch.Stop();   
-                        }
-                        catch (ArgumentException)
-                        {
-                            Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
-                        }
-                    }
-                    else Console.WriteLine("Raw frame was null. Not sending to debug form!");
-                }
+            if (processedFrames.GetFrame(selectedIndex) is VideoFrame processedFrame && 
+                processedFrame.frame is Bitmap processedBitmap)
+            {
+                btnShowReplaceBallsForm.Enabled = true;
+                UpdatePictureBoxImage(new Bitmap(processedBitmap));
+                UpdateDebugForms(selectedIndex);
             }
         }
 
@@ -361,8 +335,8 @@ namespace billiard_laser
                     try
                     {
                         results = ballDetector.GetCueBallResults(workingFrame);
-                        processedFrame = new VideoFrame(new Bitmap(results.CueBallHighlighted), workingFrame.Index, workingFrame.FrameRate);
-                        shotDetector.ProcessFrame(results.CueBall, processedFrame);
+                        processedFrame = new VideoFrame(new Bitmap(results?.CueBallHighlighted), workingFrame.Index, workingFrame.FrameRate);
+                        shotDetector.ProcessFrame(results?.CueBall, processedFrame);
 
                         ballDetectionDebugForm?.DisplayDebugImages(results); //use precalced images to avoid recalculating the same images for debug when playing
                     }
@@ -384,7 +358,6 @@ namespace billiard_laser
             catch (Exception ex)
             {
                 Console.WriteLine($"Error in ProcessFrame: {ex.Message}");
-                processedFrame?.Dispose();
             }
 
             finally
@@ -396,9 +369,9 @@ namespace billiard_laser
         }
 
         /// <summary>
-        /// Helper method to update PictureBoxImage safely
+        /// Updates the PictureBox image, taking ownership of the new image.
+        /// Caller should provide a cloned image if they need to retain the original.
         /// </summary>
-        /// <param name="newImage"></param>
         private void UpdatePictureBoxImage(Bitmap newImage)
         {
             var oldImage = pictureBoxImage.Image;
@@ -489,15 +462,13 @@ namespace billiard_laser
                 for (int i = 0; i < shot.FrameCount; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    using (Bitmap frameToDrawOn = shot.GetFrameCopy(i).frame)
-                    {
-                        Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
-                        UpdatePictureBoxImage(drawnImage);
-                        await Task.Delay(delay, cancellationToken);
-                    }
+                    using var frameToDrawOn = shot.GetFrameCopy(i).frame;
+                    var drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
+                    UpdatePictureBoxImage(drawnImage);
+                    await Task.Delay(delay, cancellationToken);
                 }
             }
-            catch (OperationCanceledException e)
+            catch (OperationCanceledException)
             {
                 Console.WriteLine("Shot replay ball path cancelled.");
             }
@@ -607,88 +578,79 @@ namespace billiard_laser
             rawFrames.Dispose();
             processedFrames.Dispose();
 
-            if (pictureBoxImage.Image != null)
-            {
-                pictureBoxImage.Image.Dispose();
-                pictureBoxImage.Image = null;
-            }
+            pictureBoxImage.Image?.Dispose();
+            pictureBoxImage.Image = null;
         }
 
         private void btnShowDebugForm_Click(object sender, EventArgs e)
         {
-            if (ballDetectionDebugForm == null || ballDetectionDebugForm.IsDisposed)
+            if (ballDetectionDebugForm?.IsDisposed != false)
             {
                 ballDetectionDebugForm = new BallDetectionDebugForm(ballDetector);
-
                 ballDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
                 ballDetectionDebugForm.Show();
 
-                //init debug form with current (raw) selected rawFrame
-                if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
+                // init debug form with current frame if one is selected
+                if (listBoxProcessedFrames.SelectedItem is int selectedIndex && 
+                    rawFrames.GetFrame(selectedIndex) is VideoFrame rawFrame)
                 {
-                    var rawFrame = rawFrames.GetFrame(selectedIndex);
-                    if (rawFrame != null) ballDetectionDebugForm.GetAndShowDebugImages(rawFrame);
-                    else Console.WriteLine("Raw rawFrame was null. not sending to debug form!");
+                    ballDetectionDebugForm.GetAndShowDebugImages(rawFrame);
                 }
             }
-
             else ballDetectionDebugForm.Focus();
         }
 
-        private void DebugForm_FormClosed(object sender, EventArgs e)
+        private void DebugForm_FormClosed(object? sender, EventArgs e)
         {
-            if (ballDetectionDebugForm != null)
+            ballDetectionDebugForm?.Dispose();
+            ballDetectionDebugForm = null;
+        }
+
+        //if open, send our raw frame to the ball debug forms
+        private void UpdateDebugForms(int frameIndex)
+        {
+            try
             {
-                ballDetectionDebugForm.Dispose();
-                ballDetectionDebugForm = null;
+                if (rawFrames.GetFrame(frameIndex) is VideoFrame rawFrame)
+                {
+                    debugStopwatch.Restart();
+                    if (CurrentPlaybackState != PlaybackState.Playing) 
+                        ballDetectionDebugForm?.GetAndShowDebugImages(rawFrame);
+                    ballReplacementForm?.UpdateTableOverlay(rawFrame);
+                    debugStopwatch.Stop();
+                }
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
             }
         }
 
-        //if open, send our raw frame to the ball replacement and image processing debug forms
-        private void UpdateDebugForms(VideoFrame originalFrame) {
-            if (CurrentPlaybackState != PlaybackState.Playing) ballDetectionDebugForm?.GetAndShowDebugImages(originalFrame);
-            ballReplacementForm?.UpdateTableOverlay(originalFrame);
-        }
-
-        #region Ball Replacement Form
-
-        private void BallReplacementForm_FormClosed(object sender, EventArgs e)
+        private void BallReplacementForm_FormClosed(object? sender, EventArgs e)
         {
-            if (ballReplacementForm != null)
-            {
-                ballReplacementForm.Dispose();
-                ballReplacementForm = null;
-            }
+            ballReplacementForm?.Dispose();
+            ballReplacementForm = null;   
         }
 
         private void btnShowReplaceBallsForm_Click(object sender, EventArgs e)
         {
-            if (listBoxProcessedFrames.SelectedItem is int selectedIndex)
+            if (listBoxProcessedFrames.SelectedItem is int selectedIndex &&
+                rawFrames.GetFrame(selectedIndex) is VideoFrame rawFrame)
             {
-                var rawFrame = rawFrames.GetFrame(selectedIndex);
-
-                if (rawFrame != null)
+                // new form
+                if (ballReplacementForm?.IsDisposed != false)
                 {
-                    if (ballReplacementForm == null || ballReplacementForm.IsDisposed)
-                    {
-                        // Create new form if it doesn't exist
-                        ballReplacementForm = new BallReplacementForm(rawFrame.frame, cameraController);
-                        ballReplacementForm.BallReplacementFormClosed += BallReplacementForm_FormClosed;
-                        ballReplacementForm.Show();
-                    }
-                    else
-                    {
-                        // Update existing form with current frame
-                        ballReplacementForm.TargetTableLayout = rawFrame.frame;
-                        ballReplacementForm.Focus();
-                    }
+                    ballReplacementForm = new BallReplacementForm(rawFrame.frame, cameraController);
+                    ballReplacementForm.BallReplacementFormClosed += BallReplacementForm_FormClosed;
+                    ballReplacementForm.Show();
                 }
+                // update existing form
                 else
                 {
-                    Console.WriteLine("Raw frame was null. Not sending to debug form!");
+                    ballReplacementForm.TargetTableLayout = rawFrame.frame;
+                    ballReplacementForm.Focus();
                 }
             }
         }
-        #endregion
     }
 }

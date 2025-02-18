@@ -46,7 +46,7 @@ public class LaserDetector : TableObjectDetector
         LaserDetectionResults laserDetectionResults = new LaserDetectionResults();
         laserDetectionResults.OriginalImage = new Bitmap(tableImage);
 
-        Bitmap workingImage = tableImage;
+        Bitmap workingImage = new Bitmap(tableImage);
         Bitmap? transformedImage = null;
 
         // Apply image transformations if enabled

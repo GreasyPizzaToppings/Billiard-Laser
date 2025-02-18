@@ -266,7 +266,6 @@ namespace billiard_laser
             trackBarLaserMaskBlueMax.Name = "trackBarLaserMaskBlueMax";
             trackBarLaserMaskBlueMax.Size = new Size(307, 37);
             trackBarLaserMaskBlueMax.TabIndex = 36;
-            trackBarLaserMaskBlueMax.ValueChanged += trackBarLaserMaskBlueMax_ValueChanged;
             // 
             // trackBarLaserMaskGreenMax
             // 
@@ -277,7 +276,6 @@ namespace billiard_laser
             trackBarLaserMaskGreenMax.Name = "trackBarLaserMaskGreenMax";
             trackBarLaserMaskGreenMax.Size = new Size(307, 37);
             trackBarLaserMaskGreenMax.TabIndex = 36;
-            trackBarLaserMaskGreenMax.ValueChanged += trackBarLaserMaskGreenMax_ValueChanged;
             // 
             // trackBarLaserMaskRedMax
             // 
@@ -288,7 +286,6 @@ namespace billiard_laser
             trackBarLaserMaskRedMax.Name = "trackBarLaserMaskRedMax";
             trackBarLaserMaskRedMax.Size = new Size(307, 37);
             trackBarLaserMaskRedMax.TabIndex = 36;
-            trackBarLaserMaskRedMax.ValueChanged += trackBarLaserMaskRedMax_ValueChanged;
             // 
             // trackBarLaserMaskBlueMin
             // 
@@ -299,7 +296,6 @@ namespace billiard_laser
             trackBarLaserMaskBlueMin.Name = "trackBarLaserMaskBlueMin";
             trackBarLaserMaskBlueMin.Size = new Size(307, 36);
             trackBarLaserMaskBlueMin.TabIndex = 44;
-            trackBarLaserMaskBlueMin.ValueChanged += trackBarLaserMaskBlueMin_ValueChanged;
             // 
             // trackBarLaserMaskGreenMin
             // 
@@ -311,7 +307,6 @@ namespace billiard_laser
             trackBarLaserMaskGreenMin.Size = new Size(307, 36);
             trackBarLaserMaskGreenMin.TabIndex = 43;
             trackBarLaserMaskGreenMin.Value = 3;
-            trackBarLaserMaskGreenMin.ValueChanged += trackBarLaserMaskGreenMin_ValueChanged;
             // 
             // trackBarLaserMaskRedMin
             // 
@@ -322,7 +317,6 @@ namespace billiard_laser
             trackBarLaserMaskRedMin.Name = "trackBarLaserMaskRedMin";
             trackBarLaserMaskRedMin.Size = new Size(307, 36);
             trackBarLaserMaskRedMin.TabIndex = 35;
-            trackBarLaserMaskRedMin.ValueChanged += trackBarLaserMaskRedMin_ValueChanged;
             // 
             // labelLaserMaskMax
             // 
@@ -441,7 +435,6 @@ namespace billiard_laser
             checkBoxEnableSharpen.TabIndex = 39;
             checkBoxEnableSharpen.Text = "Use Sharpening";
             checkBoxEnableSharpen.UseVisualStyleBackColor = true;
-            checkBoxEnableSharpen.CheckedChanged += checkBoxEnableSharpen_CheckedChanged;
             // 
             // checkBoxEnableTableBoundary
             // 
@@ -453,7 +446,6 @@ namespace billiard_laser
             checkBoxEnableTableBoundary.TabIndex = 39;
             checkBoxEnableTableBoundary.Text = "Use Table Boundary";
             checkBoxEnableTableBoundary.UseVisualStyleBackColor = true;
-            checkBoxEnableTableBoundary.CheckedChanged += checkBoxEnableTableBoundary_CheckedChanged;
             // 
             // checkBoxEnableBlurr
             // 
@@ -465,7 +457,6 @@ namespace billiard_laser
             checkBoxEnableBlurr.TabIndex = 38;
             checkBoxEnableBlurr.Text = "Use Blur";
             checkBoxEnableBlurr.UseVisualStyleBackColor = true;
-            checkBoxEnableBlurr.CheckedChanged += checkBoxEnableBlurr_CheckedChanged;
             // 
             // tableLayoutPanel1
             // 
