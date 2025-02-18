@@ -27,9 +27,6 @@ namespace billiard_laser
         private bool replayInProgress = false;
         private bool loadedVideoStarted = false;
 
-        private PlaybackController.PlaybackState playbackState;
-        private MediaInputType currentInputType;
-
         //fps
         private Stopwatch stopwatch = new Stopwatch();
         private Stopwatch debugStopwatch = new Stopwatch();
@@ -37,6 +34,8 @@ namespace billiard_laser
         private Queue<double> frameProcessingTimes = new Queue<double>();
 
         private CancellationTokenSource? videoCancellationTokenSource;
+
+        private MediaInputType currentInputType;
 
         private readonly PlaybackController playbackController;
 
@@ -58,12 +57,8 @@ namespace billiard_laser
 
         private PlaybackController.PlaybackState CurrentPlaybackState
         {
-            get => playbackState;
-            set
-            {
-                playbackState = value;
-                playbackController.State = value;
-            }
+            get => playbackController.State;
+            set => playbackController.State = value;
         }
 
         private enum MediaInputType
@@ -77,7 +72,6 @@ namespace billiard_laser
             InitializeComponent();
 
             playbackController = new PlaybackController(btnPlayPause, btnNextFrame, btnLastFrame);
-            playbackController.PlaybackStateChanged += state => playbackState = state;
             playbackController.NextFrameRequested += (s, e) => ShowNextFrame();
             playbackController.LastFrameRequested += (s, e) => ShowPreviousFrame();
 
@@ -176,8 +170,11 @@ namespace billiard_laser
                     return;
                 }
 
-                rawFrames.Enqueue(frame);
-                ProcessFrame(frame);
+                else 
+                {
+                    rawFrames.Enqueue(frame);
+                    ProcessFrame(frame);
+                }
             }
 
             catch (Exception ex)
@@ -185,6 +182,7 @@ namespace billiard_laser
                 Console.WriteLine("exception in camera controller received frame: " + ex.Message);
                 return;
             }
+            
         }
 
         /// <summary>
@@ -289,6 +287,18 @@ namespace billiard_laser
             btnShowReplaceBallsForm.Enabled = false;
         }
 
+        private void ShowNextFrame()
+        {
+            if (listBoxProcessedFrames.SelectedIndex < listBoxProcessedFrames.Items.Count - 1)
+                listBoxProcessedFrames.SelectedIndex++;
+        }
+
+        private void ShowPreviousFrame()
+        {
+            if (listBoxProcessedFrames.SelectedIndex > 0)
+                listBoxProcessedFrames.SelectedIndex--;
+        }
+
         /// <summary>
         /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
         /// </summary>
@@ -330,7 +340,7 @@ namespace billiard_laser
                     }
                 }
                 else processedFrame = rawFrame.Clone();
-
+              
                 processedFrames.Enqueue(processedFrame);
                 listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; // scrolls and updates pic box and debug forms
 
@@ -492,12 +502,6 @@ namespace billiard_laser
             else ballDetectionDebugForm.Focus();
         }
 
-        private void DebugForm_FormClosed(object? sender, EventArgs e)
-        {
-            ballDetectionDebugForm?.Dispose();
-            ballDetectionDebugForm = null;
-        }
-
         //if open, send our raw frame to the ball debug forms
         private void UpdateDebugForms(int frameIndex)
         {
@@ -516,12 +520,6 @@ namespace billiard_laser
             {
                 Console.WriteLine("Raw frame was disposed. Not sending to debug form!");
             }
-        }
-
-        private void BallReplacementForm_FormClosed(object? sender, EventArgs e)
-        {
-            ballReplacementForm?.Dispose();
-            ballReplacementForm = null;
         }
 
         private void btnShowReplaceBallsForm_Click(object sender, EventArgs e)
@@ -559,16 +557,14 @@ namespace billiard_laser
             processedFrames.Dispose();
         }
 
-        private void ShowNextFrame()
+        private void DebugForm_FormClosed(object? sender, EventArgs e)
         {
-            if (listBoxProcessedFrames.SelectedIndex < listBoxProcessedFrames.Items.Count - 1)
-                listBoxProcessedFrames.SelectedIndex++;
+            ballDetectionDebugForm = null;
         }
 
-        private void ShowPreviousFrame()
+        private void BallReplacementForm_FormClosed(object? sender, EventArgs e)
         {
-            if (listBoxProcessedFrames.SelectedIndex > 0)
-                listBoxProcessedFrames.SelectedIndex--;
+            ballReplacementForm = null;
         }
     }
 }

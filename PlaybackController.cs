@@ -11,7 +11,6 @@ public class PlaybackController
     private readonly Button lastFrameButton;
     private PlaybackState state;
 
-    public event Action<PlaybackState>? PlaybackStateChanged;
     public event EventHandler? NextFrameRequested;
     public event EventHandler? LastFrameRequested;
 
@@ -43,7 +42,6 @@ public class PlaybackController
         {
             state = value;
             UpdateControlsState();
-            PlaybackStateChanged?.Invoke(state);
         }
     }
 
