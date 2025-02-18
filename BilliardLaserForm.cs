@@ -36,9 +36,6 @@ namespace billiard_laser
         private const int FPS_WINDOW_SIZE = 30;
         private Queue<double> frameProcessingTimes = new Queue<double>();
 
-        private const string PAUSE_ICON = "⏸";
-        private const string PLAY_ICON = "⏵";
-
         private CancellationTokenSource? videoCancellationTokenSource;
 
         private readonly PlaybackController playbackController;
@@ -321,8 +318,8 @@ namespace billiard_laser
                     try
                     {
                         using var results = ballDetector.GetCueBallResults(rawFrame);
-                        processedFrame = new VideoFrame(new Bitmap(results?.CueBallHighlighted), rawFrame.Index, rawFrame.FrameRate);
-                        shotDetector.ProcessFrame(results.CueBall, processedFrame);
+                        processedFrame = new VideoFrame(new Bitmap(results?.CueBallHighlighted ?? rawFrame.frame), rawFrame.Index, rawFrame.FrameRate);
+                        shotDetector.ProcessFrame(results?.CueBall, processedFrame);
 
                         ballDetectionDebugForm?.DisplayDebugImages(results); // use precalced images to avoid recalculating the same images for debug when playing
                     }

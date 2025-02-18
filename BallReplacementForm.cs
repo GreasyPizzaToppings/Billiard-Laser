@@ -15,7 +15,7 @@ namespace billiard_laser
     public partial class BallReplacementForm : Form
     {
         private Bitmap targetTableLayout;
-        private ArduinoController? arduinoController;
+        private ArduinoController arduinoController;
         private LaserDetector laserDetector;
         private LaserDetectionDebugForm? laserDetectionDebugForm;
         private bool calibratingLaserPosition = false;
@@ -186,9 +186,7 @@ namespace billiard_laser
         private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             laserDetectionDebugForm?.Dispose();
-            laserDetectionDebugForm = null;
             arduinoController?.Dispose();
-            arduinoController = null;
             targetTableLayout.Dispose();
             pictureBoxTable.Dispose();
 
