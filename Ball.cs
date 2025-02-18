@@ -139,7 +139,7 @@ public class Ball : IDisposable
     /// <exception cref="ArgumentNullException">contour is null or has no points</exception>
     public Ball(VectorOfPoint contour)
     {
-        if (contour == null || contour.Size == 0)
+        if (contour == null || contour.Size <= 0)
         {
             throw new ArgumentNullException(nameof(contour));
         }

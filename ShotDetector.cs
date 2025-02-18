@@ -12,7 +12,7 @@ public class ShotDetector : IDisposable
     // Configurable parameters
     public int MinFramesForShot = 20;             // Minimum frames needed to consider it a valid shot
     public double MinTotalDistance = 50.0;        // Minimum total distance for a valid shot
-    public double StationaryThreshold = 5;       // Maximum movement allowed to consider ball stationary
+    public double StationaryThreshold = 5;        // Maximum movement allowed to consider ball stationary
     public int StationaryFrameWindow = 15;        // Number of frames to check for ball being stationary
 
     //keep a rolling window of this data even without a shot being tracked
@@ -44,7 +44,7 @@ public class ShotDetector : IDisposable
     public void ProcessFrame(Ball? cueBall, VideoFrame frame)
     {
         if (disposed) throw new ObjectDisposedException(nameof(ShotDetector));
-        if (!IsValidBall(cueBall)) return;
+        if (cueBall == null) return;
 
         // queues storing data to be ready for new shots
         recentPositions.Enqueue(cueBall.Centre);
@@ -66,12 +66,6 @@ public class ShotDetector : IDisposable
 
     private bool IsValidShot() {
         if (currentShot == null || currentShot.DistanceTravelled < MinTotalDistance || currentShot.FrameCount < MinFramesForShot) return false;
-        return true;
-    }
-
-    private bool IsValidBall(Ball? cueBall)
-    {
-        if (cueBall == null || cueBall.Contour == null || cueBall.Contour.ToArray().Length <= 0) return false;
         return true;
     }
 
@@ -107,7 +101,7 @@ public class ShotDetector : IDisposable
 
     private void FinalizeShot()
     {
-        OnShotFinished(currentShot);
+        if (currentShot != null) OnShotFinished(currentShot);
         ResetState();
     }
 
