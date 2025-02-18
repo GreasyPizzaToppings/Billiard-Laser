@@ -18,18 +18,6 @@ namespace billiard_laser
         private readonly ShotDetector shotDetector;
         private readonly CueBallDetector ballDetector;
 
-        //selection of output resolutions
-        private static OpenCvSharp.Size p200 = new OpenCvSharp.Size(355, 200);
-        private static OpenCvSharp.Size p270 = new OpenCvSharp.Size(480, 270);
-        private static OpenCvSharp.Size p300 = new OpenCvSharp.Size(534, 300);
-        private static OpenCvSharp.Size p360 = new OpenCvSharp.Size(640, 360);
-        private static OpenCvSharp.Size p480 = new OpenCvSharp.Size(854, 480);
-        private static OpenCvSharp.Size p720 = new OpenCvSharp.Size(1280, 720);
-        private static OpenCvSharp.Size p1080 = new OpenCvSharp.Size(1920, 1080);
-
-        //testing output
-        private OpenCvSharp.Size outputVideoResolution = p300;
-
         //frames
         private readonly FrameQueueManager<VideoFrame> rawFrames;
         private readonly FrameQueueManager<VideoFrame> processedFrames;
@@ -54,6 +42,8 @@ namespace billiard_laser
         private CancellationTokenSource? videoCancellationTokenSource;
 
         private readonly PlaybackController playbackController;
+
+        public OpenCvSharp.Size OutputVideoResolution { get; private set; }
 
         private bool DetectingBalls
         {
@@ -94,8 +84,11 @@ namespace billiard_laser
             playbackController.NextFrameRequested += (s, e) => ShowNextFrame();
             playbackController.LastFrameRequested += (s, e) => ShowPreviousFrame();
 
+            // set output resolution. todo: add user-configurable way
+            OutputVideoResolution = ResolutionHelper.GetSize(VideoResolution.P300);
+
             // initialise core components
-            cameraController = new CameraController(cboCamera, outputVideoResolution);
+            cameraController = new CameraController(cboCamera, OutputVideoResolution);
             shotDetector = new ShotDetector();
             ballDetector = new CueBallDetector();
             rawFrames = new FrameQueueManager<VideoFrame>(maxFrames: maxFrames);
@@ -216,7 +209,7 @@ namespace billiard_laser
                 {
                     videoCancellationTokenSource = new CancellationTokenSource();
                     CancellationToken cancellationToken = videoCancellationTokenSource.Token;
-                    await VideoFrameLoader.LoadFramesAsync(openFileDialog.FileName, outputVideoResolution, rawFrames, cancellationToken);
+                    await VideoFrameLoader.LoadFramesAsync(openFileDialog.FileName, OutputVideoResolution, rawFrames, cancellationToken);
 
                     if (cancellationToken.IsCancellationRequested)
                     {
@@ -393,7 +386,7 @@ namespace billiard_laser
                     ? 1.0 / averageProcessingTime
                     : 0;
 
-                labelFrameRate.Text = $"FPS: {fps:F2} @ {outputVideoResolution.Width}x{outputVideoResolution.Height}";
+                labelFrameRate.Text = $"FPS: {fps:F2} @ {OutputVideoResolution.Width}x{OutputVideoResolution.Height}";
             }
         }
 
@@ -449,7 +442,7 @@ namespace billiard_laser
                 {
                     cancellationToken.ThrowIfCancellationRequested();
                     using var frameToDrawOn = shot.GetFrameCopy(i).frame;
-                    var drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(outputVideoResolution.Width, outputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
+                    var drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(OutputVideoResolution.Width, OutputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
                     UpdatePictureBoxImage(drawnImage);
                     await Task.Delay(delay, cancellationToken);
                 }
