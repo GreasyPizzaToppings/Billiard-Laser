@@ -958,7 +958,6 @@ namespace billiard_laser
 
         #endregion
         private PictureBox scoredCandidatesPicBox;
-        private PictureBox appliedMaskPicBox;
         private PictureBox cueBallCandidatesPicBox;
         private Label labelWorkingImage;
         private Label labelTableMaskApplied;
@@ -1021,6 +1020,5 @@ namespace billiard_laser
         private PictureBox cueBallMaskPicBox;
         private Label labelCueBallMask;
         private PictureBox cueBallFoundPicBox;
-        private Label labelMaskApplied;
     }
 }

@@ -635,10 +635,8 @@ namespace billiard_laser
         #endregion
         private PictureBox scoredCandidatesPicBox;
         private PictureBox allCandidatesPicBox;
-        private Label labelOriginalImage;
         private Label labelWorkingImage;
         private Label labelScoredCandidates;
-        private Label labelMaskApplied;
         private Label labelFilteredCandidates;
         private Label labelAllCandidates;
         private TableLayoutPanel tableLayoutPanelMain;

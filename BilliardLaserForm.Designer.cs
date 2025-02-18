@@ -330,8 +330,7 @@ namespace billiard_laser
             Margin = new Padding(3, 2, 3, 2);
             Name = "BilliardLaserForm";
             Text = "Billiard Laser";
-            FormClosing += Form1_FormClosing;
-            Load += Form1_Load;
+            FormClosed += BilliardLaserForm_FormClosed;
             ((System.ComponentModel.ISupportInitialize)pictureBoxImage).EndInit();
             tableLayoutPanelVideoControls.ResumeLayout(false);
             panelMediaControls.ResumeLayout(false);
@@ -345,7 +344,6 @@ namespace billiard_laser
         #endregion
         private PictureBox pictureBoxImage;
         private TableLayoutPanel tableLayoutPanelVideoControls;
-        private GroupBox groupBoxVideoControls;
         private Panel panelVideoControls;
         private Label labelShots;
         private Label labelFrames;
