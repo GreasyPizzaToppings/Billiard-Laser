@@ -9,7 +9,6 @@ public class FrameQueueManager<T> where T : IDisposable
     private int writePosition = 0;
     private int readPosition = 0;
     private int count = 0;
-    private readonly int batchClearSize;
 
     public readonly int MaxFrames;
     public IBindingList FrameIndices => frameIndices;
@@ -19,7 +18,6 @@ public class FrameQueueManager<T> where T : IDisposable
     {
         MaxFrames = maxFrames;
         frames = new T[maxFrames];
-        batchClearSize = (int)(maxFrames * 0.15); // clear 15% at once
     }
 
     /// <summary>
@@ -29,18 +27,13 @@ public class FrameQueueManager<T> where T : IDisposable
     {
         if (frame == null) throw new ArgumentNullException(nameof(frame));
 
-        // if we're at capacity, batch clear old frames
         if (count >= MaxFrames)
         {
-            // clear batch of oldest frames
-            for (int i = 0; i < batchClearSize; i++)
-            {
-                frames[readPosition]?.Dispose();
-                frames[readPosition] = default;
-                if (frameIndices.Count > 0) frameIndices.RemoveAt(0);
-                readPosition = (readPosition + 1) % MaxFrames;
-                count--;
-            }
+            frames[readPosition]?.Dispose();
+            frames[readPosition] = default;
+            if (frameIndices.Count > 0) frameIndices.RemoveAt(0);
+            readPosition = (readPosition + 1) % MaxFrames;
+            count--;
         }
 
         // add new frame
