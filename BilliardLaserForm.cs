@@ -21,7 +21,7 @@ namespace billiard_laser
         //frames
         private readonly FrameQueueManager<VideoFrame> rawFrames;
         private readonly FrameQueueManager<VideoFrame> processedFrames;
-        private const int maxFrames = 1500; //testing
+        private const int maxFrames = 1000; //testing
 
         //flags
         private bool replayInProgress = false;
@@ -30,7 +30,7 @@ namespace billiard_laser
         //fps
         private Stopwatch stopwatch = new Stopwatch();
         private Stopwatch debugStopwatch = new Stopwatch();
-        private const int FPS_WINDOW_SIZE = 30;
+        private const int FPS_WINDOW_SIZE = 50;
         private Queue<double> frameProcessingTimes = new Queue<double>();
 
         private CancellationTokenSource? videoCancellationTokenSource;
@@ -156,33 +156,30 @@ namespace billiard_laser
         private void btnStartCameraInput_Click(object sender, EventArgs e)
         {
             SetStateLoadCamera();
+            stopwatch.Restart();
             if (cameraController.StartCameraCapture()) CurrentPlaybackState = PlaybackController.PlaybackState.Playing;
         }
 
         private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
         {
+            if (currentInputType != MediaInputType.Camera) throw new InvalidOperationException("Camera controller frame received despite not being input media type.");
             try
             {
-                if (CurrentPlaybackState == PlaybackController.PlaybackState.Paused || currentInputType != MediaInputType.Camera)
+                
+                if (CurrentPlaybackState == PlaybackController.PlaybackState.Playing)
                 {
-                    ballReplacementForm?.UpdateTableOverlay(frame); //send to replacement form even if main form is not processing ball detection
-                    frame.Dispose();
-                    return;
-                }
-
-                else 
-                {
-                    rawFrames.Enqueue(frame);
+                    rawFrames.Enqueue(frame.Clone());
                     ProcessFrame(frame);
                 }
+                else {
+                    Invoke(new Action(() => ballReplacementForm?.UpdateTableOverlay(frame)));
+                }
             }
-
-            catch (Exception ex)
+            finally
             {
-                Console.WriteLine("exception in camera controller received frame: " + ex.Message);
-                return;
+                frame.Dispose();
+                stopwatch.Restart();
             }
-            
         }
 
         /// <summary>
@@ -262,6 +259,7 @@ namespace billiard_laser
                 while (CurrentPlaybackState == PlaybackController.PlaybackState.Paused) await Task.Delay(100, cancellationToken);
                 if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException();
 
+                stopwatch.Restart();
                 ProcessFrame(rawFrames.GetFrame(index));
             }
         }
@@ -275,7 +273,7 @@ namespace billiard_laser
                 processedFrame.frame is Bitmap processedBitmap)
             {
                 btnShowReplaceBallsForm.Enabled = true;
-                UpdatePictureBoxImage(new Bitmap(processedBitmap));
+                UpdatePictureBoxImage(processedBitmap);
                 UpdateDebugForms(selectedIndex);
             }
         }
@@ -317,8 +315,6 @@ namespace billiard_laser
                 return;
             }
 
-            stopwatch.Restart();
-
             try
             {
                 VideoFrame processedFrame;
@@ -351,21 +347,15 @@ namespace billiard_laser
             {
                 Console.WriteLine($"Error in ProcessFrame: {ex.Message}");
             }
-            finally
-            {
-                stopwatch.Stop();
-                debugStopwatch.Stop();
-            }
         }
 
         /// <summary>
-        /// Updates the PictureBox image, taking ownership of the new image.
-        /// Caller should provide a cloned image if they need to retain the original.
+        /// Updates the PictureBox image, using a clone of the given image.
         /// </summary>
         private void UpdatePictureBoxImage(Bitmap newImage)
         {
             var oldImage = pictureBoxImage.Image;
-            pictureBoxImage.Image = newImage;
+            pictureBoxImage.Image = new Bitmap(newImage);
             oldImage?.Dispose();
         }
 
@@ -397,7 +387,6 @@ namespace billiard_laser
             }
         }
 
-
         #region Shots
 
         /// <summary>
@@ -408,10 +397,7 @@ namespace billiard_laser
         private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBoxShots.SelectedIndex is int index && index >= 0)
-            {
-                Shot selectedShot = (Shot)listBoxShots.SelectedItem;
-                ReplayShotWithBallPath(selectedShot, 60);
-            }
+                ReplayShotWithBallPath(index, 60);
         }
 
         /// <summary>
@@ -433,7 +419,7 @@ namespace billiard_laser
 
         private void ShotDetector_ShotFinished(object? sender, Shot shot) => listBoxShots.Items.Add(shot);
 
-        private async Task ReplayShotWithBallPath(Shot shot, int replayFPS)
+        private async Task ReplayShotWithBallPath(int shotIndex, int replayFPS)
         {
             if (replayInProgress || CurrentPlaybackState == PlaybackController.PlaybackState.Playing)
                 return;
@@ -445,12 +431,15 @@ namespace billiard_laser
             try
             {
                 int delay = (int)Math.Round(1000d / Math.Abs(replayFPS));
+                using Shot shot = ((Shot)listBoxShots.Items[shotIndex]).Clone();
+                
                 for (int i = 0; i < shot.FrameCount; i++)
                 {
                     cancellationToken.ThrowIfCancellationRequested();
-                    using var frameToDrawOn = shot.GetFrameCopy(i).frame;
-                    var drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(OutputVideoResolution.Width, OutputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
+                    using Bitmap frameToDrawOn = shot.GetFrameCopy(i).frame;
+                    using Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(OutputVideoResolution.Width, OutputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
                     UpdatePictureBoxImage(drawnImage);
+
                     await Task.Delay(delay, cancellationToken);
                 }
             }
@@ -502,17 +491,18 @@ namespace billiard_laser
             else ballDetectionDebugForm.Focus();
         }
 
-        //if open, send our raw frame to the ball debug forms
         private void UpdateDebugForms(int frameIndex)
         {
             try
             {
+                debugStopwatch.Restart();
+
                 if (rawFrames.GetFrame(frameIndex) is VideoFrame rawFrame)
                 {
-                    debugStopwatch.Restart();
                     if (CurrentPlaybackState != PlaybackController.PlaybackState.Playing)
                         ballDetectionDebugForm?.GetAndShowDebugImages(rawFrame);
                     ballReplacementForm?.UpdateTableOverlay(rawFrame);
+
                     debugStopwatch.Stop();
                 }
             }
@@ -548,6 +538,8 @@ namespace billiard_laser
             // unwire events first
             shotDetector.ShotFinished -= ShotDetector_ShotFinished;
             cameraController.ReceivedFrame -= CameraController_ReceivedFrame;
+            if (ballReplacementForm != null) ballReplacementForm.BallReplacementFormClosed -= BallReplacementForm_FormClosed;
+            if (ballDetectionDebugForm != null) ballDetectionDebugForm.DebugFormClosed -= DebugForm_FormClosed;
 
             // dispose managed resources
             cameraController.Dispose();
@@ -555,6 +547,9 @@ namespace billiard_laser
             ballDetector.Dispose();
             rawFrames.Dispose();
             processedFrames.Dispose();
+
+            ballReplacementForm?.Dispose();
+            ballDetectionDebugForm?.Dispose();
         }
 
         private void DebugForm_FormClosed(object? sender, EventArgs e)
