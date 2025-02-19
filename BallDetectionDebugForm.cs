@@ -41,8 +41,6 @@ namespace billiard_laser
             SetImage(cueBallCandidatesPicBox, images.CueBallCandidatesHighlighted);
             SetImage(scoredCandidatesPicBox, images.ScoredCandidatesHighlighted);
             SetImage(cueBallFoundPicBox, images.CueBallHighlighted);
-
-            images.Dispose();
         }
 
         /// <summary>
@@ -146,6 +144,8 @@ namespace billiard_laser
 
         private void ImageProcessingDebugForm_FormClosed(object? sender, FormClosedEventArgs e)
         {
+            DebugFormClosed?.Invoke(this, EventArgs.Empty);
+
             workingImagePicBox.Image?.Dispose();
             tableMaskAppliedPicBox.Image?.Dispose();
             cueBallMaskPicBox.Image?.Dispose();
@@ -157,8 +157,6 @@ namespace billiard_laser
             
             originalFrame?.Dispose();
             ballDetector = null;
-
-            DebugFormClosed?.Invoke(this, EventArgs.Empty);
         }
     }
 }

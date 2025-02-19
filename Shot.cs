@@ -53,8 +53,6 @@ public class Shot : IDisposable
 
     public double AverageAcceleration => AccelerationOverTime.Average();
 
-    public Shot(List<PointF> path) { this.cueBallPath = path; }
-    
     public Shot() { }
 
     /// <summary>

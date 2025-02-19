@@ -40,8 +40,6 @@ namespace billiard_laser
             SetImage(workingImagePicBox, images.WorkingImage);
 
             Console.WriteLine(images.Laser);
-
-            images.Dispose();
         }
 
         /// <summary>
@@ -128,6 +126,8 @@ namespace billiard_laser
 
         private void ImageProcessingDebugForm_FormClosed(object? sender, FormClosedEventArgs e)
         {
+            DebugFormClosed?.Invoke(this, EventArgs.Empty);
+
             if (components != null) components.Dispose();
 
             filteredCandidatesPicBox.Image?.Dispose();
@@ -139,8 +139,6 @@ namespace billiard_laser
             originalImage?.Dispose();
 
             laserDetector?.Dispose();
-
-            DebugFormClosed?.Invoke(this, EventArgs.Empty);
         }
     }
 }

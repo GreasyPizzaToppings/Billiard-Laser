@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Linq;
@@ -18,9 +19,11 @@ namespace billiard_laser
         private ArduinoController arduinoController;
         private LaserDetector laserDetector;
         private LaserDetectionDebugForm? laserDetectionDebugForm;
-        private bool calibratingLaserPosition = false;
-
         public CameraController cameraController;
+
+        public event EventHandler? BallReplacementFormClosed;
+
+        private bool calibratingLaserPosition = false;
 
         public Bitmap TargetTableLayout
         {
@@ -32,11 +35,10 @@ namespace billiard_laser
             }
         }
 
-        public event EventHandler? BallReplacementFormClosed;
-
         public BallReplacementForm(Bitmap targetTableLayout, CameraController cameraController)
         {
             ArgumentNullException.ThrowIfNull(targetTableLayout);
+            ArgumentNullException.ThrowIfNull(cameraController);
 
             InitializeComponent();
             UpdateOpacityValueLabel();
@@ -88,63 +90,58 @@ namespace billiard_laser
 
         public void UpdateTableOverlay(VideoFrame newFrame)
         {
+            if (newFrame == null || newFrame.frame == null) throw new InvalidEnumArgumentException("Frame given to update table overlay in ball replacement form should not be null.");
+
             if (InvokeRequired)
             {
                 Invoke(new Action(() => UpdateTableOverlay(newFrame)));
                 return;
             }
-            if (newFrame?.frame == null) return;
 
-            try
-            {
-                using Bitmap overlaidImage = new(TargetTableLayout.Width, TargetTableLayout.Height);
-                using var graphics = Graphics.FromImage(overlaidImage);
+            using Bitmap frameClone = (Bitmap)newFrame.frame.Clone();
+            using Bitmap overlaidImage = new(TargetTableLayout.Width, TargetTableLayout.Height);
+            using var graphics = Graphics.FromImage(overlaidImage);
                 
-                // Calculate opacity (0-1 range from trackbar percentage)
-                float opacity = trackBarCameraOpacity.Value / 100f;
-                using var imageAttributes = new ImageAttributes();
-                imageAttributes.SetColorMatrix(new ColorMatrix { Matrix33 = opacity }, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+            // Calculate opacity (0-1 range from trackbar percentage)
+            float opacity = trackBarCameraOpacity.Value / 100f;
+            using var imageAttributes = new ImageAttributes();
+            imageAttributes.SetColorMatrix(new ColorMatrix { Matrix33 = opacity }, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
 
-                // Draw base table layout
-                graphics.Clear(Color.Transparent);
-                graphics.DrawImage(TargetTableLayout,
+            // Draw base table layout
+            graphics.Clear(Color.Transparent);
+            graphics.DrawImage(TargetTableLayout,
+                new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
+                GraphicsUnit.Pixel);
+
+            // Process laser detection if enabled
+            LaserDetectionResults? laserResults = null;
+            if (arduinoController?.IsLaserOn ?? false)
+                laserResults = laserDetector.ProcessLaserDetection(frameClone);
+                
+            // Show debug images if form is open
+            laserDetectionDebugForm?.DisplayDebugImages(laserResults);
+
+            // Draw either laser highlight or camera frame
+            if (laserResults?.LaserHighlighted != null)
+            {
+                graphics.DrawImage(laserResults.LaserHighlighted,
                     new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                    0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
-                    GraphicsUnit.Pixel);
-
-                // Process laser detection if enabled
-                LaserDetectionResults? laserResults = null;
-                if (arduinoController?.IsLaserOn ?? false)
-                    laserResults = laserDetector.ProcessLaserDetection(newFrame.frame);
-                
-                // Show debug images if form is open
-                laserDetectionDebugForm?.DisplayDebugImages(laserResults);
-
-                // Draw either laser highlight or camera frame
-                if (laserResults?.LaserHighlighted != null)
-                {
-                    graphics.DrawImage(laserResults.LaserHighlighted,
-                        new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                        0, 0, laserResults.LaserHighlighted.Width, laserResults.LaserHighlighted.Height,
-                        GraphicsUnit.Pixel,
-                        imageAttributes);
-                }
-                else
-                {
-                    graphics.DrawImage(newFrame.frame,
-                        new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                        0, 0, newFrame.frame.Width, newFrame.frame.Height,
-                        GraphicsUnit.Pixel,
-                        imageAttributes);
-                }
-
-                SetImage(pictureBoxTable, overlaidImage);
-                laserResults?.Dispose();
+                    0, 0, laserResults.LaserHighlighted.Width, laserResults.LaserHighlighted.Height,
+                    GraphicsUnit.Pixel,
+                    imageAttributes);
             }
-            catch (Exception ex)
+            else
             {
-                Console.WriteLine($"Error in UpdateTableOverlay: {ex.Message}");
+                graphics.DrawImage(frameClone,
+                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                    0, 0, frameClone.Width, frameClone.Height,
+                    GraphicsUnit.Pixel,
+                    imageAttributes);
             }
+
+            SetImage(pictureBoxTable, overlaidImage);
+            laserResults?.Dispose();
         }
 
         private static void SetImage(PictureBox pictureBox, Image newImage)
@@ -171,12 +168,12 @@ namespace billiard_laser
 
         private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            laserDetectionDebugForm?.Dispose();
+            BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
+
             arduinoController?.Dispose();
+            laserDetectionDebugForm?.Dispose();
             targetTableLayout.Dispose();
             pictureBoxTable.Dispose();
-
-            BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
         }
 
         private void btnLaserUp_Click(object sender, EventArgs e)
@@ -228,6 +225,8 @@ namespace billiard_laser
                 // Update the property which will handle disposal of old image
                 TargetTableLayout = flippedImage;
             }
+
+            Console.WriteLine(cameraController);
         }
 
         private void btnMirrorCamera_Click(object sender, EventArgs e)
@@ -248,6 +247,8 @@ namespace billiard_laser
                 // Update the property which will handle disposal of old image
                 TargetTableLayout = mirroredImage;
             }
+
+            Console.WriteLine(cameraController);
         }
 
         private void btnShowDebugForm_Click(object sender, EventArgs e)
@@ -267,7 +268,6 @@ namespace billiard_laser
 
         private void DebugForm_FormClosed(object? sender, EventArgs e)
         {
-            laserDetectionDebugForm?.Dispose();
             laserDetectionDebugForm = null;
         }
 
