@@ -87,37 +87,41 @@ public class CameraController : IDisposable
         }
     }
 
+    /// <summary>
+    /// Signal to subscribers that a new frame is here
+    /// </summary>
+    /// <param name="sender"></param>
+    /// <param name="eventArgs"></param>
     private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
         frameReceivedEvent.Set();
 
-        // clone the original frame immediately since AForge will reuse it
-        using Bitmap originalFrame = (Bitmap)eventArgs.Frame.Clone();
+        using Bitmap originalFrame = eventArgs.Frame;
         Bitmap? workingFrame = null;
 
         try
         {
             // determine if we need transformations
             bool needsTransform = isFlipped || isMirrored;
-            bool needsResize = originalFrame.Width != OutputResolution.Width || 
-                              originalFrame.Height != OutputResolution.Height;
+                bool needsResize = originalFrame.Width != OutputResolution.Width || 
+                                  originalFrame.Height != OutputResolution.Height;
 
-            workingFrame = originalFrame;
+                workingFrame = originalFrame;
 
             if (needsTransform)
             {
-                var transformedFrame = TransformFrame(workingFrame);
-                if (workingFrame != originalFrame) workingFrame.Dispose();
-                workingFrame = transformedFrame;
+                    var transformedFrame = TransformFrame(workingFrame);
+                    if (workingFrame != originalFrame) workingFrame.Dispose();
+                    workingFrame = transformedFrame;
             }
 
             if (needsResize)
             {
-                var resizedFrame = ResizeFrame(workingFrame);
-                if (workingFrame != originalFrame) workingFrame.Dispose();
-                workingFrame = resizedFrame;
+                    var resizedFrame = ResizeFrame(workingFrame);
+                    if (workingFrame != originalFrame) workingFrame.Dispose();
+                    workingFrame = resizedFrame;
             }
-
+        
             ReceivedFrame?.Invoke(this, new VideoFrame(workingFrame, frameIndex++));
             workingFrame.Dispose();
             workingFrame = null;
@@ -248,4 +252,12 @@ public class CameraController : IDisposable
     {
         Dispose(false);
     }
+
+    public override string ToString() =>
+        $"CameraController Settings:\n" +
+        $"  Is Flipped: {IsFlipped}\n" +
+        $"  Is Mirrored: {IsMirrored}\n" +
+        $"  Output Resolution: {OutputResolution.Width}x{OutputResolution.Height}\n" +
+        $"  Frame Index: {frameIndex}\n" +
+        $"  Camera Device: {videoCaptureDevice?.Source ?? "Not Started"}";
 }
