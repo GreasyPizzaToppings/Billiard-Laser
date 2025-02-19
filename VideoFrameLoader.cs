@@ -18,7 +18,7 @@ public static class VideoFrameLoader
     public static async Task<int> LoadFramesAsync(
         string videoPath,
         OpenCvSharp.Size outputResolution,
-        FrameQueueManager<VideoFrame> frameManager,
+        QueueManager<VideoFrame> frameManager,
         CancellationToken cancellationToken = default)
     {
         using var capture = new VideoCapture(videoPath);
@@ -35,7 +35,7 @@ public static class VideoFrameLoader
                     throw new OperationCanceledException();
                 }
 
-                if (frameManager.Count >= frameManager.MaxFrames)
+                if (frameManager.Count >= frameManager.MaxSize)
                     break;
 
                 // Process frame on background thread

@@ -18,10 +18,13 @@ namespace billiard_laser
         private readonly ShotDetector shotDetector;
         private readonly CueBallDetector ballDetector;
 
-        //frames
-        private readonly FrameQueueManager<VideoFrame> rawFrames;
-        private readonly FrameQueueManager<VideoFrame> processedFrames;
+        //items
+        private readonly QueueManager<VideoFrame> rawFrames;
+        private readonly QueueManager<VideoFrame> processedFrames;
         private const int maxFrames = 1000; //testing
+
+        private readonly QueueManager<Shot> shots;
+        private const int maxShots = 15;
 
         //flags
         private bool replayInProgress = false;
@@ -82,8 +85,9 @@ namespace billiard_laser
             cameraController = new CameraController(cboCamera, OutputVideoResolution);
             shotDetector = new ShotDetector();
             ballDetector = new CueBallDetector();
-            rawFrames = new FrameQueueManager<VideoFrame>(maxFrames: maxFrames);
-            processedFrames = new FrameQueueManager<VideoFrame>(maxFrames: maxFrames);
+            rawFrames = new QueueManager<VideoFrame>(maxSize: maxFrames);
+            processedFrames = new QueueManager<VideoFrame>(maxSize: maxFrames);
+            shots = new QueueManager<Shot>(maxSize: maxShots);
 
             // wire up events
             shotDetector.ShotFinished += ShotDetector_ShotFinished;
@@ -92,7 +96,8 @@ namespace billiard_laser
             // configure UI
             pictureBoxImage.SizeMode = PictureBoxSizeMode.Zoom;
             btnShowReplaceBallsForm.Enabled = false;
-            listBoxProcessedFrames.DataSource = processedFrames.FrameIndices;
+            listBoxProcessedFrames.DataSource = processedFrames.Indices;
+            listBoxShots.DataSource = shots.Indices;
         }
 
         //before loading camera
@@ -183,7 +188,7 @@ namespace billiard_laser
         }
 
         /// <summary>
-        /// load a video's frames into memory but do not play it
+        /// load a video's items into memory but do not play it
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
@@ -222,7 +227,7 @@ namespace billiard_laser
         }
 
         /// <summary>
-        /// Start showing the loaded videos frames, detecting balls if enabled
+        /// Start showing the loaded videos items, detecting balls if enabled
         /// </summary>
         private async void StartLoadedVideo()
         {
@@ -253,14 +258,14 @@ namespace billiard_laser
             videoCancellationTokenSource = new CancellationTokenSource();
             CancellationToken cancellationToken = videoCancellationTokenSource.Token;
 
-            var indices = rawFrames.FrameIndices.Cast<int>().ToList(); // create a snapshot of indices to avoid collection being modified
+            var indices = rawFrames.Indices.Cast<int>().ToList(); // create a snapshot of indices to avoid collection being modified
             foreach (int index in indices)
             {
                 while (CurrentPlaybackState == PlaybackController.PlaybackState.Paused) await Task.Delay(100, cancellationToken);
                 if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException();
 
                 stopwatch.Restart();
-                ProcessFrame(rawFrames.GetFrame(index));
+                ProcessFrame(rawFrames.GetItem(index));
             }
         }
 
@@ -269,7 +274,7 @@ namespace billiard_laser
         {
             if (listBoxProcessedFrames.SelectedItem is not int selectedIndex) return;
 
-            if (processedFrames.GetFrame(selectedIndex) is VideoFrame processedFrame &&
+            if (processedFrames.GetItem(selectedIndex) is VideoFrame processedFrame &&
                 processedFrame.frame is Bitmap processedBitmap)
             {
                 btnShowReplaceBallsForm.Enabled = true;
@@ -375,7 +380,7 @@ namespace billiard_laser
 
             while (frameProcessingTimes.Count > FPS_WINDOW_SIZE) frameProcessingTimes.Dequeue();
 
-            // Calculate FPS using the current window of frames
+            // Calculate FPS using the current window of items
             if (frameProcessingTimes.Count > 0)
             {
                 double averageProcessingTime = frameProcessingTimes.Sum() / frameProcessingTimes.Count;
@@ -396,8 +401,8 @@ namespace billiard_laser
         /// <param name="e"></param>
         private void listBoxShots_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if (listBoxShots.SelectedIndex is int index && index >= 0)
-                ReplayShotWithBallPath(index, 60);
+            if (listBoxShots.SelectedItem is int frameIndex && frameIndex >= 0)
+                ReplayShotWithBallPath(frameIndex, 60);
         }
 
         /// <summary>
@@ -405,9 +410,7 @@ namespace billiard_laser
         /// </summary>
         private void DisposeShots()
         {
-            // Dispose each Shot object before clearing the list
-            foreach (Shot shot in listBoxShots.Items) shot.Dispose();
-            listBoxShots.Items.Clear();
+            shots.Dispose();
         }
 
         //clear all shot data and everything associated with it
@@ -417,7 +420,14 @@ namespace billiard_laser
             shotDetector.ResetState();
         }
 
-        private void ShotDetector_ShotFinished(object? sender, Shot shot) => listBoxShots.Items.Add(shot);
+        private void ShotDetector_ShotFinished(object? sender, Shot shot) {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => { ShotDetector_ShotFinished(sender, shot); }));
+                return;
+            }
+            shots.Enqueue(shot);
+        }
 
         private async Task ReplayShotWithBallPath(int shotIndex, int replayFPS)
         {
@@ -431,7 +441,7 @@ namespace billiard_laser
             try
             {
                 int delay = (int)Math.Round(1000d / Math.Abs(replayFPS));
-                using Shot shot = ((Shot)listBoxShots.Items[shotIndex]).Clone();
+                using Shot shot = shots.GetItem(shotIndex).Clone();
                 
                 for (int i = 0; i < shot.FrameCount; i++)
                 {
@@ -483,7 +493,7 @@ namespace billiard_laser
 
                 // init debug form with current frame if one is selected
                 if (listBoxProcessedFrames.SelectedItem is int selectedIndex &&
-                    rawFrames.GetFrame(selectedIndex) is VideoFrame rawFrame)
+                    rawFrames.GetItem(selectedIndex) is VideoFrame rawFrame)
                 {
                     ballDetectionDebugForm.GetAndShowDebugImages(rawFrame);
                 }
@@ -497,7 +507,7 @@ namespace billiard_laser
             {
                 debugStopwatch.Restart();
 
-                if (rawFrames.GetFrame(frameIndex) is VideoFrame rawFrame)
+                if (rawFrames.GetItem(frameIndex) is VideoFrame rawFrame)
                 {
                     if (CurrentPlaybackState != PlaybackController.PlaybackState.Playing)
                         ballDetectionDebugForm?.GetAndShowDebugImages(rawFrame);
@@ -515,7 +525,7 @@ namespace billiard_laser
         private void btnShowReplaceBallsForm_Click(object sender, EventArgs e)
         {
             if (listBoxProcessedFrames.SelectedItem is int selectedIndex &&
-                rawFrames.GetFrame(selectedIndex) is VideoFrame rawFrame)
+                rawFrames.GetItem(selectedIndex) is VideoFrame rawFrame)
             {
                 // new form
                 if (ballReplacementForm?.IsDisposed != false)

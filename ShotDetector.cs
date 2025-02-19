@@ -2,10 +2,12 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 public class ShotDetector : IDisposable
 {
-    private Shot? currentShot;
+    private Shot currentShot;
+    private Shot completedShot;
     private bool isTrackingShot;
     private bool disposed;
 
@@ -18,8 +20,9 @@ public class ShotDetector : IDisposable
     //keep a rolling window of this data even without a shot being tracked
     private const int queueSize = 10;
     private Queue<Point> recentPositions = new(queueSize);
-    private Queue<double> recentDisplacement = new(queueSize);
-    private Queue<VideoFrame> recentFrames = new(queueSize); 
+    private Queue<VideoFrame> recentFrames = new(queueSize);
+
+    private double recentDisplacement;
 
     public event EventHandler<Shot>? ShotFinished;
 
@@ -32,10 +35,11 @@ public class ShotDetector : IDisposable
     {
         currentShot?.Dispose();
         currentShot = new Shot();
+        completedShot?.Dispose();
+        completedShot = new Shot();
 
         isTrackingShot = false;
         recentPositions.Clear();
-        recentDisplacement.Clear();
 
         foreach (var frame in recentFrames) frame.Dispose();
         recentFrames.Clear();
@@ -50,22 +54,23 @@ public class ShotDetector : IDisposable
         recentPositions.Enqueue(cueBall.Centre);
         if (recentPositions.Count > queueSize) recentPositions.Dequeue();
 
-        recentDisplacement.Enqueue(cueBall.Displacement);
-        if (recentDisplacement.Count > queueSize) recentDisplacement.Dequeue();
+        recentDisplacement = cueBall.Displacement;
 
         recentFrames.Enqueue(frame.Clone());
         if (recentFrames.Count > queueSize) recentFrames.Dequeue().Dispose();
 
-        currentShot?.AddFrame(frame.Clone());
-        currentShot?.cueBallPath.Add(cueBall.Centre);
+        if (isTrackingShot)
+        {
+            currentShot.AddFrame(frame.Clone());
+            currentShot.cueBallPath.Add(cueBall.Centre);
+        }
 
-        if (StartedMoving() && !isTrackingShot) StartNewShot();
-        else if (isTrackingShot && StoppedMoving() && IsValidShot()) FinalizeShot();
+        if (isTrackingShot && StoppedMoving() && IsValidShot()) FinalizeShot();
+        else if (StartedMoving() & !isTrackingShot) StartNewShot();
     }
 
-
     private bool IsValidShot() {
-        if (currentShot == null || currentShot.DistanceTravelled < MinTotalDistance || currentShot.FrameCount < MinFramesForShot) return false;
+        if (currentShot.DistanceTravelled < MinTotalDistance || currentShot.FrameCount < MinFramesForShot) return false;
         return true;
     }
 
@@ -75,7 +80,7 @@ public class ShotDetector : IDisposable
     /// <returns></returns>
     private bool StartedMoving()
     {
-        return currentShot?.Displacement >= StationaryThreshold;
+        return recentDisplacement >= StationaryThreshold;
     }
 
     /// <summary>
@@ -83,13 +88,13 @@ public class ShotDetector : IDisposable
     /// </summary>
     /// <returns></returns>
     private bool StoppedMoving() {
-        if (currentShot?.FrameDistances.TakeLast(StationaryFrameWindow).Sum() < StationaryThreshold) return true;
+        if (currentShot.FrameDistances.TakeLast(StationaryFrameWindow).Sum() < StationaryThreshold) return true;
         return false;
     }
 
     private void StartNewShot()
     {
-        currentShot?.Dispose();
+        currentShot.Dispose();
         currentShot = new Shot();
 
         // Add recent history
@@ -101,13 +106,25 @@ public class ShotDetector : IDisposable
 
     private void FinalizeShot()
     {
-        if (currentShot != null) OnShotFinished(currentShot);
-        ResetState();
+        if (currentShot != null)
+        {
+            completedShot = currentShot;
+            currentShot = new Shot();
+
+            Task.Run(() => 
+            {
+                OnShotFinished(completedShot.Clone());
+                completedShot.Dispose();
+                completedShot = new Shot();
+            });
+
+            isTrackingShot = false;
+        }
     }
 
     protected virtual void OnShotFinished(Shot shot)
     {
-        ShotFinished?.Invoke(this, shot.Clone());
+        ShotFinished?.Invoke(this, shot);
     }
 
     public void Dispose()
