@@ -62,12 +62,7 @@ public class ArduinoController : IDisposable
         try
         {
             // Clean up existing connection if any
-            if (serialPort != null)
-            {
-                if (serialPort.IsOpen)
-                    serialPort.Close();
-                serialPort.Dispose();
-            }
+            DisposeSerialPort();
 
             // Create new connection
             serialPort = new SerialPort(portName, baudRate)
@@ -76,15 +71,15 @@ public class ArduinoController : IDisposable
                 WriteTimeout = timeout
             };
 
-            serialPort.Open();
+            serialPort?.Open();
             
             Thread.Sleep(timeout); // Allow Arduino to reset after connection
 
             // Send handshake request
-            serialPort.WriteLine(HANDSHAKE_REQUEST);
+            serialPort?.WriteLine(HANDSHAKE_REQUEST);
 
             // Read response
-            string response = serialPort.ReadLine().Trim();
+            string response = serialPort?.ReadLine()?.Trim() ?? "";
 
             if (response == EXPECTED_HANDSHAKE_RESPONSE)
             {
@@ -92,29 +87,19 @@ public class ArduinoController : IDisposable
                 return true;
             }
 
-            // If handshake failed, clean up
-            serialPort.Close();
-            serialPort.Dispose();
-            serialPort = null;
+            DisposeSerialPort();
             return false;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"Failed to connect on port {portName}: {ex.Message}");
-            if (serialPort != null)
-            {
-                if (serialPort.IsOpen)
-                    serialPort.Close();
-                serialPort.Dispose();
-                serialPort = null;
-            }
-
             isHandshakeVerified = false;
+            DisposeSerialPort();
             return false;
         }
     }
 
-    private async void SendCommand(string command)
+    private void SendCommand(string command)
     {
         try
         {
@@ -153,11 +138,13 @@ public class ArduinoController : IDisposable
 
     public void Dispose()
     {
-        if (serialPort != null)
-        {
-            if (serialPort.IsOpen)
-                serialPort.Close();
-            serialPort.Dispose();
-        }
+        DisposeSerialPort();
+    }
+
+    private void DisposeSerialPort() {
+        if (serialPort?.IsOpen ?? false)
+            serialPort?.Close();
+        serialPort?.Dispose();
+        serialPort = null;
     }
 }
