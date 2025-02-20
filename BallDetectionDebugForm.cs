@@ -30,6 +30,12 @@ namespace billiard_laser
         {
             if (images == null) return;
 
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => DisplayDebugImages(images)));
+                return;
+            }
+
             originalFrame?.Dispose();
             originalFrame = images.OriginalFrame?.Clone();
 
@@ -51,6 +57,12 @@ namespace billiard_laser
 
         private static void SetImage(PictureBox pictureBox, Image? newImage)
         {
+            if (pictureBox.InvokeRequired)
+            {
+                pictureBox.Invoke(new Action(() => SetImage(pictureBox, newImage)));
+                return;
+            }
+
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
             oldImage?.Dispose();
@@ -59,6 +71,12 @@ namespace billiard_laser
         private void InitCheckBoxes()
         {
             if (ballDetector == null) return;
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(InitCheckBoxes));
+                return;
+            }
 
             checkBoxEnableBlurr.Checked = ballDetector.EnableBlur;
             checkBoxEnableSharpen.Checked = ballDetector.EnableSharpening;
@@ -76,6 +94,12 @@ namespace billiard_laser
         {
             if (initialisingControls || ballDetector == null)
                 return;
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(SetObjectDetectorSettings));
+                return;
+            }
 
             ballDetector.LowerClothMask = new Rgb(trackBarClothMaskRedMin.Value, trackBarClothMaskGreenMin.Value, trackBarClothMaskBlueMin.Value);
             ballDetector.UpperClothMask = new Rgb(trackBarClothMaskRedMax.Value, trackBarClothMaskGreenMax.Value, trackBarClothMaskBlueMax.Value);
@@ -96,6 +120,12 @@ namespace billiard_laser
         private void InitMaskTrackbars()
         {
             if (ballDetector == null) return;
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(InitMaskTrackbars));
+                return;
+            }
 
             // define trackbar groups for easier initialization
             var trackbarSettings = new (TrackBar Bar, Label Label, double Value)[]
@@ -131,6 +161,12 @@ namespace billiard_laser
 
         private void TrackBar_ValueChanged(object? sender, EventArgs e)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => TrackBar_ValueChanged(sender, e)));
+                return;
+            }
+
             if (sender is TrackBar trackBar)
             {
                 // update corresponding label based on trackbar name

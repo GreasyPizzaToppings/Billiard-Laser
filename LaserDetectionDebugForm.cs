@@ -29,6 +29,12 @@ namespace billiard_laser
         {
             if (images == null) return;
 
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => DisplayDebugImages(images)));
+                return;
+            }
+
             originalImage?.Dispose();
             originalImage = images.OriginalImage != null ? new Bitmap(images.OriginalImage) : null;
 
@@ -39,7 +45,7 @@ namespace billiard_laser
             SetImage(laserFoundPicBox, images.LaserHighlighted);
             SetImage(workingImagePicBox, images.WorkingImage);
 
-            Console.WriteLine(images.Laser);
+            if (images.Laser != null) Console.WriteLine(images.Laser);
         }
 
         /// <summary>
@@ -50,6 +56,12 @@ namespace billiard_laser
 
         private void SetImage(PictureBox pictureBox, Image? newImage)
         {
+            if (pictureBox.InvokeRequired)
+            {
+                pictureBox.Invoke(new Action(() => SetImage(pictureBox, newImage)));
+                return;
+            }
+
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
             oldImage?.Dispose();
@@ -58,6 +70,12 @@ namespace billiard_laser
         private void InitCheckBoxes()
         {
             if (laserDetector == null) return;
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(InitCheckBoxes));
+                return;
+            }
 
             checkBoxEnableBlurr.Checked = laserDetector.EnableBlur;
             checkBoxEnableSharpen.Checked = laserDetector.EnableSharpening;
@@ -73,8 +91,13 @@ namespace billiard_laser
 
         private void SetObjectDetectorSettings()
         {
-            if (initialisingControls)
+            if (initialisingControls) return;
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(SetObjectDetectorSettings));
                 return;
+            }
 
             laserDetector.LowerLaserMask = new Rgb(trackBarLaserMaskRedMin.Value, trackBarLaserMaskGreenMin.Value, trackBarLaserMaskBlueMin.Value);
             laserDetector.UpperLaserMask = new Rgb(trackBarLaserMaskRedMax.Value, trackBarLaserMaskGreenMax.Value, trackBarLaserMaskBlueMax.Value);
@@ -92,6 +115,12 @@ namespace billiard_laser
         private void InitMaskTrackbars()
         {
             if (laserDetector == null) return;
+
+            if (InvokeRequired)
+            {
+                Invoke(new Action(InitMaskTrackbars));
+                return;
+            }
 
             var trackbarSettings = new (TrackBar Bar, Label Label, double Value)[]
             {
@@ -114,6 +143,12 @@ namespace billiard_laser
 
         private void TrackBar_ValueChanged(object? sender, EventArgs e)
         {
+            if (InvokeRequired)
+            {
+                Invoke(new Action(() => TrackBar_ValueChanged(sender, e)));
+                return;
+            }
+
             if (sender is TrackBar trackBar)
             {
                 var labelName = trackBar.Name.Replace("trackBar", "label");
