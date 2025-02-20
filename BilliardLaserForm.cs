@@ -165,28 +165,6 @@ namespace billiard_laser
             if (cameraController.StartCameraCapture()) CurrentPlaybackState = PlaybackController.PlaybackState.Playing;
         }
 
-        private void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
-        {
-            if (currentInputType != MediaInputType.Camera) throw new InvalidOperationException("Camera controller frame received despite not being input media type.");
-            try
-            {
-                
-                if (CurrentPlaybackState == PlaybackController.PlaybackState.Playing)
-                {
-                    rawFrames.Enqueue(frame.Clone());
-                    ProcessFrame(frame);
-                }
-                else {
-                    Invoke(new Action(() => ballReplacementForm?.UpdateTableOverlay(frame)));
-                }
-            }
-            finally
-            {
-                frame.Dispose();
-                stopwatch.Restart();
-            }
-        }
-
         /// <summary>
         /// load a video's items into memory but do not play it
         /// </summary>
@@ -249,26 +227,6 @@ namespace billiard_laser
             loadedVideoStarted = false;
         }
 
-        /// <summary>
-        /// For each frame in the video, perform ball and/or shot tracking
-        /// Pauses processing when playback state is paused
-        /// </summary>
-        private async Task ProcessFramesInLoadedVideo()
-        {
-            videoCancellationTokenSource = new CancellationTokenSource();
-            CancellationToken cancellationToken = videoCancellationTokenSource.Token;
-
-            var indices = rawFrames.Indices.Cast<int>().ToList(); // create a snapshot of indices to avoid collection being modified
-            foreach (int index in indices)
-            {
-                while (CurrentPlaybackState == PlaybackController.PlaybackState.Paused) await Task.Delay(100, cancellationToken);
-                if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException();
-
-                stopwatch.Restart();
-                ProcessFrame(rawFrames.GetItem(index));
-            }
-        }
-
         //display a selected processed frame of the video and send to debug form if its open
         private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -278,8 +236,7 @@ namespace billiard_laser
                 processedFrame.frame is Bitmap processedBitmap)
             {
                 btnShowReplaceBallsForm.Enabled = true;
-                UpdatePictureBoxImage(processedBitmap);
-                UpdateDebugForms(selectedIndex);
+                UpdatePictureBox(processedBitmap);
             }
         }
 
@@ -302,62 +259,102 @@ namespace billiard_laser
                 listBoxProcessedFrames.SelectedIndex--;
         }
 
+        private async void CameraController_ReceivedFrame(object? sender, VideoFrame frame)
+        {
+            if (currentInputType != MediaInputType.Camera) throw new InvalidOperationException("Camera controller frame received despite not being input media type.");
+            try
+            {
+                if (CurrentPlaybackState == PlaybackController.PlaybackState.Playing)
+                {
+                    VideoFrame rawFrame = frame.Clone();
+                    rawFrames.Enqueue(rawFrame);
+                    //await Task.Run(() => ProcessFrame(rawFrame)); // do frame processing on background thread
+                    ProcessFrame(rawFrame);
+                }
+                else
+                {
+                    Invoke(new Action(() => ballReplacementForm?.UpdateTableOverlay(frame)));
+                }
+            }
+            finally
+            {
+                frame.Dispose();
+                stopwatch.Restart();
+            }
+        }
+
         /// <summary>
-        /// Processing involves: finding and showing the balls in the rawFrame and listbox and showing the fps
+        /// For each frame in the video, perform ball and/or shot tracking
+        /// Pauses processing when playback state is paused
+        /// </summary>
+        private async Task ProcessFramesInLoadedVideo()
+        {
+            videoCancellationTokenSource = new CancellationTokenSource();
+            CancellationToken cancellationToken = videoCancellationTokenSource.Token;
+
+            var indices = rawFrames.Indices.Cast<int>().ToList(); // create a snapshot of indices to avoid collection being modified
+            foreach (int index in indices)
+            {
+                while (CurrentPlaybackState == PlaybackController.PlaybackState.Paused) await Task.Delay(100, cancellationToken);
+                if (cancellationToken.IsCancellationRequested) throw new OperationCanceledException();
+
+                stopwatch.Restart();
+                await Task.Run(() => ProcessFrame(rawFrames.GetItem(index))); // do frame processing on background thread
+            }
+        }
+
+        /// <summary>
+        /// Processing involves: finding the cueball from the given frame. Calls OnFrameProcessed to update UI
         /// </summary>
         /// <param name="rawFrame"></param>
         private void ProcessFrame(VideoFrame rawFrame)
         {
+            ArgumentNullException.ThrowIfNull(rawFrame);
+
+            VideoFrame processedFrame;
+
+            if (DetectingBalls)
+            {
+                try
+                {
+                    using var results = ballDetector.GetCueBallResults(rawFrame);
+                    processedFrame = new VideoFrame(new Bitmap(results?.CueBallHighlighted ?? rawFrame.frame), rawFrame.Index, rawFrame.FrameRate);
+                    shotDetector.ProcessFrame(results?.CueBall, processedFrame);
+
+                    ballDetectionDebugForm?.DisplayDebugImages(results); // use precalced images to avoid recalculating the same images for debug when playing
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Error during ball detection: {ex.Message}");
+                    processedFrame = rawFrame;
+                }
+            }
+            else processedFrame = rawFrame;
+
+            OnFrameProcessed(processedFrame);
+        }
+
+        /// <summary>
+        /// Add the processed frame to our controls and update the UI
+        /// </summary>
+        /// <param name="processedFrame"></param>
+        private void OnFrameProcessed(VideoFrame processedFrame) {
             if (InvokeRequired)
             {
-                Invoke(new Action(() => ProcessFrame(rawFrame)));
+                Invoke(new Action(() => OnFrameProcessed(processedFrame)));
                 return;
             }
 
-            if (rawFrame?.frame == null)
-            {
-                Console.WriteLine("Received null frame or frame data");
-                return;
-            }
-
-            try
-            {
-                VideoFrame processedFrame;
-
-                if (DetectingBalls)
-                {
-                    try
-                    {
-                        using var results = ballDetector.GetCueBallResults(rawFrame);
-                        processedFrame = new VideoFrame(new Bitmap(results?.CueBallHighlighted ?? rawFrame.frame), rawFrame.Index, rawFrame.FrameRate);
-                        shotDetector.ProcessFrame(results?.CueBall, processedFrame);
-
-                        ballDetectionDebugForm?.DisplayDebugImages(results); // use precalced images to avoid recalculating the same images for debug when playing
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Error during ball detection: {ex.Message}");
-                        processedFrame = rawFrame.Clone();
-                    }
-                }
-                else processedFrame = rawFrame.Clone();
-              
-                processedFrames.Enqueue(processedFrame);
-                listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; // scrolls and updates pic box and debug forms
-
-                Application.DoEvents(); // todo better way?
-                UpdateFpsLabel();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Error in ProcessFrame: {ex.Message}");
-            }
+            processedFrames.Enqueue(processedFrame);
+            listBoxProcessedFrames.SelectedIndex = listBoxProcessedFrames.Items.Count - 1; // scrolls listbox, updating picturebox in process
+            UpdateDebugForms(processedFrame.Index);
+            UpdateFpsLabel();
         }
 
         /// <summary>
         /// Updates the PictureBox image, using a clone of the given image.
         /// </summary>
-        private void UpdatePictureBoxImage(Bitmap newImage)
+        private void UpdatePictureBox(Bitmap newImage)
         {
             var oldImage = pictureBoxImage.Image;
             pictureBoxImage.Image = new Bitmap(newImage);
@@ -405,22 +402,15 @@ namespace billiard_laser
                 ReplayShotWithBallPath(frameIndex, 60);
         }
 
-        /// <summary>
-        /// dispose of the shot data and the listbox they are referenced in
-        /// </summary>
-        private void DisposeShots()
-        {
-            shots.Dispose();
-        }
-
         //clear all shot data and everything associated with it
         private void ResetShotState()
         {
-            DisposeShots();
+            shots.Dispose();
             shotDetector.ResetState();
         }
 
         private void ShotDetector_ShotFinished(object? sender, Shot shot) {
+            // we need UI thread to update the shots queue because the listbox uses the index bindinglist from it
             if (InvokeRequired)
             {
                 Invoke(new Action(() => { ShotDetector_ShotFinished(sender, shot); }));
@@ -448,7 +438,7 @@ namespace billiard_laser
                     cancellationToken.ThrowIfCancellationRequested();
                     using Bitmap frameToDrawOn = shot.GetFrameCopy(i).frame;
                     using Bitmap drawnImage = DrawingHelper.DrawBallPath(shot.cueBallPath, new System.Drawing.Size(OutputVideoResolution.Width, OutputVideoResolution.Height), frameToDrawOn.Size, frameToDrawOn);
-                    UpdatePictureBoxImage(drawnImage);
+                    UpdatePictureBox(drawnImage);
 
                     await Task.Delay(delay, cancellationToken);
                 }
