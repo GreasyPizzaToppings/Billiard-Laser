@@ -87,7 +87,6 @@ namespace billiard_laser
         /// Take in a new camera frame and overlay it on the base table at a lower opacity
         /// </summary>
         /// <param name="image"></param>
-
         public void UpdateTableOverlay(VideoFrame newFrame)
         {
             if (newFrame == null || newFrame.frame == null) throw new InvalidEnumArgumentException("Frame given to update table overlay in ball replacement form should not be null.");
@@ -117,10 +116,10 @@ namespace billiard_laser
             // Process laser detection if enabled
             LaserDetectionResults? laserResults = null;
             if (arduinoController?.IsLaserOn ?? false)
+            {
                 laserResults = laserDetector.ProcessLaserDetection(frameClone);
-                
-            // Show debug images if form is open
-            laserDetectionDebugForm?.DisplayDebugImages(laserResults);
+                laserDetectionDebugForm?.DisplayDebugImages(laserResults);
+            }
 
             // Draw either laser highlight or camera frame
             if (laserResults?.LaserHighlighted != null)
@@ -164,16 +163,6 @@ namespace billiard_laser
         private void UpdateStepAmountValueLabel()
         {
             labelLaserStepAmountValue.Text = trackBarLaserStepAmount.Value.ToString();
-        }
-
-        private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
-
-            arduinoController?.Dispose();
-            laserDetectionDebugForm?.Dispose();
-            targetTableLayout.Dispose();
-            pictureBoxTable.Dispose();
         }
 
         private void btnLaserUp_Click(object sender, EventArgs e)
@@ -269,6 +258,16 @@ namespace billiard_laser
         private void DebugForm_FormClosed(object? sender, EventArgs e)
         {
             laserDetectionDebugForm = null;
+        }
+
+        private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
+
+            arduinoController?.Dispose();
+            laserDetectionDebugForm?.Dispose();
+            targetTableLayout.Dispose();
+            pictureBoxTable.Dispose();
         }
 
         /// <summary>
