@@ -286,9 +286,9 @@ namespace billiard_laser
                             Console.WriteLine("ball repalcer form disposed or disposing!");
                         }
 
-                        Console.WriteLine($"before calling update table overlay: we have {cameraController.UnprocessedFrames - 1} frames in updatetableoverlay that are trying to complete");
+                        Console.WriteLine($"before calling update table overlay: we have {cameraController.UnprocessedFrames - 1} unprocessed frames in camera controller");
                         Console.WriteLine($"calling updatetableoverlay at {DateTime.Now.Millisecond}");
-                        ballReplacementForm.UpdateTableOverlay(frame);
+                        ballReplacementForm.UpdateTableOverlay(frame.Clone());
                         Console.WriteLine($"finished updatetableoverlay at {DateTime.Now.Millisecond}");
                     }
                 }

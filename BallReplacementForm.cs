@@ -24,10 +24,14 @@ namespace billiard_laser
         private int _opacityPercentage;
         private bool calibratingLaserPosition = false;
         private CancellationTokenSource? cancellationTokenSource;
-        private int ongoingUpdates = 0;
 
         public CameraController cameraController;
         public event EventHandler? BallReplacementFormClosed;
+
+        private readonly object updateLock = new object();
+        private readonly Queue<Action> updateQueue = new Queue<Action>();
+        private readonly SemaphoreSlim updateSemaphore = new SemaphoreSlim(0);
+        private readonly CancellationTokenSource updateCancellationTokenSource = new CancellationTokenSource();
 
         public Bitmap TargetTableLayout
         {
@@ -100,16 +104,28 @@ namespace billiard_laser
             laserDetector = new LaserDetector();
 
             cancellationTokenSource = new CancellationTokenSource();
+            Task.Run(ProcessUpdateQueue); // process frame updates in the background
         }
 
         /// <summary>
         /// Take in a new camera frame and overlay it on the base table at a lower opacity
         /// </summary>
         /// <param name="image"></param>
-        public async void UpdateTableOverlay(VideoFrame newFrame)
+        public void UpdateTableOverlay(VideoFrame newFrame)
         {
-            Interlocked.Increment(ref ongoingUpdates);
+            if (updateCancellationTokenSource.Token.IsCancellationRequested) return;
 
+            lock (updateLock)
+            {
+                // Queue the update operation
+                Console.WriteLine("adding new update to queue!");
+                updateQueue.Enqueue(() => UpdateTableOverlayInternal(newFrame));
+                updateSemaphore.Release();
+            }
+        }
+
+        private void UpdateTableOverlayInternal(VideoFrame newFrame)
+        {
             try
             {
                 cancellationTokenSource?.Token.ThrowIfCancellationRequested();
@@ -136,7 +152,7 @@ namespace billiard_laser
                 LaserDetectionResults? laserResults = null;
                 if (arduinoController?.IsLaserOn ?? false)
                 {
-                    await Task.Run(() => laserResults = laserDetector.ProcessLaserDetection(frameClone)); // do heavy processing in background
+                    laserResults = laserDetector.ProcessLaserDetection(frameClone);
                     laserDetectionDebugForm?.DisplayDebugImages(laserResults);
                 }
 
@@ -161,12 +177,46 @@ namespace billiard_laser
                 SetImage(pictureBoxTable, overlaidImage);
                 laserResults?.Dispose();
             }
-            catch (ObjectDisposedException e) {
+            catch (ObjectDisposedException e)
+            {
                 Console.WriteLine($"Failed to close gracefully in ball replacement form. {e.Message}");
             }
-            finally
+            catch (OperationCanceledException e) {
+                Console.WriteLine($"Table overlay update cancelled! Closing now.");
+            }
+        }
+
+        private async Task ProcessUpdateQueue()
+        {
+            try
             {
-                Interlocked.Decrement(ref ongoingUpdates);
+                while (!updateCancellationTokenSource.Token.IsCancellationRequested)
+                {
+                    await updateSemaphore.WaitAsync(updateCancellationTokenSource.Token);
+
+                    Action updateAction;
+                    lock (updateLock)
+                    {
+                        if (updateQueue.Count == 0) continue;
+                        updateAction = updateQueue.Dequeue();
+                    }
+
+                    try
+                    {
+                        if (InvokeRequired) Invoke(updateAction);
+                        //if (InvokeRequired) await Task.Factory.FromAsync(BeginInvoke(updateAction, null), EndInvoke);
+                        else updateAction();
+                    }
+                    catch (ObjectDisposedException e)
+                    {
+                        Console.WriteLine($"Failed to close gracefully in ball replacement form. {e.Message}");
+                        break;
+                    }
+                }
+            }
+            catch (OperationCanceledException e)
+            {
+                Console.WriteLine($"Cancel received, stopping processing frame queue. {e.Message}");
             }
         }
 
@@ -182,6 +232,7 @@ namespace billiard_laser
                 return;
             }
 
+            Console.WriteLine($"updating picturebox image at {DateTime.Now.Millisecond}");
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
             oldImage?.Dispose();
@@ -210,33 +261,27 @@ namespace billiard_laser
 
         private async void BallReplacementForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            BallReplacementFormClosed?.Invoke(this, e); // signal to observer early that we are closing to stop receiving new frames
+            BallReplacementFormClosed?.Invoke(this, e);
             cancellationTokenSource?.Cancel();
 
-            await Task.Run(async () =>
+            // give the UI thread a chance to process pending messages
+            Console.WriteLine($"In formclosing. {updateQueue.Count} items in queue.");
+            Application.DoEvents();
+
+            int maxAttempts = 5;
+            for (int i = 0; i < maxAttempts; i++)
             {
-                bool onUI = !InvokeRequired;
-                Console.WriteLine($"in FormClosing at {DateTime.Now.Millisecond}. onUI? {onUI}");
+                if (updateQueue.Count == 0) break;
+                Application.DoEvents();
+                Thread.Sleep(25);
+            }
 
-                // wait for ongoing updates to complete before closing
-                // cancel token not effective here because of ongoing synchronous UI operation (updating picturebox) that may be in progress
-                int maxSleeps = 50; // fallback to guarantee closure
-                int currentSleeps = 0;
-
-                while (ongoingUpdates > 0 && currentSleeps < maxSleeps)
-                {
-                    await Task.Delay(10); // Use Task.Delay instead of Thread.Sleep
-                    currentSleeps++;
-                }
-
-                Console.WriteLine($"at end of FormClosing while loop at {DateTime.Now.Millisecond} with {currentSleeps} currentSleeps and {ongoingUpdates} ongoingUpdates");
-            });
+            Console.WriteLine($"at end of formclosing. {updateQueue.Count} items in queue.");
 
             arduinoController?.Dispose();
             laserDetectionDebugForm?.Dispose();
             targetTableLayout.Dispose();
             pictureBoxTable.Dispose();
-            Console.WriteLine($"replacer form fully closed at {DateTime.Now.Millisecond}");
         }
 
         private void trackBarCameraOpacity_Scroll(object sender, EventArgs e)
