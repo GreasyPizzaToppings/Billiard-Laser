@@ -270,32 +270,15 @@ namespace billiard_laser
 
                 if (CurrentPlaybackState == PlaybackController.PlaybackState.Playing)
                 {
-
                     VideoFrame rawFrame = frame.Clone();
                     rawFrames.Enqueue(rawFrame);
                     await Task.Run(() => ProcessFrame(rawFrame)); // do frame processing on background thread
-                    //ProcessFrame(rawFrame);
                     stopwatch.Restart();
                 }
                 else
                 {
-                    if (ballReplacementForm != null)
-                    {
-                        if (ballReplacementForm.Disposing || ballReplacementForm.IsDisposed)
-                        {
-                            Console.WriteLine("ball repalcer form disposed or disposing!");
-                        }
-
-                        Console.WriteLine($"before calling update table overlay: we have {cameraController.UnprocessedFrames - 1} unprocessed frames in camera controller");
-                        Console.WriteLine($"calling updatetableoverlay at {DateTime.Now.Millisecond}");
-                        ballReplacementForm.UpdateTableOverlay(frame.Clone());
-                        Console.WriteLine($"finished updatetableoverlay at {DateTime.Now.Millisecond}");
-                    }
+                    ballReplacementForm?.UpdateTableOverlay(frame.Clone());   
                 }
-            }
-            catch (OperationCanceledException)
-            {
-                Console.WriteLine("ball replacement form cancelled.");
             }
             catch (Exception ex) { 
                 Console.WriteLine($"Other exception occured in processing camera frame! {ex.Message}");
