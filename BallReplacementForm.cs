@@ -33,6 +33,9 @@ namespace billiard_laser
         private readonly SemaphoreSlim updateSemaphore = new SemaphoreSlim(0);
         private readonly CancellationTokenSource updateCancellationTokenSource = new CancellationTokenSource();
 
+        private DateTime lastFrameTime = DateTime.MinValue;
+        private readonly TimeSpan minFrameInterval = TimeSpan.FromMilliseconds(33); // ~30fps
+
         public Bitmap TargetTableLayout
         {
             get => targetTableLayout;
@@ -113,6 +116,14 @@ namespace billiard_laser
         /// <param name="image"></param>
         public void UpdateTableOverlay(VideoFrame newFrame)
         {
+            // skip frames that arrive too quickly
+            if (DateTime.Now - lastFrameTime < minFrameInterval) {
+                Console.WriteLine("Skipping new table overlay frame. too fast!");
+                return;
+            }
+            
+            lastFrameTime = DateTime.Now;
+            
             if (updateCancellationTokenSource.Token.IsCancellationRequested) return;
 
             lock (updateLock)
