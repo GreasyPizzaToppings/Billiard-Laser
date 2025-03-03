@@ -18,6 +18,10 @@ public class CameraController : IDisposable
     public event EventHandler<VideoFrame>? ReceivedFrame;
     public event EventHandler? TransformationChanged; //for flip or mirror
 
+    // testing throttling
+    public int UnprocessedFrames = 0;
+    public int MaxProcessedFrames = 2;
+
     public bool IsFlipped
     {
         get => isFlipped;
@@ -95,6 +99,11 @@ public class CameraController : IDisposable
     private void FinalFrame_NewFrame(object sender, NewFrameEventArgs eventArgs)
     {
         frameReceivedEvent.Set();
+
+        if (UnprocessedFrames > MaxProcessedFrames) {
+            Console.WriteLine($"Skipping incoming camera frame. Unprocessed frames: {UnprocessedFrames} > MaxProcessedFrames: {MaxProcessedFrames}");
+            return;
+        }
 
         using Bitmap originalFrame = eventArgs.Frame;
         Bitmap? workingFrame = null;

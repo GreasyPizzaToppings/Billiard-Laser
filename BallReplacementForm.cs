@@ -10,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Threading;
 
 namespace billiard_laser
 {
@@ -19,11 +20,14 @@ namespace billiard_laser
         private ArduinoController arduinoController;
         private LaserDetector laserDetector;
         private LaserDetectionDebugForm? laserDetectionDebugForm;
-        public CameraController cameraController;
 
-        public event EventHandler? BallReplacementFormClosed;
-
+        private int _opacityPercentage;
         private bool calibratingLaserPosition = false;
+        private CancellationTokenSource? cancellationTokenSource;
+        private int ongoingUpdates = 0;
+
+        public CameraController cameraController;
+        public event EventHandler? BallReplacementFormClosed;
 
         public Bitmap TargetTableLayout
         {
@@ -35,15 +39,28 @@ namespace billiard_laser
             }
         }
 
+        public int OpacityPercentage
+        {
+            get => _opacityPercentage;
+            set
+            {
+                _opacityPercentage = value;
+                trackBarCameraOpacity.Value = value;
+
+                labelCameraOpacityValue.Text = OpacityPercentage + "%";
+            }
+        }
+
         public BallReplacementForm(Bitmap targetTableLayout, CameraController cameraController)
         {
             ArgumentNullException.ThrowIfNull(targetTableLayout);
             ArgumentNullException.ThrowIfNull(cameraController);
 
             InitializeComponent();
-            UpdateOpacityValueLabel();
+
+            OpacityPercentage = trackBarCameraOpacity.Value;
             UpdateStepAmountValueLabel();
-            
+
             this.cameraController = cameraController;
             arduinoController = new ArduinoController();
             TargetTableLayout = new Bitmap(targetTableLayout);
@@ -73,7 +90,7 @@ namespace billiard_laser
                     else
                     {
                         // Log the error since we can't show it to the user
-                        Console.WriteLine("Arduino connection failed but form was disposed: " + 
+                        Console.WriteLine("Arduino connection failed but form was disposed: " +
                             task?.Exception?.InnerException?.Message);
                     }
                 }
@@ -81,83 +98,150 @@ namespace billiard_laser
 
             arduinoController?.LaserOff();
             laserDetector = new LaserDetector();
+
+            cancellationTokenSource = new CancellationTokenSource();
         }
 
         /// <summary>
         /// Take in a new camera frame and overlay it on the base table at a lower opacity
         /// </summary>
         /// <param name="image"></param>
-        public void UpdateTableOverlay(VideoFrame newFrame)
+        public async void UpdateTableOverlay(VideoFrame newFrame)
         {
-            if (newFrame == null || newFrame.frame == null) throw new InvalidEnumArgumentException("Frame given to update table overlay in ball replacement form should not be null.");
+            Interlocked.Increment(ref ongoingUpdates);
 
-            if (InvokeRequired)
+            try
             {
-                Invoke(new Action(() => UpdateTableOverlay(newFrame)));
+                cancellationTokenSource?.Token.ThrowIfCancellationRequested();
+                if (cancellationTokenSource?.Token.IsCancellationRequested == true) throw new OperationCanceledException();
+
+                if (newFrame == null || newFrame.frame == null) throw new InvalidEnumArgumentException("Frame given to update table overlay in ball replacement form should not be null.");
+
+                using Bitmap frameClone = (Bitmap)newFrame.frame.Clone();
+                using Bitmap overlaidImage = new(TargetTableLayout.Width, TargetTableLayout.Height);
+                using var graphics = Graphics.FromImage(overlaidImage);
+
+                // Calculate opacity in (0-1 range)
+                using var imageAttributes = new ImageAttributes();
+                imageAttributes.SetColorMatrix(new ColorMatrix { Matrix33 = (OpacityPercentage / 100f) }, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
+
+                // Draw base table layout
+                graphics.Clear(Color.Transparent);
+                graphics.DrawImage(TargetTableLayout,
+                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                    0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
+                    GraphicsUnit.Pixel);
+
+                // Process laser detection if enabled
+                LaserDetectionResults? laserResults = null;
+                if (arduinoController?.IsLaserOn ?? false)
+                {
+                    await Task.Run(() => laserResults = laserDetector.ProcessLaserDetection(frameClone)); // do heavy processing in background
+                    laserDetectionDebugForm?.DisplayDebugImages(laserResults);
+                }
+
+                // Draw either laser highlight or camera frame
+                if (laserResults?.LaserHighlighted != null)
+                {
+                    graphics.DrawImage(laserResults.LaserHighlighted,
+                        new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                        0, 0, laserResults.LaserHighlighted.Width, laserResults.LaserHighlighted.Height,
+                        GraphicsUnit.Pixel,
+                        imageAttributes);
+                }
+                else
+                {
+                    graphics.DrawImage(frameClone,
+                        new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
+                        0, 0, frameClone.Width, frameClone.Height,
+                        GraphicsUnit.Pixel,
+                        imageAttributes);
+                }
+
+                SetImage(pictureBoxTable, overlaidImage);
+                laserResults?.Dispose();
+            }
+            catch (ObjectDisposedException e) {
+                Console.WriteLine($"Failed to close gracefully in ball replacement form. {e.Message}");
+            }
+            finally
+            {
+                Interlocked.Decrement(ref ongoingUpdates);
+            }
+        }
+
+        private void SetImage(PictureBox pictureBox, Image newImage)
+        {
+            cancellationTokenSource?.Token.ThrowIfCancellationRequested();
+            if (pictureBox == null || pictureBox.IsDisposed || pictureBox.Disposing) throw new Exception();
+
+            if (pictureBox.InvokeRequired)
+            {
+                Console.WriteLine($"invoking picturebox update now at {DateTime.Now.Millisecond}");
+                pictureBox.Invoke(new Action(() => SetImage(pictureBox, newImage)));
                 return;
             }
 
-            using Bitmap frameClone = (Bitmap)newFrame.frame.Clone();
-            using Bitmap overlaidImage = new(TargetTableLayout.Width, TargetTableLayout.Height);
-            using var graphics = Graphics.FromImage(overlaidImage);
-                
-            // Calculate opacity (0-1 range from trackbar percentage)
-            float opacity = trackBarCameraOpacity.Value / 100f;
-            using var imageAttributes = new ImageAttributes();
-            imageAttributes.SetColorMatrix(new ColorMatrix { Matrix33 = opacity }, ColorMatrixFlag.Default, ColorAdjustType.Bitmap);
-
-            // Draw base table layout
-            graphics.Clear(Color.Transparent);
-            graphics.DrawImage(TargetTableLayout,
-                new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                0, 0, TargetTableLayout.Width, TargetTableLayout.Height,
-                GraphicsUnit.Pixel);
-
-            // Process laser detection if enabled
-            LaserDetectionResults? laserResults = null;
-            if (arduinoController?.IsLaserOn ?? false)
-            {
-                laserResults = laserDetector.ProcessLaserDetection(frameClone);
-                laserDetectionDebugForm?.DisplayDebugImages(laserResults);
-            }
-
-            // Draw either laser highlight or camera frame
-            if (laserResults?.LaserHighlighted != null)
-            {
-                graphics.DrawImage(laserResults.LaserHighlighted,
-                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                    0, 0, laserResults.LaserHighlighted.Width, laserResults.LaserHighlighted.Height,
-                    GraphicsUnit.Pixel,
-                    imageAttributes);
-            }
-            else
-            {
-                graphics.DrawImage(frameClone,
-                    new Rectangle(0, 0, TargetTableLayout.Width, TargetTableLayout.Height),
-                    0, 0, frameClone.Width, frameClone.Height,
-                    GraphicsUnit.Pixel,
-                    imageAttributes);
-            }
-
-            SetImage(pictureBoxTable, overlaidImage);
-            laserResults?.Dispose();
-        }
-
-        private static void SetImage(PictureBox pictureBox, Image newImage)
-        {
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
             oldImage?.Dispose();
+            Console.WriteLine($"finished picturebox update at {DateTime.Now.Millisecond}");
+        }
+
+        private void btnShowDebugForm_Click(object sender, EventArgs e)
+        {
+            if (laserDetectionDebugForm == null || laserDetectionDebugForm.IsDisposed)
+            {
+                laserDetectionDebugForm = new LaserDetectionDebugForm(laserDetector);
+                laserDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
+                laserDetectionDebugForm.Show();
+                laserDetectionDebugForm.GetAndShowDebugImages(targetTableLayout);
+            }
+            else
+            {
+                laserDetectionDebugForm.Focus();
+            }
+        }
+
+        private void DebugForm_FormClosed(object? sender, EventArgs e)
+        {
+            laserDetectionDebugForm = null;
+        }
+
+        private async void BallReplacementForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            BallReplacementFormClosed?.Invoke(this, e); // signal to observer early that we are closing to stop receiving new frames
+            cancellationTokenSource?.Cancel();
+
+            await Task.Run(async () =>
+            {
+                bool onUI = !InvokeRequired;
+                Console.WriteLine($"in FormClosing at {DateTime.Now.Millisecond}. onUI? {onUI}");
+
+                // wait for ongoing updates to complete before closing
+                // cancel token not effective here because of ongoing synchronous UI operation (updating picturebox) that may be in progress
+                int maxSleeps = 50; // fallback to guarantee closure
+                int currentSleeps = 0;
+
+                while (ongoingUpdates > 0 && currentSleeps < maxSleeps)
+                {
+                    await Task.Delay(10); // Use Task.Delay instead of Thread.Sleep
+                    currentSleeps++;
+                }
+
+                Console.WriteLine($"at end of FormClosing while loop at {DateTime.Now.Millisecond} with {currentSleeps} currentSleeps and {ongoingUpdates} ongoingUpdates");
+            });
+
+            arduinoController?.Dispose();
+            laserDetectionDebugForm?.Dispose();
+            targetTableLayout.Dispose();
+            pictureBoxTable.Dispose();
+            Console.WriteLine($"replacer form fully closed at {DateTime.Now.Millisecond}");
         }
 
         private void trackBarCameraOpacity_Scroll(object sender, EventArgs e)
         {
-            UpdateOpacityValueLabel();
-        }
-
-        private void UpdateOpacityValueLabel()
-        {
-            labelCameraOpacityValue.Text = trackBarCameraOpacity.Value.ToString() + "%";
+            OpacityPercentage = trackBarCameraOpacity.Value;
         }
 
         private void UpdateStepAmountValueLabel()
@@ -238,36 +322,6 @@ namespace billiard_laser
             }
 
             Console.WriteLine(cameraController);
-        }
-
-        private void btnShowDebugForm_Click(object sender, EventArgs e)
-        {
-            if (laserDetectionDebugForm == null || laserDetectionDebugForm.IsDisposed)
-            {
-                laserDetectionDebugForm = new LaserDetectionDebugForm(laserDetector);
-                laserDetectionDebugForm.DebugFormClosed += DebugForm_FormClosed;
-                laserDetectionDebugForm.Show();
-                laserDetectionDebugForm.GetAndShowDebugImages(targetTableLayout);
-            }
-            else
-            {
-                laserDetectionDebugForm.Focus();
-            }
-        }
-
-        private void DebugForm_FormClosed(object? sender, EventArgs e)
-        {
-            laserDetectionDebugForm = null;
-        }
-
-        private void BallReplacementForm_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            BallReplacementFormClosed?.Invoke(this, EventArgs.Empty);
-
-            arduinoController?.Dispose();
-            laserDetectionDebugForm?.Dispose();
-            targetTableLayout.Dispose();
-            pictureBoxTable.Dispose();
         }
 
         /// <summary>

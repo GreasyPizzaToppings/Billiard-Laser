@@ -4,6 +4,7 @@ using System.Threading;
 using System.Windows.Controls;
 using System.Xml.Linq;
 using Accord.IO;
+using System.Net.Sockets;
 
 namespace billiard_laser
 {
@@ -21,7 +22,7 @@ namespace billiard_laser
         //items
         private readonly QueueManager<VideoFrame> rawFrames;
         private readonly QueueManager<VideoFrame> processedFrames;
-        private const int maxFrames = 1000; //testing
+        private const int maxFrames = 300; //testing
 
         private readonly QueueManager<Shot> shots;
         private const int maxShots = 15;
@@ -163,6 +164,7 @@ namespace billiard_laser
             SetStateLoadCamera();
             stopwatch.Restart();
             if (cameraController.StartCameraCapture()) CurrentPlaybackState = PlaybackController.PlaybackState.Playing;
+            else MessageBox.Show("Camera was unable to start!");
         }
 
         /// <summary>
@@ -227,7 +229,7 @@ namespace billiard_laser
             loadedVideoStarted = false;
         }
 
-        //display a selected processed frame of the video and send to debug form if its open
+        //display a selected processed frame
         private void listBoxFrames_SelectedIndexChanged(object sender, EventArgs e)
         {
             if (listBoxProcessedFrames.SelectedItem is not int selectedIndex) return;
@@ -264,22 +266,44 @@ namespace billiard_laser
             if (currentInputType != MediaInputType.Camera) throw new InvalidOperationException("Camera controller frame received despite not being input media type.");
             try
             {
+                cameraController.UnprocessedFrames++;
+
                 if (CurrentPlaybackState == PlaybackController.PlaybackState.Playing)
                 {
+
                     VideoFrame rawFrame = frame.Clone();
                     rawFrames.Enqueue(rawFrame);
-                    //await Task.Run(() => ProcessFrame(rawFrame)); // do frame processing on background thread
-                    ProcessFrame(rawFrame);
+                    await Task.Run(() => ProcessFrame(rawFrame)); // do frame processing on background thread
+                    //ProcessFrame(rawFrame);
+                    stopwatch.Restart();
                 }
                 else
                 {
-                    Invoke(new Action(() => ballReplacementForm?.UpdateTableOverlay(frame)));
+                    if (ballReplacementForm != null)
+                    {
+                        if (ballReplacementForm.Disposing || ballReplacementForm.IsDisposed)
+                        {
+                            Console.WriteLine("ball repalcer form disposed or disposing!");
+                        }
+
+                        Console.WriteLine($"before calling update table overlay: we have {cameraController.UnprocessedFrames - 1} frames in updatetableoverlay that are trying to complete");
+                        Console.WriteLine($"calling updatetableoverlay at {DateTime.Now.Millisecond}");
+                        ballReplacementForm.UpdateTableOverlay(frame);
+                        Console.WriteLine($"finished updatetableoverlay at {DateTime.Now.Millisecond}");
+                    }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                Console.WriteLine("ball replacement form cancelled.");
+            }
+            catch (Exception ex) { 
+                Console.WriteLine($"Other exception occured in processing camera frame! {ex.Message}");
             }
             finally
             {
                 frame.Dispose();
-                stopwatch.Restart();
+                cameraController.UnprocessedFrames--;
             }
         }
 

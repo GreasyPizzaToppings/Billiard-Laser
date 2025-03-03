@@ -423,7 +423,7 @@
             Controls.Add(tableLayoutPanelMain);
             Name = "BallReplacementForm";
             Text = "Ball Replacement Helper";
-            FormClosed += BallReplacementForm_FormClosed;
+            FormClosing += BallReplacementForm_FormClosing;
             ((System.ComponentModel.ISupportInitialize)pictureBoxTable).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarCameraOpacity).EndInit();
             ((System.ComponentModel.ISupportInitialize)trackBarLaserStepAmount).EndInit();
