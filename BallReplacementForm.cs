@@ -23,7 +23,6 @@ namespace billiard_laser
 
         private int _opacityPercentage;
         private bool calibratingLaserPosition = false;
-        private CancellationTokenSource? cancellationTokenSource;
 
         public CameraController cameraController;
         public event EventHandler? BallReplacementFormClosed;
@@ -82,7 +81,7 @@ namespace billiard_laser
                     {
                         try
                         {
-                            this.BeginInvoke(new Action(() =>
+                            BeginInvoke(new Action(() =>
                             {
                                 MessageBox.Show("Failed to connect to Arduino: " + task?.Exception?.InnerException?.Message,
                                     "Connection Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -106,7 +105,7 @@ namespace billiard_laser
             arduinoController?.LaserOff();
             laserDetector = new LaserDetector();
 
-            cancellationTokenSource = new CancellationTokenSource();
+            updateCancellationTokenSource = new CancellationTokenSource();
             Task.Run(ProcessUpdateQueue); // process frame updates in the background
         }
 
@@ -128,8 +127,6 @@ namespace billiard_laser
 
             lock (updateLock)
             {
-                // Queue the update operation
-                Console.WriteLine("adding new update to queue!");
                 updateQueue.Enqueue(() => UpdateTableOverlayInternal(newFrame));
                 updateSemaphore.Release();
             }
@@ -139,8 +136,7 @@ namespace billiard_laser
         {
             try
             {
-                cancellationTokenSource?.Token.ThrowIfCancellationRequested();
-                if (cancellationTokenSource?.Token.IsCancellationRequested == true) throw new OperationCanceledException();
+                updateCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
                 if (newFrame == null || newFrame.frame == null) throw new InvalidEnumArgumentException("Frame given to update table overlay in ball replacement form should not be null.");
 
@@ -215,7 +211,6 @@ namespace billiard_laser
                     try
                     {
                         if (InvokeRequired) Invoke(updateAction);
-                        //if (InvokeRequired) await Task.Factory.FromAsync(BeginInvoke(updateAction, null), EndInvoke);
                         else updateAction();
                     }
                     catch (ObjectDisposedException e)
@@ -233,21 +228,17 @@ namespace billiard_laser
 
         private void SetImage(PictureBox pictureBox, Image newImage)
         {
-            cancellationTokenSource?.Token.ThrowIfCancellationRequested();
-            if (pictureBox == null || pictureBox.IsDisposed || pictureBox.Disposing) throw new Exception();
+            updateCancellationTokenSource.Token.ThrowIfCancellationRequested();
 
             if (pictureBox.InvokeRequired)
             {
-                Console.WriteLine($"invoking picturebox update now at {DateTime.Now.Millisecond}");
                 pictureBox.Invoke(new Action(() => SetImage(pictureBox, newImage)));
                 return;
             }
 
-            Console.WriteLine($"updating picturebox image at {DateTime.Now.Millisecond}");
             var oldImage = pictureBox.Image;
             pictureBox.Image = newImage != null ? new Bitmap(newImage) : null;
             oldImage?.Dispose();
-            Console.WriteLine($"finished picturebox update at {DateTime.Now.Millisecond}");
         }
 
         private void btnShowDebugForm_Click(object sender, EventArgs e)
@@ -273,19 +264,21 @@ namespace billiard_laser
         private async void BallReplacementForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             BallReplacementFormClosed?.Invoke(this, e);
-            cancellationTokenSource?.Cancel();
+            updateCancellationTokenSource.Cancel();
 
             // give the UI thread a chance to process pending messages
             Console.WriteLine($"In formclosing. {updateQueue.Count} items in queue.");
             Application.DoEvents();
 
-            int maxAttempts = 5;
+            int maxAttempts = 3;
             for (int i = 0; i < maxAttempts; i++)
             {
                 if (updateQueue.Count == 0) break;
                 Application.DoEvents();
-                Thread.Sleep(25);
+                await Task.Delay(25);
             }
+
+            if (updateQueue.Count > 0) lock (updateLock) updateQueue.Clear();
 
             Console.WriteLine($"at end of formclosing. {updateQueue.Count} items in queue.");
 
